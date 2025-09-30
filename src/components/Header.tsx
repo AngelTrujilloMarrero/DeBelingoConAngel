@@ -1,6 +1,7 @@
 import React from 'react';
 import { Music, Guitar, Instagram, Facebook, MessageCircle, Send } from 'lucide-react';
 import DBCALogo from './DBCALogo';
+import Navigation from './Navigation';
 
 const Header: React.FC = () => {
   return (
@@ -80,6 +81,7 @@ const Header: React.FC = () => {
       
       {/* Bottom gradient */}
       <div className="absolute bottom-0 left-0 right-0 h-4 bg-gradient-to-t from-gray-50 to-transparent"></div>
+      <Navigation />
     </header>
   );
 };

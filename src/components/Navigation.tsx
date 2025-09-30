@@ -2,14 +2,14 @@ import React from 'react';
 
 const Navigation: React.FC = () => {
   return (
-    <nav className="sticky top-0 bg-white shadow-lg z-50">
+    <nav className="bg-black bg-opacity-20 backdrop-blur-sm p-2 mt-4 rounded-full">
       <div className="container mx-auto px-4">
-        <div className="flex justify-center items-center h-16 space-x-4">
-          <a href="#events" className="text-gray-600 hover:text-blue-600 font-semibold px-3 py-2 rounded-md transition-colors duration-300">Eventos</a>
-          <a href="#map" className="text-gray-600 hover:text-blue-600 font-semibold px-3 py-2 rounded-md transition-colors duration-300">Mapa</a>
-          <a href="#stats" className="text-gray-600 hover:text-blue-600 font-semibold px-3 py-2 rounded-md transition-colors duration-300">Estadísticas</a>
-          <a href="#analyzer" className="text-gray-600 hover:text-blue-600 font-semibold px-3 py-2 rounded-md transition-colors duration-300">Analizador</a>
-          <a href="#social" className="text-gray-600 hover:text-blue-600 font-semibold px-3 py-2 rounded-md transition-colors duration-300">Redes</a>
+        <div className="flex justify-center items-center h-12 space-x-2">
+          <a href="#events" className="text-white hover:bg-white/20 font-semibold px-4 py-2 rounded-full transition-all duration-300">Eventos</a>
+          <a href="#map" className="text-white hover:bg-white/20 font-semibold px-4 py-2 rounded-full transition-all duration-300">Mapa</a>
+          <a href="#stats" className="text-white hover:bg-white/20 font-semibold px-4 py-2 rounded-full transition-all duration-300">Estadísticas</a>
+          <a href="#analyzer" className="text-white hover:bg-white/20 font-semibold px-4 py-2 rounded-full transition-all duration-300">Analizador</a>
+          <a href="#social" className="text-white hover:bg-white/20 font-semibold px-4 py-2 rounded-full transition-all duration-300">Redes</a>
         </div>
       </div>
     </nav>
