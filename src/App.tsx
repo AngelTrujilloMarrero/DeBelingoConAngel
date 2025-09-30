@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import Header from './components/Header';
+import Navigation from './components/Navigation';
 import EventsList from './components/EventsList';
 import MapComponent from './components/MapComponent';
 import Statistics from './components/Statistics';
@@ -638,6 +639,7 @@ function App() {
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
       {/* Header */}
       <Header />
+      <Navigation />
 
       {/* Main Content */}
       <div className="container mx-auto px-4 py-8 space-y-12">
