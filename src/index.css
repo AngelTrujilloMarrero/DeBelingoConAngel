@@ -195,6 +195,39 @@
   transform: scale(1.15);
 }
 
+/* Blurred background image style */
+.blurred-bg {
+  position: relative;
+  background-color: transparent; /* Ensure pseudo-element is visible */
+  z-index: 1;
+}
+
+.blurred-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('/eltablero.jpg');
+  background-size: cover;
+  background-position: center;
+  filter: blur(8px);
+  transform: scale(1.1); /* Avoid seeing blurred edges */
+  z-index: -2;
+}
+
+.blurred-bg::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5); /* Dark overlay for readability */
+  z-index: -1;
+}
+
 @keyframes background-pan {
   0% {
     background-position: 0% 50%;
