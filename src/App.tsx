@@ -202,7 +202,7 @@ function App() {
         if (index === 0) {
             const dateWidth = ctx.measureText(dateText).width;
             const generationDate = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
-            const additionalText = ` - https://admindebelingo.web.app - Generado ${generationDate}`;
+            const additionalText = ` - https://debelingoconangel.web.app - Generado ${generationDate}`;
             ctx.fillStyle = 'red';
             if (dateWidth + ctx.measureText(additionalText).width <= maxWidth) {
                 ctx.fillText(additionalText, dateWidth, currentY);
@@ -355,7 +355,7 @@ function App() {
     `;
 
     const baseUrls = [
-        'https://admindebelingo.web.app/fotos/',
+        'http://debelingoconangel.web.app/fotos/',
         'https://debelingo.webcindario.com/',
         'http://debelingoconangel.infy.uk/fotos/'
     ];
@@ -543,7 +543,7 @@ function App() {
             margin-top: 15px;
             font-family: Arial, sans-serif;
         `;
-        infoText.innerHTML = '<strong>Más info en: https://admindebelingo.web.app o https://debelingo.webcindario.com</strong>';
+        infoText.innerHTML = '<strong>Más info en: https://debelingoconangel.web.app </strong>';
 
         tempContainer.appendChild(backgroundDiv);
         tempContainer.appendChild(contentDiv);

@@ -17,10 +17,10 @@ const Header: React.FC = () => {
         {/* Top section with Logo and Social Icons */}
         <div className="flex items-center justify-center gap-4 md:gap-6 w-full">
           <div className="hidden md:flex items-center gap-2">
-            <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
+            <a href="https://www.instagram.com/debelingoconangel/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg">
               <Instagram className="w-5 h-5 text-white" />
             </a>
-            <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center shadow-lg">
+            <a href="https://www.facebook.com/debelingoconangel/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center shadow-lg">
               <Facebook className="w-5 h-5 text-white" />
             </a>
           </div>
@@ -30,10 +30,10 @@ const Header: React.FC = () => {
           </div>
 
           <div className="hidden md:flex items-center gap-2">
-             <a href="https://whatsapp.com" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg">
+             <a href="https://www.whatsapp.com/channel/0029Va8nc2A77qVZokI0aC2K" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg">
               <MessageCircle className="w-5 h-5 text-white" />
             </a>
-            <a href="https://telegram.org" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gradient-to-br from-sky-400 to-sky-600 rounded-full flex items-center justify-center shadow-lg">
+            <a href="https://t.me/debelingoconangel" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gradient-to-br from-sky-400 to-sky-600 rounded-full flex items-center justify-center shadow-lg">
               <Send className="w-5 h-5 text-white" />
             </a>
           </div>
