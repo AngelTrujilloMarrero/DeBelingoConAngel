@@ -29,3 +29,8 @@ export interface Coordinates {
   lat: number;
   lng: number;
 }
+
+export interface RecentActivityItem {
+  type: 'add' | 'edit' | 'delete';
+  event: Event;
+}

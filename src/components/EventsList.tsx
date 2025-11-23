@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
-import { Calendar, Clock, MapPin, Music2, Download, Navigation } from 'lucide-react';
-import { Event } from '../types';
+import { Calendar, Clock, MapPin, Music2, Download, Navigation, Plus, Edit, Trash2 } from 'lucide-react';
+import { Event, RecentActivityItem } from '../types';
 import { groupEventsByDay, sortEventsByDateTime, formatDayName, getLastUpdateDate } from '../utils/helpers';
 
 interface EventsListProps {
   events: Event[];
+  recentActivity?: RecentActivityItem[];
   onExportWeek: (startDate?: string, endDate?: string) => void;
   onExportFestival: () => void;
 }
 
-const EventsList: React.FC<EventsListProps> = ({ events, onExportWeek, onExportFestival }) => {
+const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExportWeek, onExportFestival }) => {
   const [showDatePickers, setShowDatePickers] = useState(false);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -126,6 +127,47 @@ const EventsList: React.FC<EventsListProps> = ({ events, onExportWeek, onExportF
             Última actualización: {lastUpdate}
           </div>
         </div>
+
+        {/* Recent Activity Block */}
+        {recentActivity && recentActivity.length > 0 && (
+          <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700 w-full">
+            <h4 className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-3 text-center">
+              Últimos movimientos
+            </h4>
+            <div className="space-y-2">
+              {recentActivity.map((item, index) => (
+                <div key={index} className="flex items-center gap-3 text-sm bg-gray-800/50 p-2 rounded border border-gray-700/50">
+                  <div className={`p-1.5 rounded-full ${item.type === 'add' ? 'bg-green-500/20 text-green-400' :
+                    item.type === 'edit' ? 'bg-blue-500/20 text-blue-400' :
+                      'bg-red-500/20 text-red-400'
+                    }`}>
+                    {item.type === 'add' ? <Plus className="w-3 h-3" /> :
+                      item.type === 'edit' ? <Edit className="w-3 h-3" /> :
+                        <Trash2 className="w-3 h-3" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className={`font-medium ${item.type === 'add' ? 'text-green-300' :
+                        item.type === 'edit' ? 'text-blue-300' :
+                          'text-red-300'
+                        }`}>
+                        {item.type === 'add' ? 'Nuevo:' :
+                          item.type === 'edit' ? 'Editado:' :
+                            'Eliminado:'}
+                      </span>
+                      <span className="text-gray-300 truncate">
+                        {item.event.lugar ? `${item.event.lugar}, ` : ''}{item.event.municipio}
+                      </span>
+                    </div>
+                    <div className="text-gray-500 text-xs truncate">
+                      {item.event.orquesta} - {new Date(item.event.day).toLocaleDateString('es-ES')}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Export Section */}
         <div className="flex flex-col items-center gap-4">
