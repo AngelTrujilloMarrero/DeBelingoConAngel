@@ -1,19 +1,68 @@
-import React from 'react';
+import React, { useRef, useEffect } from 'react';
 import { Instagram, Facebook, MessageCircle, Send } from 'lucide-react';
 import DBCALogo from './DBCALogo';
 import Navigation from './Navigation';
 
 const Header: React.FC = () => {
+  const headerRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    const header = headerRef.current;
+    if (!header) return;
+
+    const handleMouseMove = (e: MouseEvent) => {
+      const rect = header.getBoundingClientRect();
+      const x = e.clientX - rect.left;
+      const y = e.clientY - rect.top;
+      header.style.setProperty('--mouse-x', `${x}px`);
+      header.style.setProperty('--mouse-y', `${y}px`);
+    };
+
+    header.addEventListener('mousemove', handleMouseMove);
+
+    return () => {
+      header.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, []);
+
   return (
     <header
-      className="sticky top-0 z-50 text-white shadow-lg flex flex-col justify-center items-center blurred-bg cursor-default"
+      ref={headerRef}
+      className="sticky top-0 z-50 text-white shadow-lg flex flex-col justify-center items-center cursor-default group overflow-hidden"
       style={{
-        maxHeight: '35vh',
-        backgroundSize: '200% 200%',
-        animation: 'background-pan 10s ease infinite'
+        maxHeight: '28.5vh',
       }}
     >
-      <div className="relative container mx-auto px-4 text-center flex flex-col justify-center h-full">
+      {/* Background Layers */}
+      <div className="absolute inset-0 pointer-events-none">
+        {/* Base Blurred Image */}
+        <div
+          className="absolute inset-0 bg-[url('/eltablero.jpg')] bg-cover bg-center blur-[2px] scale-110"
+        />
+
+        {/* Unblurred Reveal Layer */}
+        <div
+          className="absolute inset-0 bg-[url('/eltablero.jpg')] bg-cover bg-center scale-110 transition-opacity duration-300"
+          style={{
+            maskImage: `radial-gradient(160px circle at var(--mouse-x) var(--mouse-y), black, transparent)`,
+            WebkitMaskImage: `radial-gradient(160px circle at var(--mouse-x) var(--mouse-y), black, transparent)`,
+          }}
+        />
+
+        {/* Dark Overlay */}
+        <div className="absolute inset-0 bg-black/50" />
+      </div>
+
+      {/* Spotlight Effect (Intensified) */}
+      <div
+        className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+        style={{
+          background: `radial-gradient(600px circle at var(--mouse-x) var(--mouse-y), rgba(255,255,255,0.3), transparent 40%)`,
+          zIndex: 5
+        }}
+      />
+
+      <div className="relative container mx-auto px-4 text-center flex flex-col justify-between h-full z-10 py-2">
         {/* Top section with Logo and Social Icons */}
         <div className="flex items-center justify-center gap-4 md:gap-6 w-full">
           <div className="hidden md:flex items-center gap-2">
@@ -25,7 +74,7 @@ const Header: React.FC = () => {
             </a>
           </div>
 
-          <div className="transform scale-75 md:scale-90 -my-2 md:my-0">
+          <div className="transform scale-[0.54] md:scale-[0.70] -my-4 md:-my-2">
             <DBCALogo />
           </div>
 
@@ -40,17 +89,17 @@ const Header: React.FC = () => {
         </div>
 
         {/* Main Title & Subtitle */}
-        <div className="hidden md:block my-1">
-          <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-orbitron gradient-text">
+        <div className="hidden md:block -mt-2 mb-1">
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold font-orbitron gradient-text tracking-widest transform scale-x-110 origin-center inline-block">
             DE BELINGO CON ÁNGEL
           </h1>
-          <p className="text-lg md:text-xl font-semibold text-blue-100 animate-fade-in">
+          <p className="text-base md:text-lg font-semibold text-blue-100 animate-fade-in">
             Verbenas en Tenerife
           </p>
         </div>
 
         {/* Navigation is now inside the flex container */}
-        <div className="w-full mt-auto">
+        <div className="w-full mt-auto mb-1">
           <Navigation />
         </div>
 
