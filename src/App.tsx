@@ -288,6 +288,13 @@ function App() {
       return eventDate >= cutoffDate;
     });
 
+    // Sort events by FechaAgregado descending (newest first)
+    currentEvents.sort((a, b) => {
+      const dateA = a.FechaAgregado ? new Date(a.FechaAgregado).getTime() : 0;
+      const dateB = b.FechaAgregado ? new Date(b.FechaAgregado).getTime() : 0;
+      return dateB - dateA;
+    });
+
     const uniqueFestivals = [...new Set(currentEvents.map(event => {
       return event.lugar ? `${event.lugar}, ${event.municipio}` : event.municipio;
     }))];
