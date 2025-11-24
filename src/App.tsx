@@ -290,8 +290,18 @@ function App() {
 
     // Sort events by FechaAgregado descending (newest first)
     currentEvents.sort((a, b) => {
-      const dateA = a.FechaAgregado ? new Date(a.FechaAgregado).getTime() : 0;
-      const dateB = b.FechaAgregado ? new Date(b.FechaAgregado).getTime() : 0;
+      const parseDate = (dateStr?: string) => {
+        if (!dateStr) return 0;
+        // Check for DD/MM/YYYY or DD-MM-YYYY format
+        const dmy = dateStr.match(/^(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})/);
+        if (dmy) {
+          return new Date(parseInt(dmy[3]), parseInt(dmy[2]) - 1, parseInt(dmy[1])).getTime();
+        }
+        return new Date(dateStr).getTime();
+      };
+
+      const dateA = parseDate(a.FechaAgregado);
+      const dateB = parseDate(b.FechaAgregado);
       return dateB - dateA;
     });
 
