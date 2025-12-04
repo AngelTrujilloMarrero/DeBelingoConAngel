@@ -11,6 +11,13 @@ import { Loader2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
 import { Event } from './types';
 import { groupEventsByDay, sortEventsByDateTime } from './utils/helpers';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 function App() {
   const { events, recentActivity, loading } = useEvents();
@@ -716,18 +723,21 @@ function App() {
                     <label className="block text-sm font-medium text-gray-700 mb-2">
                       Selecciona una fiesta:
                     </label>
-                    <select
+                    <Select
                       value={selectedFestival}
-                      onChange={(e) => setSelectedFestival(e.target.value)}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white"
+                      onValueChange={setSelectedFestival}
                     >
-                      <option value="">-- Selecciona una fiesta --</option>
-                      {getUniqueFestivals().map((festival, index) => (
-                        <option key={index} value={JSON.stringify(festival)}>
-                          Verbenas de {festival.label}
-                        </option>
-                      ))}
-                    </select>
+                      <SelectTrigger className="w-full bg-white border-gray-300">
+                        <SelectValue placeholder="-- Selecciona una fiesta --" />
+                      </SelectTrigger>
+                      <SelectContent viewportClassName="md:grid md:grid-cols-2 md:gap-x-4">
+                        {getUniqueFestivals().map((festival, index) => (
+                          <SelectItem key={index} value={JSON.stringify(festival)}>
+                            Verbenas de {festival.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="flex gap-3 justify-end">
