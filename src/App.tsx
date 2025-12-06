@@ -6,10 +6,12 @@ import Statistics from './components/Statistics';
 import Total from './components/Total';
 import VisitCounter from './components/VisitCounter';
 import SocialMedia from './components/SocialMedia';
+import { onValue, eventsRef, runTransaction, exportUsageRef } from './utils/firebase';
 import { useEvents } from './hooks/useEvents';
 import { Loader2 } from 'lucide-react';
 import html2canvas from 'html2canvas';
-import { Event } from './types';
+
+import { Event as AppEvent } from './types';
 import { groupEventsByDay, sortEventsByDateTime } from './utils/helpers';
 import {
   Select,
@@ -20,6 +22,72 @@ import {
 } from "@/components/ui/select"
 
 function App() {
+  const checkRateLimit = (limit: number): boolean => {
+    const key = 'user_export_history'; // Combined key for all exports
+    try {
+      const now = Date.now();
+      const timeWindow = 60 * 60 * 1000; // 1 hour
+      const stored = localStorage.getItem(key);
+      let timestamps: number[] = stored ? JSON.parse(stored) : [];
+
+      // Filter timestamps older than 1 hour
+      timestamps = timestamps.filter(ts => now - ts < timeWindow);
+
+      if (timestamps.length >= limit) {
+        return false;
+      }
+
+      timestamps.push(now);
+      localStorage.setItem(key, JSON.stringify(timestamps));
+      return true;
+    } catch (e) {
+      console.error("Error in rate limit check:", e);
+      // In case of error, we allow the action to avoid blocking the user due to local storage issues
+      return true;
+    }
+  };
+
+  const checkGlobalRateLimit = async (limit: number): Promise<boolean> => {
+    try {
+      const result = await runTransaction(exportUsageRef, (currentData) => {
+        const now = Date.now();
+        const timeWindow = 60 * 60 * 1000; // 1 hour
+        let timestamps: number[] = currentData ? Object.values(currentData) : [];
+
+        // Filter old timestamps
+        timestamps = timestamps.filter(ts => now - ts < timeWindow);
+
+        if (timestamps.length >= limit) {
+          // Abort transaction if limit reached
+          return;
+        }
+
+        // Add new timestamp
+        timestamps.push(now);
+
+        // Return new state (store as array or object, object is better for Firebase lists but array is ok if small)
+        // Firebase converts arrays to objects like {0: val, 1: val} sometimes. 
+        // Let's store as array, runTransaction works with it.
+        return timestamps;
+      });
+
+      // result.committed is true if the transaction completed successfully (update was made)
+      // If we returned undefined (abort), committed is false? No, we need to abort properly.
+      // Actually runTransaction returns { committed: boolean, snapshot: ... }
+      // If we return 'undefined' from updateFunction, the transaction is canceled ? 
+      // Documentation says: "If undefined is returned, the transaction is aborted."
+
+      return result.committed;
+    } catch (e) {
+      console.error("Error in global rate limit check:", e);
+      // Fail safe: if global check fails (network etc), maybe allow? Or deny?
+      // Let's allow to not break UX, or deny if strict. 
+      // User said "40 total", implying a hard limit. But if DB is down...
+      // Let's deny to be safe/strict as requested.
+      return false;
+    }
+  };
+
   const { events, recentActivity, loading } = useEvents();
   const [festivalSelectionVisible, setFestivalSelectionVisible] = useState(false);
   const [selectedFestival, setSelectedFestival] = useState('');
@@ -55,12 +123,22 @@ function App() {
       return;
     }
 
+    if (!checkRateLimit(20)) {
+      alert('Has alcanzado el límite de 20 descargas por hora por usuario.');
+      return;
+    }
+
+    if (!await checkGlobalRateLimit(40)) {
+      alert('Se ha alcanzado el límite global de 40 descargas por hora. Inténtalo más tarde.');
+      return;
+    }
+
     const groupedEvents = filteredEvents.reduce((acc, event) => {
       const date = event.day;
       if (!acc[date]) acc[date] = [];
       acc[date].push(event);
       return acc;
-    }, {} as Record<string, Event[]>);
+    }, {} as Record<string, AppEvent[]>);
 
     for (const date in groupedEvents) {
       groupedEvents[date].sort((a, b) => {
@@ -107,7 +185,7 @@ function App() {
       return text.substring(0, fitIndex);
     }
 
-    function calculateEventLines(event: Event, ctx: CanvasRenderingContext2D, maxWidth: number) {
+    function calculateEventLines(event: AppEvent, ctx: CanvasRenderingContext2D, maxWidth: number) {
       let lines = 0;
       let currentLineWidth = 0;
       const segments = [
@@ -331,6 +409,16 @@ function App() {
   const exportFestivalToImage = useCallback(async (festivalJson: string) => {
     if (!festivalJson) return;
 
+    if (!checkRateLimit(20)) {
+      alert('Has alcanzado el límite de 20 descargas por hora por usuario.');
+      return;
+    }
+
+    if (!await checkGlobalRateLimit(40)) {
+      alert('Se ha alcanzado el límite global de 40 descargas por hora. Inténtalo más tarde.');
+      return;
+    }
+
     let lugar: string, municipio: string;
     try {
       const parsed = JSON.parse(festivalJson);
@@ -485,7 +573,7 @@ function App() {
 
       festivalEvents.sort((a, b) => new Date(`${a.day}T${a.hora}`).getTime() - new Date(`${b.day}T${b.hora}`).getTime());
 
-      const eventsByDay: { [key: string]: Event[] } = {};
+      const eventsByDay: { [key: string]: AppEvent[] } = {};
       festivalEvents.forEach(event => {
         const dayKey = new Date(event.day).toISOString().split('T')[0];
         if (!eventsByDay[dayKey]) eventsByDay[dayKey] = [];

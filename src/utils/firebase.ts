@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, onValue, set, get } from 'firebase/database';
+import { getDatabase, ref, onValue, set, get, runTransaction } from 'firebase/database';
 
 const firebaseConfig = {
   apiKey: "AIzaSyCg1OiMDsmfoAGpSVYRnvWdl4tSPnLVoUo",
@@ -16,5 +16,6 @@ const app = initializeApp(firebaseConfig);
 export const db = getDatabase(app);
 export const eventsRef = ref(db, 'events');
 export const visitCountRef = ref(db, 'visitCount');
+export const exportUsageRef = ref(db, 'exportUsage');
 
-export { onValue, set, get };
+export { onValue, set, get, runTransaction };
