@@ -16,7 +16,7 @@ const Navigation: React.FC = () => {
           <NavLink to="/mapa" className={navLinkClass}>Mapa</NavLink>
           <NavLink to="/estadisticas" className={navLinkClass}>Estadísticas</NavLink>
           <NavLink to="/total" className={navLinkClass}>Total</NavLink>
-          <NavLink to="/redes" className={navLinkClass}>Redes</NavLink>
+          <NavLink to="/redes" className={navLinkClass}>Redes&Bio</NavLink>
         </div>
       </div>
     </nav>

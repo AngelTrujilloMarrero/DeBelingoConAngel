@@ -316,3 +316,35 @@
   animation: gradient-shift 3s ease infinite;
   display: inline-block;
 }
+
+/* Animación fadeIn para análisis de orquestas */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Estilos para el contador de seguidores */
+@keyframes countUp {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.count-animation {
+  animation: countUp 0.3s ease-out;
+}

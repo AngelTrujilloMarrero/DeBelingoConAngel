@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -9,9 +9,10 @@ import {
   Legend,
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
-import { BarChart3, Calendar, Trophy, TrendingUp, ChevronDown, ChevronUp } from 'lucide-react';
+import { BarChart3, Calendar, Trophy, TrendingUp, ChevronDown, ChevronUp, MousePointerClick } from 'lucide-react';
 import { Event, OrquestaCount, MonthlyOrquestaCount } from '../types';
 import { getRandomColor } from '../utils/helpers';
+import OrquestaAnalysis from './OrquestaAnalysis';
 
 ChartJS.register(
   CategoryScale,
@@ -33,6 +34,17 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
   const [monthlyData, setMonthlyData] = useState<MonthlyOrquestaCount>({});
   const [monthlyEventCount, setMonthlyEventCount] = useState<{ [month: string]: number }>({});
   const [expandedMonths, setExpandedMonths] = useState<{ [month: string]: boolean }>({});
+  const [selectedOrquesta, setSelectedOrquesta] = useState<string | null>(null);
+
+  // Determinar si debemos mostrar el análisis detallado (solo desde junio en adelante)
+  const currentDate = new Date();
+  const currentMonth = currentDate.getMonth(); // 0 = enero, 11 = diciembre
+  const currentYear = currentDate.getFullYear();
+
+  // Mostrar análisis solo si:
+  // 1. Estamos en junio (mes 5) o posterior del año actual, O
+  // 2. Estamos viendo años anteriores al actual
+  const showAnalysis = selectedYear < currentYear || (selectedYear === currentYear && currentMonth >= 5);
 
   const toggleMonth = (month: string) => {
     setExpandedMonths(prev => ({
@@ -68,7 +80,7 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
         const orquestas = event.orquesta.split(',').map(orq => orq.trim());
         orquestas.forEach(orq => {
           if (orq === 'DJ') return; // Excluir "DJ"
-          
+
           currentOrquestaCount[orq] = (currentOrquestaCount[orq] || 0) + 1;
 
           if (!monthlyOrquestaCount[month]) {
@@ -92,6 +104,14 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
     setMonthlyData(monthlyOrquestaCount);
     setMonthlyEventCount(monthlyEvents);
   };
+
+  // Lista ordenada de orquestas para el análisis
+  const sortedOrquestasList = useMemo(() => {
+    return Object.entries(currentYearData)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 15)
+      .map(([name, count]) => ({ name, count }));
+  }, [currentYearData]);
 
   const createChartData = (data: OrquestaCount) => {
     const sortedData = Object.entries(data)
@@ -119,6 +139,16 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
       intersect: false,
       mode: 'index' as const,
     },
+    onClick: (_event: any, elements: any[]) => {
+      // Solo permitir clic si showAnalysis es true
+      if (showAnalysis && elements.length > 0) {
+        const index = elements[0].index;
+        const orquestaName = sortedOrquestasList[index]?.name;
+        if (orquestaName) {
+          setSelectedOrquesta(prev => prev === orquestaName ? null : orquestaName);
+        }
+      }
+    },
     plugins: {
       legend: {
         position: 'top' as const,
@@ -139,6 +169,9 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
         borderWidth: 1,
         cornerRadius: 8,
         displayColors: true,
+        callbacks: {
+          afterBody: () => showAnalysis ? ['', '👆 Haz clic para ver análisis detallado'] : []
+        }
       },
     },
     scales: {
@@ -185,6 +218,11 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
   const currentYearChartData = createChartData(currentYearData);
   const nextYearChartData = createChartData(nextYearData);
 
+  // Obtener posición de la orquesta seleccionada
+  const selectedOrquestaPosition = selectedOrquesta
+    ? sortedOrquestasList.findIndex(o => o.name === selectedOrquesta)
+    : -1;
+
   return (
     <div className="space-y-8">
       {/* Year Selection */}
@@ -194,12 +232,14 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
             {availableYears.map(year => (
               <button
                 key={year}
-                onClick={() => setSelectedYear(year)}
-                className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${
-                  selectedYear === year
-                    ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
-                    : 'text-gray-300 hover:text-white hover:bg-gray-700'
-                }`}
+                onClick={() => {
+                  setSelectedYear(year);
+                  setSelectedOrquesta(null);
+                }}
+                className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${selectedYear === year
+                  ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
+                  : 'text-gray-300 hover:text-white hover:bg-gray-700'
+                  }`}
               >
                 {year}
               </button>
@@ -216,13 +256,56 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
             Los 15 Primeros De {selectedYear}
             <TrendingUp className="w-8 h-8" />
           </h2>
+          {showAnalysis ? (
+            <p className="text-center text-blue-100 mt-2 text-sm flex items-center justify-center gap-2">
+              <MousePointerClick className="w-4 h-4" />
+              Haz clic en cualquier barra para ver el análisis detallado
+            </p>
+          ) : (
+            <p className="text-center text-yellow-200 mt-2 text-sm">
+              📊 El análisis detallado estará disponible a partir de junio
+            </p>
+          )}
         </div>
 
         <div className="p-3 md:p-6">
           {Object.keys(currentYearData).length > 0 ? (
-            <div className="w-full" style={{ height: 'calc(100vh - 400px)', minHeight: '400px', maxHeight: '600px' }}>
-              <Bar data={currentYearChartData} options={chartOptions} />
-            </div>
+            <>
+              <div className="w-full cursor-pointer" style={{ height: 'calc(100vh - 400px)', minHeight: '400px', maxHeight: '600px' }}>
+                <Bar data={currentYearChartData} options={chartOptions} />
+              </div>
+
+              {/* Top 15 Clickable List - Solo mostrar si showAnalysis es true */}
+              {showAnalysis && (
+                <>
+                  <div className="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-2">
+                    {sortedOrquestasList.map((orq, idx) => (
+                      <button
+                        key={orq.name}
+                        onClick={() => setSelectedOrquesta(prev => prev === orq.name ? null : orq.name)}
+                        className={`p-2 rounded-lg text-xs font-medium transition-all duration-300 ${selectedOrquesta === orq.name
+                          ? 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white shadow-lg scale-105'
+                          : 'bg-gray-700/50 text-gray-300 hover:bg-gray-600/50 hover:text-white'
+                          }`}
+                      >
+                        <span className="font-bold text-yellow-400">#{idx + 1}</span> {orq.name.length > 15 ? orq.name.substring(0, 15) + '...' : orq.name}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Análisis de la orquesta seleccionada */}
+                  {selectedOrquesta && selectedOrquestaPosition >= 0 && (
+                    <OrquestaAnalysis
+                      orquesta={selectedOrquesta}
+                      events={events}
+                      position={selectedOrquestaPosition}
+                      totalOrquestas={sortedOrquestasList}
+                      onClose={() => setSelectedOrquesta(null)}
+                    />
+                  )}
+                </>
+              )}
+            </>
           ) : (
             <div className="text-center text-gray-400 py-12">
               <BarChart3 className="w-16 h-16 mx-auto mb-4 opacity-50" />
@@ -277,7 +360,7 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
                     {isExpanded ? <ChevronUp className="w-6 h-6 text-white" /> : <ChevronDown className="w-6 h-6 text-white" />}
                   </div>
                   <p className="text-center text-white mt-2">
-                    Eventos de este mes: {monthlyEventCount[month] || 0} 
+                    Eventos de este mes: {monthlyEventCount[month] || 0}
                   </p>
                 </div>
 
@@ -295,9 +378,8 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
                           {sortedOrquestas.map(([orquesta, count], index) => (
                             <tr
                               key={orquesta}
-                              className={`${
-                                index % 2 === 0 ? 'bg-gray-50' : 'bg-white'
-                              } hover:bg-blue-50 transition-colors duration-200`}
+                              className={`${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'
+                                } hover:bg-blue-50 transition-colors duration-200`}
                             >
                               <td className="px-6 py-4 text-gray-800 font-medium">{orquesta}</td>
                               <td className="px-6 py-4 text-center">
@@ -314,7 +396,7 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
                 )}
               </div>
             );
-        })}
+          })}
       </div>
     </div>
   );
