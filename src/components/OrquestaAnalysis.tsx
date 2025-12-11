@@ -11,45 +11,11 @@ interface OrquestaAnalysisProps {
     events: Event[];
     position: number;
     totalOrquestas: { name: string; count: number }[];
+    selectedYear: number;
     onClose: () => void;
 }
 
-// Zonas de la isla de Tenerife
-const zonasIsla: { [key: string]: string } = {
-    // Norte
-    'Santa Cruz de Tenerife': 'Metropolitana',
-    'La Laguna': 'Metropolitana',
-    'Tegueste': 'Norte',
-    'Tacoronte': 'Norte',
-    'El Sauzal': 'Norte',
-    'La Matanza': 'Norte',
-    'La Victoria': 'Norte',
-    'Santa Úrsula': 'Norte',
-    'Puerto de la Cruz': 'Norte',
-    'La Orotava': 'Norte',
-    'Los Realejos': 'Norte',
-    'San Juan de la Rambla': 'Norte',
-    'La Guancha': 'Norte',
-    'Icod de los Vinos': 'Norte',
-    'Garachico': 'Norte',
-    'El Tanque': 'Norte',
-    'Los Silos': 'Norte',
-    'Buenavista del Norte': 'Norte',
-    // Sur
-    'Arona': 'Sur',
-    'Adeje': 'Sur',
-    'Granadilla': 'Sur',
-    'San Miguel': 'Sur',
-    'Vilaflor': 'Sur',
-    'Arico': 'Sur',
-    'Fasnia': 'Sur',
-    'Güímar': 'Sur-Este',
-    'Candelaria': 'Sur-Este',
-    'Arafo': 'Sur-Este',
-    // Oeste
-    'Santiago del Teide': 'Oeste',
-    'Guía de Isora': 'Oeste'
-};
+import { zonasIsla } from '../utils/zones';
 
 const diasSemana = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
 
@@ -58,24 +24,42 @@ const OrquestaAnalysis: React.FC<OrquestaAnalysisProps> = ({
     events,
     position,
     totalOrquestas,
+    selectedYear,
     onClose
 }) => {
     const analysis = useMemo(() => {
-        const now = new Date();
-        const threeMonthsAgo = new Date(now);
-        threeMonthsAgo.setMonth(now.getMonth() - 3);
-        const sixMonthsAgo = new Date(now);
-        sixMonthsAgo.setMonth(now.getMonth() - 6);
+        // Determinar la fecha de referencia para el análisis
+        const currentYear = new Date().getFullYear();
+        let referenceDate = new Date();
 
-        // Filtrar eventos de esta orquesta
-        const orquestaEvents = events.filter(e =>
-            !e.cancelado && e.orquesta.split(',').map(o => o.trim()).includes(orquesta)
-        );
+        if (selectedYear < currentYear) {
+            // Si es un año pasado, tomamos como referencia el final de ese año
+            referenceDate = new Date(selectedYear, 11, 31);
+        } else if (selectedYear === currentYear) {
+            // Si es el año actual, la fecha actual
+            referenceDate = new Date();
+        } else {
+            // Año futuro
+            referenceDate = new Date(selectedYear, 0, 1);
+        }
 
-        // Eventos de los últimos 3 meses vs 3 meses anteriores
+        const threeMonthsAgo = new Date(referenceDate);
+        threeMonthsAgo.setMonth(referenceDate.getMonth() - 3);
+        const sixMonthsAgo = new Date(referenceDate);
+        sixMonthsAgo.setMonth(referenceDate.getMonth() - 6);
+
+        // Filtrar eventos de esta orquesta Y del año seleccionado
+        const orquestaEvents = events.filter(e => {
+            const eDate = new Date(e.day);
+            return !e.cancelado &&
+                eDate.getFullYear() === selectedYear &&
+                e.orquesta.split(',').map(o => o.trim()).includes(orquesta);
+        });
+
+        // Eventos de los últimos 3 meses (relativo a referenceDate) vs 3 meses anteriores
         const last3Months = orquestaEvents.filter(e => {
             const eventDate = new Date(e.day);
-            return eventDate >= threeMonthsAgo && eventDate <= now;
+            return eventDate >= threeMonthsAgo && eventDate <= referenceDate;
         });
 
         const prev3Months = orquestaEvents.filter(e => {
@@ -229,7 +213,7 @@ const OrquestaAnalysis: React.FC<OrquestaAnalysisProps> = ({
                         )}
                         <div>
                             <p className={`text-lg font-bold ${analysis.tendencia > 0 ? 'text-green-400' :
-                                    analysis.tendencia < 0 ? 'text-red-400' : 'text-yellow-400'
+                                analysis.tendencia < 0 ? 'text-red-400' : 'text-yellow-400'
                                 }`}>
                                 {analysis.tendencia > 0 ? '📈 Al Alza' : analysis.tendencia < 0 ? '📉 A la Baja' : '➡️ Estable'}
                             </p>
@@ -339,9 +323,9 @@ const OrquestaAnalysis: React.FC<OrquestaAnalysisProps> = ({
                         </div>
                     </div>
                     <span className={`font-bold px-3 py-1 rounded-full text-sm ${analysis.versatilidad === 'Muy Alta' ? 'bg-green-600/50 text-green-300' :
-                            analysis.versatilidad === 'Alta' ? 'bg-blue-600/50 text-blue-300' :
-                                analysis.versatilidad === 'Media' ? 'bg-yellow-600/50 text-yellow-300' :
-                                    'bg-red-600/50 text-red-300'
+                        analysis.versatilidad === 'Alta' ? 'bg-blue-600/50 text-blue-300' :
+                            analysis.versatilidad === 'Media' ? 'bg-yellow-600/50 text-yellow-300' :
+                                'bg-red-600/50 text-red-300'
                         }`}>
                         {analysis.versatilidad} ({analysis.numMunicipios} municipios)
                     </span>
