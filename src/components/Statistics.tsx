@@ -9,7 +9,7 @@ import {
   Legend,
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
-import { BarChart3, Calendar, Trophy, TrendingUp, TrendingDown, ChevronDown, ChevronUp, MousePointerClick, MapPin } from 'lucide-react';
+import { BarChart3, Calendar, Trophy, TrendingUp, TrendingDown, ChevronDown, MousePointerClick, MapPin } from 'lucide-react';
 import { Event, OrquestaCount, MonthlyOrquestaCount } from '../types';
 import { getRandomColor } from '../utils/helpers';
 import { zonasIsla, diasSemana } from '../utils/zones';
@@ -291,61 +291,114 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
         </div>
       </div>
 
-      {/* Monthly Tables */}
-      <div className="space-y-8">
-        {Object.entries(monthlyData)
-          .sort(([monthA], [monthB]) => {
-            const monthsOrder = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
-            return monthsOrder.indexOf(monthA.toLowerCase()) - monthsOrder.indexOf(monthB.toLowerCase());
-          })
-          .map(([month, orquestas]) => {
-            const sortedOrquestas = Object.entries(orquestas).sort(([, a], [, b]) => b - a);
-            const isExpanded = expandedMonths[month];
-            return (
-              <div key={month} className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl shadow-2xl overflow-hidden">
-                <div
-                  className="bg-gradient-to-r from-green-600 to-blue-600 p-6 cursor-pointer hover:from-green-700 hover:to-blue-700 transition-all duration-300"
-                  onClick={() => toggleMonth(month)}
+      {/* Monthly Selection - Modern Circular Pills */}
+      <div className="space-y-6">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+          {Object.entries(monthlyData)
+            .sort(([monthA], [monthB]) => {
+              const monthsOrder = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+              return monthsOrder.indexOf(monthA.toLowerCase()) - monthsOrder.indexOf(monthB.toLowerCase());
+            })
+            .map(([month, orquestas]) => {
+              const isSelected = expandedMonths[month];
+              const count = monthlyEventCount[month] || 0;
+
+              return (
+                <button
+                  key={month}
+                  onClick={() => {
+                    // Toggle: if clicking already selected, close it. If clicking new, open new and close others (Accordion style but single select for cleanliness)
+                    setExpandedMonths(prev => {
+                      // Exclusive selection for better mobile UX
+                      return isSelected ? {} : { [month]: true };
+                    });
+                  }}
+                  className={`
+                    relative group flex flex-col items-center justify-center p-4 rounded-3xl transition-all duration-300 border
+                    ${isSelected
+                      ? 'bg-blue-600 border-blue-400 shadow-[0_0_20px_rgba(37,99,235,0.5)] scale-105 z-10'
+                      : 'bg-gradient-to-br from-gray-800 to-gray-900 border-white/20 shadow-lg hover:border-blue-400/50 hover:from-gray-700 hover:to-gray-800 hover:scale-110 hover:shadow-blue-500/20'
+                    }
+                  `}
                 >
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-xl md:text-2xl font-bold text-white capitalize flex items-center gap-3">
-                      <Calendar className="w-7 h-7" />
-                      {month}
-                    </h3>
-                    {isExpanded ? <ChevronUp className="w-6 h-6 text-white" /> : <ChevronDown className="w-6 h-6 text-white" />}
+                  <span className={`text-lg font-bold capitalize mb-1 transition-colors ${isSelected ? 'text-white' : 'text-gray-200 group-hover:text-white'}`}>
+                    {month}
+                  </span>
+
+                  <div className={`
+                    flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-colors
+                    ${isSelected ? 'bg-white/20 text-white' : 'bg-black/40 text-gray-300 group-hover:text-white'}
+                  `}>
+                    <Calendar className="w-3 h-3" />
+                    {count}
                   </div>
-                  <p className="text-center text-white mt-2">
-                    Eventos de este mes: {monthlyEventCount[month] || 0}
-                  </p>
+
+                  {/* Active Indicator Dot */}
+                  {isSelected && (
+                    <span className="absolute -bottom-2 w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" />
+                  )}
+                </button>
+              );
+            })}
+        </div>
+
+        {/* Active Month Detail View - Animate in */}
+        {Object.entries(expandedMonths).map(([month, isExpanded]) => {
+          if (!isExpanded) return null;
+
+          const orquestas = monthlyData[month];
+          const sortedOrquestas = Object.entries(orquestas).sort(([, a], [, b]) => b - a);
+
+          return (
+            <div key={month} className="animate-fadeInUp">
+              <div className="bg-gray-900 border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
+                {/* Header of Detail Card */}
+                <div className="bg-gradient-to-r from-gray-900 to-gray-800 p-6 border-b border-white/5 flex items-center justify-between">
+                  <h3 className="text-2xl font-bold text-white capitalize flex items-center gap-3">
+                    <span className="text-4xl">{month.substring(0, 1).toUpperCase()}</span>
+                    <span className="text-gray-400">{month.substring(1)}</span>
+                  </h3>
+                  <button
+                    onClick={() => setExpandedMonths({})}
+                    className="p-2 hover:bg-white/10 rounded-full transition-colors text-gray-400 hover:text-white"
+                  >
+                    <ChevronDown className="w-6 h-6 rotate-180" />
+                  </button>
                 </div>
 
-                {isExpanded && (
-                  <div className="p-6 overflow-x-auto">
-                    <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-                      <table className="w-full">
-                        <thead>
-                          <tr className="bg-gradient-to-r from-blue-500 to-purple-500 text-white">
-                            <th className="px-6 py-4 text-left font-bold">FORMACIÓN/SOLISTA</th>
-                            <th className="px-6 py-4 text-center font-bold">TOTAL</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {sortedOrquestas.map(([orquesta, count], index) => (
-                            <tr key={orquesta} className={`${index % 2 === 0 ? 'bg-gray-50' : 'bg-white'} hover:bg-blue-50 transition-colors duration-200`}>
-                              <td className="px-6 py-4 text-gray-800 font-medium">{orquesta}</td>
-                              <td className="px-6 py-4 text-center">
-                                <span className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 py-1 rounded-full font-bold">{count}</span>
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
+                {/* Content Grid */}
+                <div className="p-6">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+                    {sortedOrquestas.map(([orquesta, count], index) => (
+                      <div
+                        key={orquesta}
+                        className="flex items-center justify-between p-4 rounded-2xl bg-black/20 border border-white/5 hover:border-blue-500/30 hover:bg-blue-500/5 transition-all group/item"
+                      >
+                        <div className="flex items-center gap-4 overflow-hidden">
+                          <div className={`
+                             w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-full text-sm font-bold shadow-lg
+                             ${index < 3
+                              ? 'bg-gradient-to-br from-yellow-400 to-orange-500 text-black'
+                              : 'bg-gray-800 text-gray-500 border border-white/5'
+                            }
+                           `}>
+                            {index + 1}
+                          </div>
+                          <span className="text-gray-300 font-medium truncate group-hover/item:text-white transition-colors">
+                            {orquesta}
+                          </span>
+                        </div>
+                        <span className="text-sm font-bold text-blue-400 bg-blue-500/10 px-3 py-1 rounded-full border border-blue-500/20">
+                          {count}
+                        </span>
+                      </div>
+                    ))}
                   </div>
-                )}
+                </div>
               </div>
-            );
-          })}
+            </div>
+          );
+        })}
       </div>
 
       {/* Comparativa Interanual */}
