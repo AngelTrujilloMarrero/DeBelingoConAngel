@@ -14,6 +14,7 @@ import { Event, OrquestaCount, MonthlyOrquestaCount } from '../types';
 import { getRandomColor } from '../utils/helpers';
 import { zonasIsla, diasSemana } from '../utils/zones';
 import OrquestaAnalysis from './OrquestaAnalysis';
+import ComparativaDetailedAnalysis from './ComparativaDetailedAnalysis';
 
 ChartJS.register(
   CategoryScale,
@@ -38,6 +39,7 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
   const [selectedOrquesta, setSelectedOrquesta] = useState<string | null>(null);
   const [prevYearMonthlyData, setPrevYearMonthlyData] = useState<MonthlyOrquestaCount>({});
   const [prevYearMonthlyEventCount, setPrevYearMonthlyEventCount] = useState<{ [month: string]: number }>({});
+  const [selectedComparativaOrquesta, setSelectedComparativaOrquesta] = useState<{ name: string; month: string } | null>(null);
 
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth();
@@ -442,69 +444,28 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
                         <table className="w-full text-sm">
                           <thead>
                             <tr className="text-gray-400 border-b border-gray-700">
-                              <th className="text-left py-2 px-2">Orquesta</th>
-                              <th className="text-center py-2 px-2">{selectedYear - 1}</th>
-                              <th className="text-center py-2 px-2">{selectedYear}</th>
-                              <th className="text-center py-2 px-2">Zona</th>
-                              <th className="text-center py-2 px-2">Día</th>
-                              <th className="text-center py-2 px-2">Tipo</th>
-                              <th className="text-right py-2 px-2">Var.</th>
+                              <th className="text-left py-2 px-4">Orquesta</th>
+                              <th className="text-right py-2 px-4">Var.</th>
+                              <th className="text-center py-2 px-2 text-xs">Detalles</th>
                             </tr>
                           </thead>
                           <tbody>
                             {visibleRows.map((item, idx) => (
-                              <tr key={idx} className="border-b border-gray-700/50 hover:bg-gray-700/30">
-                                <td className="py-2 px-2 font-medium text-gray-200">{item.name}</td>
-                                <td className="py-2 px-2 text-center text-gray-400">{item.prev}</td>
-                                <td className="py-2 px-2 text-center font-bold text-blue-400">{item.current}</td>
-                                {/* Zona */}
-                                <td className="py-2 px-2 text-center text-xs">
-                                  {item.prevZone && item.currentZone ? (
-                                    item.prevZone === item.currentZone ? (
-                                      <span className="text-gray-400">{item.currentZone}</span>
-                                    ) : (
-                                      <div className="flex flex-col items-center gap-1">
-                                        <span className="text-[10px] text-gray-500">{selectedYear - 1}: {item.prevZone}</span>
-                                        <span className="text-gray-600">↓</span>
-                                        <span className="text-[10px] text-yellow-400 font-bold">{selectedYear}: {item.currentZone}</span>
-                                      </div>
-                                    )
-                                  ) : <span className="text-gray-600">-</span>}
-                                </td>
-
-                                {/* Día */}
-                                <td className="py-2 px-2 text-center text-xs capitalize">
-                                  {item.prevDay && item.currentDay ? (
-                                    item.prevDay === item.currentDay ? (
-                                      <span className="text-gray-400">{item.currentDay.substring(0, 3)}</span>
-                                    ) : (
-                                      <div className="flex flex-col items-center gap-1">
-                                        <span className="text-[10px] text-gray-500">{selectedYear - 1}: {item.prevDay.substring(0, 3)}</span>
-                                        <span className="text-gray-600">↓</span>
-                                        <span className="text-[10px] text-green-400 font-bold">{selectedYear}: {item.currentDay.substring(0, 3)}</span>
-                                      </div>
-                                    )
-                                  ) : <span className="text-gray-600">-</span>}
-                                </td>
-
-                                {/* Tipo */}
-                                <td className="py-2 px-2 text-center text-xs">
-                                  {item.prevType && item.currentType ? (
-                                    item.prevType === item.currentType ? (
-                                      <span className="text-gray-400">{item.currentType}</span>
-                                    ) : (
-                                      <div className="flex flex-col items-center gap-1">
-                                        <span className="text-[10px] text-gray-500">{selectedYear - 1}: {item.prevType}</span>
-                                        <span className="text-gray-600">↓</span>
-                                        <span className="text-[10px] text-purple-400 font-bold">{selectedYear}: {item.currentType}</span>
-                                      </div>
-                                    )
-                                  ) : <span className="text-gray-600">-</span>}
-                                </td>
-                                <td className="py-2 px-2 text-right">
+                              <tr
+                                key={idx}
+                                className="border-b border-gray-700/50 hover:bg-gray-700/30 cursor-pointer transition-colors"
+                                onClick={() => setSelectedComparativaOrquesta({ name: item.name, month })}
+                              >
+                                <td className="py-3 px-4 font-medium text-gray-200">{item.name}</td>
+                                <td className="py-3 px-4 text-right">
                                   <span className={`font-bold ${item.variation > 0 ? 'text-green-400' :
                                     item.variation < 0 ? 'text-red-400' : 'text-gray-500'}`}>
                                     {item.variation > 0 ? '+' : ''}{item.variation.toFixed(0)}%
+                                  </span>
+                                </td>
+                                <td className="py-3 px-2 text-center">
+                                  <span className="text-xs text-blue-400 hover:text-blue-300">
+                                    👆 Click
                                   </span>
                                 </td>
                               </tr>
@@ -544,6 +505,17 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
           </div>
         );
       })()}
+
+      {/* Análisis detallado de comparativa */}
+      {selectedComparativaOrquesta && (
+        <ComparativaDetailedAnalysis
+          orquesta={selectedComparativaOrquesta.name}
+          month={selectedComparativaOrquesta.month}
+          events={events}
+          selectedYear={selectedYear}
+          onClose={() => setSelectedComparativaOrquesta(null)}
+        />
+      )}
     </div>
   );
 };
