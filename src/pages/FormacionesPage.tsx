@@ -3,6 +3,7 @@ import { Event } from '../types';
 import { orchestraDetails } from '../data/orchestras';
 import { Instagram, Facebook, Globe, Mail, Phone, Search, Music, Users, ExternalLink } from 'lucide-react';
 import { onValue, orchestrasRef } from '../utils/firebase';
+import { scrapeProfileImage } from '../utils/socialScraper';
 
 interface FormacionesPageProps {
     events: Event[];
@@ -11,6 +12,8 @@ interface FormacionesPageProps {
 const FormacionesPage: React.FC<FormacionesPageProps> = ({ events }) => {
     const [searchTerm, setSearchTerm] = useState('');
     const [dbOrchestras, setDbOrchestras] = useState<Record<string, any>>({});
+    const [scrapedImages, setScrapedImages] = useState<Record<string, string>>({});
+    const [scrapedOrchestras, setScrapedOrchestras] = useState<Set<string>>(new Set());
 
     useEffect(() => {
         const unsubscribe = onValue(orchestrasRef, (snapshot) => {
@@ -65,6 +68,7 @@ const FormacionesPage: React.FC<FormacionesPageProps> = ({ events }) => {
                     ...stat,
                     ...orchestraDetails[name], // File (fallback)
                     ...dbInfo,                 // DB (priority)
+                    hasDbInfo: !!dbInfo.name,  // Flag to indicate if we have DB info
                 };
 
                 // Normalize fields specifically
@@ -79,6 +83,45 @@ const FormacionesPage: React.FC<FormacionesPageProps> = ({ events }) => {
             })
             .sort((a, b) => b.count - a.count); // Sort by popularity (event count)
     }, [events, dbOrchestras]);
+
+    // Scrape images effect
+    useEffect(() => {
+        const triggerScraping = async () => {
+            const potentialTargets = formaciones.filter(f =>
+                f.hasDbInfo &&
+                !f.image &&
+                !scrapedImages[f.name] &&
+                !scrapedOrchestras.has(f.name) &&
+                (f.facebook || f.instagram)
+            );
+
+            if (potentialTargets.length === 0) return;
+
+            // Mark as attempted immediately to avoid duplicates
+            setScrapedOrchestras(prev => {
+                const newSet = new Set(prev);
+                potentialTargets.forEach(t => newSet.add(t.name));
+                return newSet;
+            });
+
+            // Process one by one or in small batches
+            for (const target of potentialTargets) {
+                const url = target.facebook || target.instagram;
+                if (url) {
+                    try {
+                        const img = await scrapeProfileImage(url);
+                        if (img) {
+                            setScrapedImages(prev => ({ ...prev, [target.name]: img }));
+                        }
+                    } catch (e) {
+                        console.error("Scrape error", e);
+                    }
+                }
+            }
+        };
+
+        triggerScraping();
+    }, [formaciones, scrapedImages, scrapedOrchestras]);
 
     const filteredFormaciones = formaciones.filter(f =>
         f.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -113,117 +156,140 @@ const FormacionesPage: React.FC<FormacionesPageProps> = ({ events }) => {
 
             {/* Grid de Formaciones */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {filteredFormaciones.map((formacion, index) => (
-                    <div
-                        key={formacion.name}
-                        className="group relative bg-gray-900/80 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden hover:border-purple-500/50 transition-all duration-500 hover:shadow-[0_0_30px_rgba(168,85,247,0.2)] hover:-translate-y-2"
-                    >
-                        {/* Header / Cover Placeholder */}
-                        <div className={`h-32 bg-gradient-to-br ${getGradient(index)} relative flex items-center justify-center overflow-hidden`}>
-                            <div className="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors duration-500" />
+                {filteredFormaciones.map((formacion, index) => {
+                    // Determine the image to show: DB image > Scraped Image > Other Link (if DB info present)
+                    const displayImage = formacion.image || scrapedImages[formacion.name] || (formacion.hasDbInfo ? formacion.Otros : null);
+                    // Determine if we show custom background: Must have DB info AND a valid image/link
+                    const hasBackground = formacion.hasDbInfo && !!displayImage;
 
-                            {/* Logo / Initials */}
-                            <div className="relative z-10 w-20 h-20 rounded-full bg-gray-900 border-4 border-gray-800 flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-500">
-                                {formacion.image ? (
-                                    <img src={formacion.image} alt={formacion.name} className="w-full h-full rounded-full object-cover" />
-                                ) : (
-                                    <span className="text-2xl font-bold text-white">
-                                        {getInitials(formacion.name)}
+                    return (
+                        <div
+                            key={formacion.name}
+                            className="group relative bg-gray-900/80 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden hover:border-purple-500/50 transition-all duration-500 hover:shadow-[0_0_30px_rgba(168,85,247,0.2)] hover:-translate-y-2"
+                        >
+                            {/* Header / Cover Placeholder */}
+                            <div
+                                className={`h-32 relative flex items-center justify-center overflow-hidden transition-all duration-500`}
+                                style={{
+                                    background: hasBackground
+                                        ? `url(${displayImage}) center/cover no-repeat`
+                                        : undefined
+                                }}
+                            >
+                                {/* Gradient fallback if no background image */}
+                                {!hasBackground && (
+                                    <div className={`absolute inset-0 bg-gradient-to-br ${getGradient(index)}`} />
+                                )}
+
+                                {/* Overlay */}
+                                <div className={`absolute inset-0 transition-colors duration-500 ${hasBackground
+                                    ? 'bg-black/60 group-hover:bg-black/50'
+                                    : 'bg-black/20 group-hover:bg-black/40'
+                                    }`} />
+
+                                {/* Logo / Initials */}
+                                <div className="relative z-10 w-20 h-20 rounded-full bg-gray-900 border-4 border-gray-800 flex items-center justify-center shadow-2xl group-hover:scale-110 transition-transform duration-500">
+                                    {displayImage ? (
+                                        <img src={displayImage} alt={formacion.name} className="w-full h-full rounded-full object-cover" />
+                                    ) : (
+                                        <span className="text-2xl font-bold text-white">
+                                            {getInitials(formacion.name)}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+
+                            {/* Content */}
+                            <div className="p-6 text-center space-y-4">
+                                <div>
+                                    <h3 className="text-xl font-bold text-white mb-1 group-hover:text-purple-300 transition-colors drop-shadow-md">
+                                        {formacion.name}
+                                    </h3>
+                                    <span className="inline-flex items-center text-xs font-medium text-gray-400 bg-white/5 px-3 py-1 rounded-full border border-white/5">
+                                        <Music className="w-3 h-3 mr-1.5 text-purple-400" />
+                                        {formacion.count} actuaciones registradas
                                     </span>
-                                )}
+                                </div>
+
+                                {/* Contact & Socials Grid */}
+                                <div className="flex flex-wrap justify-center gap-3 pt-2">
+                                    {formacion.facebook && (
+                                        <a
+                                            href={formacion.facebook}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="p-2 bg-[#1877F2]/10 text-[#1877F2] rounded-lg hover:bg-[#1877F2] hover:text-white transition-all duration-300 transform hover:scale-110"
+                                            title="Facebook"
+                                        >
+                                            <Facebook className="w-5 h-5" />
+                                        </a>
+                                    )}
+
+                                    {formacion.instagram && (
+                                        <a
+                                            href={formacion.instagram}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="p-2 bg-[#E4405F]/10 text-[#E4405F] rounded-lg hover:bg-[#E4405F] hover:text-white transition-all duration-300 transform hover:scale-110"
+                                            title="Instagram"
+                                        >
+                                            <Instagram className="w-5 h-5" />
+                                        </a>
+                                    )}
+
+                                    {formacion.website && (
+                                        <a
+                                            href={formacion.website}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="p-2 bg-emerald-500/10 text-emerald-500 rounded-lg hover:bg-emerald-500 hover:text-white transition-all duration-300 transform hover:scale-110"
+                                            title="Sitio Web"
+                                        >
+                                            <Globe className="w-5 h-5" />
+                                        </a>
+                                    )}
+
+                                    {formacion.email && (
+                                        <a
+                                            href={`mailto:${formacion.email}`}
+                                            className="p-2 bg-yellow-500/10 text-yellow-500 rounded-lg hover:bg-yellow-500 hover:text-white transition-all duration-300 transform hover:scale-110"
+                                            title="Email"
+                                        >
+                                            <Mail className="w-5 h-5" />
+                                        </a>
+                                    )}
+
+                                    {formacion.phone && (
+                                        <a
+                                            href={`tel:${formacion.phone.replace(/\s/g, '')}`}
+                                            className="p-2 bg-blue-400/10 text-blue-400 rounded-lg hover:bg-blue-400 hover:text-white transition-all duration-300 transform hover:scale-110"
+                                            title="Teléfono"
+                                        >
+                                            <Phone className="w-5 h-5" />
+                                        </a>
+                                    )}
+
+                                    {formacion.Otros && formacion.Otros !== formacion.website && (
+                                        <a
+                                            href={formacion.Otros}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="p-2 bg-purple-500/10 text-purple-500 rounded-lg hover:bg-purple-500 hover:text-white transition-all duration-300 transform hover:scale-110"
+                                            title="Otros / Web"
+                                        >
+                                            <ExternalLink className="w-5 h-5" />
+                                        </a>
+                                    )}
+
+                                    {/* If no contact info found */}
+                                    {!formacion.facebook && !formacion.instagram && !formacion.website && !formacion.email && !formacion.phone && !formacion.Otros && (
+                                        <span className="text-xs text-gray-600 italic py-2">Sin contacto disponible</span>
+                                    )}
+                                </div>
                             </div>
                         </div>
-
-                        {/* Content */}
-                        <div className="p-6 text-center space-y-4">
-                            <div>
-                                <h3 className="text-xl font-bold text-white mb-1 group-hover:text-purple-300 transition-colors drop-shadow-md">
-                                    {formacion.name}
-                                </h3>
-                                <span className="inline-flex items-center text-xs font-medium text-gray-400 bg-white/5 px-3 py-1 rounded-full border border-white/5">
-                                    <Music className="w-3 h-3 mr-1.5 text-purple-400" />
-                                    {formacion.count} actuaciones registradas
-                                </span>
-                            </div>
-
-                            {/* Contact & Socials Grid */}
-                            <div className="flex flex-wrap justify-center gap-3 pt-2">
-                                {formacion.facebook && (
-                                    <a
-                                        href={formacion.facebook}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="p-2 bg-[#1877F2]/10 text-[#1877F2] rounded-lg hover:bg-[#1877F2] hover:text-white transition-all duration-300 transform hover:scale-110"
-                                        title="Facebook"
-                                    >
-                                        <Facebook className="w-5 h-5" />
-                                    </a>
-                                )}
-
-                                {formacion.instagram && (
-                                    <a
-                                        href={formacion.instagram}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="p-2 bg-[#E4405F]/10 text-[#E4405F] rounded-lg hover:bg-[#E4405F] hover:text-white transition-all duration-300 transform hover:scale-110"
-                                        title="Instagram"
-                                    >
-                                        <Instagram className="w-5 h-5" />
-                                    </a>
-                                )}
-
-                                {formacion.website && (
-                                    <a
-                                        href={formacion.website}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="p-2 bg-emerald-500/10 text-emerald-500 rounded-lg hover:bg-emerald-500 hover:text-white transition-all duration-300 transform hover:scale-110"
-                                        title="Sitio Web"
-                                    >
-                                        <Globe className="w-5 h-5" />
-                                    </a>
-                                )}
-
-                                {formacion.email && (
-                                    <a
-                                        href={`mailto:${formacion.email}`}
-                                        className="p-2 bg-yellow-500/10 text-yellow-500 rounded-lg hover:bg-yellow-500 hover:text-white transition-all duration-300 transform hover:scale-110"
-                                        title="Email"
-                                    >
-                                        <Mail className="w-5 h-5" />
-                                    </a>
-                                )}
-
-                                {formacion.phone && (
-                                    <a
-                                        href={`tel:${formacion.phone.replace(/\s/g, '')}`}
-                                        className="p-2 bg-blue-400/10 text-blue-400 rounded-lg hover:bg-blue-400 hover:text-white transition-all duration-300 transform hover:scale-110"
-                                        title="Teléfono"
-                                    >
-                                        <Phone className="w-5 h-5" />
-                                    </a>
-                                )}
-
-                                {formacion.Otros && formacion.Otros !== formacion.website && (
-                                    <a
-                                        href={formacion.Otros}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="p-2 bg-purple-500/10 text-purple-500 rounded-lg hover:bg-purple-500 hover:text-white transition-all duration-300 transform hover:scale-110"
-                                        title="Otros / Web"
-                                    >
-                                        <ExternalLink className="w-5 h-5" />
-                                    </a>
-                                )}
-
-                                {/* If no contact info found */}
-                                {!formacion.facebook && !formacion.instagram && !formacion.website && !formacion.email && !formacion.phone && !formacion.Otros && (
-                                    <span className="text-xs text-gray-600 italic py-2">Sin contacto disponible</span>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
             {filteredFormaciones.length === 0 && (

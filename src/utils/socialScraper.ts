@@ -99,3 +99,45 @@ export const scrapeSocialStats = async (): Promise<ScrapedSocialData> => {
         ])
     };
 };
+
+export const scrapeProfileImage = async (url: string): Promise<string | null> => {
+    const proxies = [
+        async () => {
+            const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}&t=${Date.now()}`);
+            if (!res.ok) throw new Error('Network response was not ok');
+            const data = await res.json();
+            return data.contents;
+        },
+        async () => {
+            const res = await fetch(`https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(url)}`);
+            if (!res.ok) throw new Error('Network response was not ok');
+            return await res.text();
+        },
+        async () => {
+            const res = await fetch(`https://corsproxy.io/?${encodeURIComponent(url)}`);
+            if (!res.ok) throw new Error('Network response was not ok');
+            return await res.text();
+        }
+    ];
+
+    for (const proxy of proxies) {
+        try {
+            const content = await proxy();
+            if (!content || content.length < 500) continue;
+
+            // Try to find og:image
+            const match = content.match(/<meta\s+property=["']og:image["']\s+content=["']([^"']+)["']/i) ||
+                content.match(/<meta\s+content=["']([^"']+)["']\s+property=["']og:image["']/i);
+
+            if (match && match[1]) {
+                // Decode HTML entities if present
+                let imageUrl = match[1].replace(/&amp;/g, '&');
+                return imageUrl;
+            }
+        } catch (err) {
+            console.warn(`Proxy failed for image scrape of ${url}`, err);
+            continue;
+        }
+    }
+    return null;
+};
