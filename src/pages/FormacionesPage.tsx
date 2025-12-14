@@ -1,7 +1,8 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Event } from '../types';
 import { orchestraDetails } from '../data/orchestras';
 import { Instagram, Facebook, Globe, Mail, Phone, Search, Music, Users, ExternalLink } from 'lucide-react';
+import { onValue, orchestrasRef } from '../utils/firebase';
 
 interface FormacionesPageProps {
     events: Event[];
@@ -9,11 +10,23 @@ interface FormacionesPageProps {
 
 const FormacionesPage: React.FC<FormacionesPageProps> = ({ events }) => {
     const [searchTerm, setSearchTerm] = useState('');
+    const [dbOrchestras, setDbOrchestras] = useState<Record<string, any>>({});
+
+    useEffect(() => {
+        const unsubscribe = onValue(orchestrasRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                setDbOrchestras(data);
+            }
+        });
+        return () => unsubscribe();
+    }, []);
 
     // Extract unique orchestras and calculate stats
     const formaciones = useMemo(() => {
         const stats: Record<string, { count: number; lastEvent: string }> = {};
 
+        // 1. Calculate stats from events
         events.forEach(event => {
             if (event.cancelado) return;
             const orquestas = event.orquesta.split(',').map(o => o.trim()).filter(o => o !== 'DJ' && o.length > 0);
@@ -29,14 +42,43 @@ const FormacionesPage: React.FC<FormacionesPageProps> = ({ events }) => {
             });
         });
 
+        // 2. Transform DB data from ID-based to Name-based
+        const dbOrchestrasMap: Record<string, any> = {};
+        if (dbOrchestras) {
+            Object.values(dbOrchestras).forEach((info: any) => {
+                if (info && info.name) {
+                    dbOrchestrasMap[info.name] = info;
+                }
+            });
+        }
+
         return Object.entries(stats)
-            .map(([name, stat]) => ({
-                name,
-                ...stat,
-                ...orchestraDetails[name] // Merge with manual details
-            }))
+            .map(([name, stat]) => {
+                const dbInfo = dbOrchestrasMap[name] || {};
+
+                // Construct the consolidated object
+                // Priority: DB > File > Fallback
+                // Note: DB field for other links is 'other' (lowercase), component expects 'Otros' or 'website'
+
+                const consolidated = {
+                    name,
+                    ...stat,
+                    ...orchestraDetails[name], // File (fallback)
+                    ...dbInfo,                 // DB (priority)
+                };
+
+                // Normalize fields specifically
+                if (dbInfo.other) consolidated.Otros = dbInfo.other;
+                // If website is missing but we have 'other', use 'other' as website too for the Globe icon if desired, 
+                // but we also have a specific block for 'Otros'. 
+                // Let's keep 'Otros' strictly for the ExternalLink icon and 'website' for the Globe icon.
+                // If the DB provides 'website', use it. If not, don't force 'other' into 'website' unless we want to.
+                // Based on previous user request, 'other' was 'Otros'.
+
+                return consolidated;
+            })
             .sort((a, b) => b.count - a.count); // Sort by popularity (event count)
-    }, [events]);
+    }, [events, dbOrchestras]);
 
     const filteredFormaciones = formaciones.filter(f =>
         f.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -74,7 +116,7 @@ const FormacionesPage: React.FC<FormacionesPageProps> = ({ events }) => {
                 {filteredFormaciones.map((formacion, index) => (
                     <div
                         key={formacion.name}
-                        className="group relative bg-gray-900/40 backdrop-blur-sm border border-white/5 rounded-2xl overflow-hidden hover:border-purple-500/30 transition-all duration-500 hover:shadow-[0_0_30px_rgba(168,85,247,0.15)] hover:-translate-y-2"
+                        className="group relative bg-gray-900/80 backdrop-blur-md border border-white/10 rounded-2xl overflow-hidden hover:border-purple-500/50 transition-all duration-500 hover:shadow-[0_0_30px_rgba(168,85,247,0.2)] hover:-translate-y-2"
                     >
                         {/* Header / Cover Placeholder */}
                         <div className={`h-32 bg-gradient-to-br ${getGradient(index)} relative flex items-center justify-center overflow-hidden`}>
@@ -95,7 +137,7 @@ const FormacionesPage: React.FC<FormacionesPageProps> = ({ events }) => {
                         {/* Content */}
                         <div className="p-6 text-center space-y-4">
                             <div>
-                                <h3 className="text-xl font-bold text-white mb-1 group-hover:text-purple-400 transition-colors">
+                                <h3 className="text-xl font-bold text-white mb-1 group-hover:text-purple-300 transition-colors drop-shadow-md">
                                     {formacion.name}
                                 </h3>
                                 <span className="inline-flex items-center text-xs font-medium text-gray-400 bg-white/5 px-3 py-1 rounded-full border border-white/5">
@@ -162,8 +204,20 @@ const FormacionesPage: React.FC<FormacionesPageProps> = ({ events }) => {
                                     </a>
                                 )}
 
+                                {formacion.Otros && formacion.Otros !== formacion.website && (
+                                    <a
+                                        href={formacion.Otros}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="p-2 bg-purple-500/10 text-purple-500 rounded-lg hover:bg-purple-500 hover:text-white transition-all duration-300 transform hover:scale-110"
+                                        title="Otros / Web"
+                                    >
+                                        <ExternalLink className="w-5 h-5" />
+                                    </a>
+                                )}
+
                                 {/* If no contact info found */}
-                                {!formacion.facebook && !formacion.instagram && !formacion.website && !formacion.email && !formacion.phone && (
+                                {!formacion.facebook && !formacion.instagram && !formacion.website && !formacion.email && !formacion.phone && !formacion.Otros && (
                                     <span className="text-xs text-gray-600 italic py-2">Sin contacto disponible</span>
                                 )}
                             </div>

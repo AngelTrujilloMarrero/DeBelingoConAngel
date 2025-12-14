@@ -6,6 +6,7 @@ export interface OrchestraSocials {
     email?: string;
     phone?: string;
     image?: string;
+    Otros?: string;
 }
 
 export const orchestraDetails: Record<string, OrchestraSocials> = {
