@@ -43,6 +43,11 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
   const [prevYearMonthlyEventCount, setPrevYearMonthlyEventCount] = useState<{ [month: string]: number }>({});
   const [selectedComparativaOrquesta, setSelectedComparativaOrquesta] = useState<{ name: string; month: string } | null>(null);
   const [showTotal, setShowTotal] = useState(false);
+  const [visibleItems, setVisibleItems] = useState(20);
+
+  useEffect(() => {
+    setVisibleItems(20);
+  }, [selectedYear, showTotal]);
 
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth();
@@ -607,27 +612,39 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
 
         {showTotal && (
           <div className="p-6 animate-fadeIn">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
-              {fullSortedOrquestasList.map((item, index) => (
-                <div key={item.name} className="flex items-center justify-between p-3 rounded-xl bg-black/20 border border-white/5 hover:bg-white/5 hover:border-white/10 transition-all cursor-default">
-                  <div className="flex items-center gap-3 overflow-hidden">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+              {fullSortedOrquestasList.slice(0, visibleItems).map((item, index) => (
+                <div key={item.name} className="flex items-center justify-between p-2 rounded-lg bg-black/20 border border-white/5 hover:bg-white/5 hover:border-white/10 transition-all cursor-default group">
+                  <div className="flex items-center gap-2 overflow-hidden min-w-0">
                     <span className={`
-                                    w-8 h-8 flex-shrink-0 flex items-center justify-center rounded-lg text-sm font-bold
+                                    w-6 h-6 flex-shrink-0 flex items-center justify-center rounded-md text-[10px] sm:text-xs font-bold
                                     ${index < 3 ? 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30' :
                         index < 10 ? 'bg-white/10 text-white' : 'text-gray-500 bg-black/20'}
                                 `}>
                       #{index + 1}
                     </span>
-                    <span className="text-gray-300 text-sm font-medium truncate" title={item.name}>
+                    <span className="text-gray-300 text-xs sm:text-sm font-medium truncate group-hover:text-white transition-colors" title={item.name}>
                       {item.name}
                     </span>
                   </div>
-                  <span className="text-sm font-bold text-blue-400 bg-blue-500/10 px-2.5 py-1 rounded-md border border-blue-500/20">
+                  <span className="ml-2 text-[10px] sm:text-xs font-bold text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded border border-blue-500/20 flex-shrink-0">
                     {item.count}
                   </span>
                 </div>
               ))}
             </div>
+
+            {visibleItems < fullSortedOrquestasList.length && (
+              <div className="mt-6 flex justify-center">
+                <button
+                  onClick={() => setVisibleItems(prev => prev + 20)}
+                  className="px-6 py-2 bg-gray-800 hover:bg-gray-700 text-white rounded-full font-medium transition-colors border border-gray-700 shadow-lg flex items-center gap-2"
+                >
+                  <ChevronDown className="w-4 h-4" />
+                  Ver más orquestas
+                </button>
+              </div>
+            )}
           </div>
         )}
       </div>
