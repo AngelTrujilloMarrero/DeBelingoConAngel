@@ -46,10 +46,10 @@ const Header: React.FC = () => {
   return (
     <header
       ref={headerRef}
-      className="sticky top-0 z-50 text-white shadow-lg flex flex-col justify-center items-center cursor-default group overflow-hidden transition-all duration-300"
+      className="sticky top-0 z-50 text-white shadow-lg flex flex-col justify-center items-center cursor-default group transition-all duration-300"
     >
       {/* Background Layers */}
-      <div className="absolute inset-0 pointer-events-none">
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
         {/* Base Blurred Image */}
         <div
           className="absolute inset-0 bg-[url('/eltablero.jpg')] bg-cover bg-center blur-[2px] scale-110"
@@ -77,7 +77,7 @@ const Header: React.FC = () => {
         }}
       />
 
-      <div className="relative container mx-auto px-4 text-center flex flex-col justify-between z-10 py-3 lg:py-4 gap-2 lg:gap-4">
+      <div className="relative container mx-auto px-4 text-center flex flex-col justify-between z-10 py-4 lg:py-6 gap-3 lg:gap-5">
         {/* Top section with Logo and Social Icons */}
         <div className="flex items-center justify-between md:justify-center gap-4 w-full relative">
 
@@ -92,7 +92,7 @@ const Header: React.FC = () => {
           </div>
 
           {/* Logo Center */}
-          <div className="transform scale-[0.5] sm:scale-[0.55] md:scale-[0.65] lg:scale-[0.75] transition-transform duration-300 mx-auto -my-4 sm:-my-6 md:-my-8 relative z-20">
+          <div className="transform scale-[0.5] sm:scale-[0.55] md:scale-[0.65] lg:scale-[0.75] transition-transform duration-300 mx-auto -my-2 sm:-my-4 md:-my-5 relative z-20">
             <DBCALogo />
           </div>
 
