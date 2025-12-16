@@ -46,10 +46,7 @@ const Header: React.FC = () => {
   return (
     <header
       ref={headerRef}
-      className="sticky top-0 z-50 text-white shadow-lg flex flex-col justify-center items-center cursor-default group overflow-hidden"
-      style={{
-        maxHeight: '28.5vh',
-      }}
+      className="sticky top-0 z-50 text-white shadow-lg flex flex-col justify-center items-center cursor-default group overflow-hidden transition-all duration-300"
     >
       {/* Background Layers */}
       <div className="absolute inset-0 pointer-events-none">
@@ -80,37 +77,41 @@ const Header: React.FC = () => {
         }}
       />
 
-      <div className="relative container mx-auto px-4 text-center flex flex-col justify-between h-full z-10 py-2">
+      <div className="relative container mx-auto px-4 text-center flex flex-col justify-between z-10 py-3 lg:py-4 gap-2 lg:gap-4">
         {/* Top section with Logo and Social Icons */}
-        <div className="flex items-center justify-center gap-4 md:gap-6 w-full">
-          <div className="hidden md:flex items-center gap-2">
-            <a href="https://www.instagram.com/debelingoconangel/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110">
-              <Instagram className="w-5 h-5 text-white" />
+        <div className="flex items-center justify-between md:justify-center gap-4 w-full relative">
+
+          {/* Social Icons Left - Desktop */}
+          <div className="hidden md:flex items-center gap-2 absolute left-4 lg:left-10 top-1/2 -translate-y-1/2">
+            <a href="https://www.instagram.com/debelingoconangel/" target="_blank" rel="noopener noreferrer" className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110">
+              <Instagram className="w-4 h-4 lg:w-5 lg:h-5 text-white" />
             </a>
-            <a href="https://www.facebook.com/debelingoconangel/" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110">
-              <Facebook className="w-5 h-5 text-white" />
+            <a href="https://www.facebook.com/debelingoconangel/" target="_blank" rel="noopener noreferrer" className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110">
+              <Facebook className="w-4 h-4 lg:w-5 lg:h-5 text-white" />
             </a>
           </div>
 
-          <div className="transform scale-[0.45] md:scale-[0.60] -my-2 md:-my-1 translate-y-[4%]">
+          {/* Logo Center */}
+          <div className="transform scale-[0.5] sm:scale-[0.55] md:scale-[0.65] lg:scale-[0.75] transition-transform duration-300 mx-auto -my-4 sm:-my-6 md:-my-8 relative z-20">
             <DBCALogo />
           </div>
 
-          <div className="hidden md:flex items-center gap-2">
-            <a href="https://www.whatsapp.com/channel/0029Va8nc2A77qVZokI0aC2K" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110">
-              <MessageCircle className="w-5 h-5 text-white" />
+          {/* Social Icons Right - Desktop */}
+          <div className="hidden md:flex items-center gap-2 absolute right-4 lg:right-10 top-1/2 -translate-y-1/2">
+            <a href="https://www.whatsapp.com/channel/0029Va8nc2A77qVZokI0aC2K" target="_blank" rel="noopener noreferrer" className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110">
+              <MessageCircle className="w-4 h-4 lg:w-5 lg:h-5 text-white" />
             </a>
-            <a href="https://t.me/debelingoconangel" target="_blank" rel="noopener noreferrer" className="w-10 h-10 bg-gradient-to-br from-sky-400 to-sky-600 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110">
-              <Send className="w-5 h-5 text-white" />
+            <a href="https://t.me/debelingoconangel" target="_blank" rel="noopener noreferrer" className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-sky-400 to-sky-600 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110">
+              <Send className="w-4 h-4 lg:w-5 lg:h-5 text-white" />
             </a>
           </div>
         </div>
 
-        {/* Group Title and Navigation to keep them close and lift them up together */}
-        <div className="w-full flex flex-col items-center gap-1 md:gap-0 mt-auto mb-3 md:mb-4">
+        {/* Group Title and Navigation */}
+        <div className="w-full flex flex-col items-center gap-2 md:gap-3">
           {/* Main Title & Subtitle */}
-          <div className="hidden md:block -mt-2">
-            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold font-orbitron tracking-widest transform scale-x-110 origin-center inline-block group/text cursor-pointer transition-transform duration-300 hover:scale-125 py-2 perspective-[1000px]">
+          <div className="hidden md:block">
+            <h1 className="text-xl md:text-2xl lg:text-4xl font-bold font-orbitron tracking-widest transform scale-x-110 origin-center inline-block group/text cursor-pointer transition-transform duration-300 hover:scale-125 py-2 perspective-[1000px]">
               {"DE BELINGO CON ÁNGEL".split('').map((char, index) => (
                 <span
                   key={index}
@@ -121,13 +122,13 @@ const Header: React.FC = () => {
                 </span>
               ))}
             </h1>
-            <p className="text-base md:text-lg font-semibold text-blue-100 animate-fade-in">
+            <p className="text-sm md:text-base lg:text-lg font-semibold text-blue-100 animate-fade-in mt-1">
               Verbenas en Tenerife
             </p>
           </div>
 
           {/* Navigation */}
-          <div className="w-full">
+          <div className="w-full flex justify-center">
             <Navigation />
           </div>
         </div>
