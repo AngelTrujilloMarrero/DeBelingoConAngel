@@ -106,27 +106,30 @@ const Header: React.FC = () => {
           </div>
         </div>
 
-        {/* Main Title & Subtitle */}
-        <div className="hidden md:block -mt-2 mb-1">
-          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold font-orbitron tracking-widest transform scale-x-110 origin-center inline-block group/text cursor-pointer transition-transform duration-300 hover:scale-125 py-2 perspective-[1000px]">
-            {"DE BELINGO CON ÁNGEL".split('').map((char, index) => (
-              <span
-                key={index}
-                className="gradient-text-wave group-hover/text:animate-[wave_1s_ease-in-out_infinite]"
-                style={{ animationDelay: `${index * 0.05}s` }}
-              >
-                {char === ' ' ? '\u00A0' : char}
-              </span>
-            ))}
-          </h1>
-          <p className="text-base md:text-lg font-semibold text-blue-100 animate-fade-in">
-            Verbenas en Tenerife
-          </p>
-        </div>
+        {/* Group Title and Navigation to keep them close and lift them up together */}
+        <div className="w-full flex flex-col items-center gap-1 md:gap-0 mt-auto mb-3 md:mb-4">
+          {/* Main Title & Subtitle */}
+          <div className="hidden md:block -mt-2">
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold font-orbitron tracking-widest transform scale-x-110 origin-center inline-block group/text cursor-pointer transition-transform duration-300 hover:scale-125 py-2 perspective-[1000px]">
+              {"DE BELINGO CON ÁNGEL".split('').map((char, index) => (
+                <span
+                  key={index}
+                  className="gradient-text-wave group-hover/text:animate-[wave_1s_ease-in-out_infinite]"
+                  style={{ animationDelay: `${index * 0.05}s` }}
+                >
+                  {char === ' ' ? '\u00A0' : char}
+                </span>
+              ))}
+            </h1>
+            <p className="text-base md:text-lg font-semibold text-blue-100 animate-fade-in">
+              Verbenas en Tenerife
+            </p>
+          </div>
 
-        {/* Navigation is now inside the flex container */}
-        <div className="w-full mt-auto mb-1">
-          <Navigation />
+          {/* Navigation */}
+          <div className="w-full">
+            <Navigation />
+          </div>
         </div>
 
         {/* Decorative elements are removed to save space */}
