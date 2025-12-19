@@ -290,7 +290,7 @@ const SocialMedia: React.FC = () => {
             </p>
 
             <p>
-              Años más tarde, de mis incursiones en la radio por internet, <strong className="text-purple-300">RADIO TROPIN FM</strong> y <strong className="text-purple-300">RUMBEROS</strong>, decidí dar el salto a las redes sociales en abril de 2014. En 2014 pasaba un poco parecido a lo que había en 2006 por internet: casi nadie informaba por redes sociales.
+              Años más tarde, de mis incursiones en la radio por internet, <strong className="text-purple-300">RADIO TROPIN FM</strong> y <strong className="text-purple-300">FM RUMBEROS</strong>, decidí dar el salto a las redes sociales en abril de 2014. En 2014 pasaba un poco parecido a lo que había en 2006 por internet: casi nadie informaba por redes sociales.
             </p>
 
             <p>
