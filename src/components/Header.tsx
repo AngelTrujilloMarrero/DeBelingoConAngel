@@ -81,29 +81,29 @@ const Header: React.FC = () => {
         {/* Top section with Logo and Social Icons */}
         <div className="flex flex-col md:flex-row items-center justify-center gap-4 lg:gap-8 w-full relative">
 
-          <div className="flex items-center gap-6 md:gap-8 lg:gap-12">
+          <div className="flex items-center gap-2 sm:gap-6 md:gap-8 lg:gap-12">
             {/* Social Icons Left Group */}
-            <div className="hidden md:flex items-center gap-3">
-              <a href="https://www.instagram.com/debelingoconangel/" target="_blank" rel="noopener noreferrer" className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110">
-                <Instagram className="w-4 h-4 lg:w-5 lg:h-5 text-white" />
+            <div className="flex items-center gap-1.5 sm:gap-3">
+              <a href="https://www.instagram.com/debelingoconangel/" target="_blank" rel="noopener noreferrer" className="w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110">
+                <Instagram className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 text-white" />
               </a>
-              <a href="https://www.facebook.com/debelingoconangel/" target="_blank" rel="noopener noreferrer" className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110">
-                <Facebook className="w-4 h-4 lg:w-5 lg:h-5 text-white" />
+              <a href="https://www.facebook.com/debelingoconangel/" target="_blank" rel="noopener noreferrer" className="w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110">
+                <Facebook className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 text-white" />
               </a>
             </div>
 
             {/* Logo Grouped in the middle of icons */}
-            <div className="transform scale-[0.5] sm:scale-[0.55] md:scale-[0.65] lg:scale-[0.75] transition-transform duration-300 -my-2 sm:-my-4 md:-my-5 relative z-20">
+            <div className="transform scale-[0.45] xs:scale-[0.5] sm:scale-[0.55] md:scale-[0.65] lg:scale-[0.75] transition-transform duration-300 -my-4 sm:-my-4 md:-my-5 relative z-20">
               <DBCALogo />
             </div>
 
             {/* Social Icons Right Group */}
-            <div className="hidden md:flex items-center gap-3">
-              <a href="https://www.whatsapp.com/channel/0029Va8nc2A77qVZokI0aC2K" target="_blank" rel="noopener noreferrer" className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110">
-                <MessageCircle className="w-4 h-4 lg:w-5 lg:h-5 text-white" />
+            <div className="flex items-center gap-1.5 sm:gap-3">
+              <a href="https://www.whatsapp.com/channel/0029Va8nc2A77qVZokI0aC2K" target="_blank" rel="noopener noreferrer" className="w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110">
+                <MessageCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 text-white" />
               </a>
-              <a href="https://t.me/debelingoconangel" target="_blank" rel="noopener noreferrer" className="w-8 h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-sky-400 to-sky-600 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110">
-                <Send className="w-4 h-4 lg:w-5 lg:h-5 text-white" />
+              <a href="https://t.me/debelingoconangel" target="_blank" rel="noopener noreferrer" className="w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-sky-400 to-sky-600 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110">
+                <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4 lg:w-5 lg:h-5 text-white" />
               </a>
             </div>
           </div>
