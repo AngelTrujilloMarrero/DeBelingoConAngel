@@ -57,7 +57,7 @@
     "react-chartjs-2": "^5.3.1",
     "react-day-picker": "9.11.3",
     "react-dom": "^19.2.3",
-    "react-hook-form": "^7.68.0",
+    "react-hook-form": "^7.69.0",
     "react-leaflet": "^5.0.0",
     "react-leaflet-cluster": "^4.0.0",
     "react-resizable-panels": "^3.0.6",
