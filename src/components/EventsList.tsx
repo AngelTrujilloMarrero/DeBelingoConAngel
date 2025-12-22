@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Calendar, Clock, MapPin, Music2, Download, Navigation, Plus, Edit, Trash2, Info, ExternalLink, ChevronDown, Facebook, Instagram, Globe, Phone } from 'lucide-react';
 import { onValue, orchestrasRef } from '../utils/firebase';
 import { orchestraDetails } from '../data/orchestras';
@@ -27,22 +27,25 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
     return () => unsubscribe();
   }, []);
 
+  const { eventsByDay, sortedEvents, lastUpdate } = useMemo(() => {
+    const grouped = groupEventsByDay(events);
+    const sorted = sortEventsByDateTime(events);
+    const update = getLastUpdateDate(sorted);
+    return { eventsByDay: grouped, sortedEvents: sorted, lastUpdate: update };
+  }, [events]);
+
   const toggleEvent = (id: string) => {
     setExpandedEventIds(prev =>
       prev.includes(id) ? prev.filter(eid => eid !== id) : [...prev, id]
     );
   };
 
-  const getOrchestraInfo = (name: string) => {
+  const getOrchestraInfo = useMemo(() => (name: string) => {
     const cleanName = name.trim();
     const dbInfo = Object.values(dbOrchestras).find((o: any) => o.name === cleanName) || {};
     const fileInfo = orchestraDetails[cleanName] || {};
     return { ...fileInfo, ...dbInfo };
-  };
-
-  const eventsByDay = groupEventsByDay(events);
-  const sortedEvents = sortEventsByDateTime(events);
-  const lastUpdate = getLastUpdateDate(sortedEvents);
+  }, [dbOrchestras]);
 
   const handleExportClick = () => {
     if (showDatePickers && startDate && endDate) {
@@ -83,9 +86,9 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
               <div key={dayKey} className={`space-y-4 ${dayKey !== Object.keys(eventsByDay).sort()[0] ? 'mt-8 pt-4 border-t border-gray-700/30' : ''}`}>
                 <div className="py-3 bg-gradient-to-r from-transparent via-yellow-400/15 to-transparent border-y border-yellow-400/20">
                   <h3 className="text-xl md:text-2xl font-bold text-yellow-400 flex items-center justify-center gap-3 drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
-                    <Calendar className="w-6 h-6 animate-pulse text-yellow-500" />
+                    <Calendar className="w-6 h-6 text-yellow-500" />
                     <span className="tracking-wide uppercase">{dayName}</span>
-                    <Calendar className="w-6 h-6 animate-pulse text-yellow-500" />
+                    <Calendar className="w-6 h-6 text-yellow-500" />
                   </h3>
                 </div>
 
@@ -307,4 +310,4 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
   );
 };
 
-export default EventsList;
+export default React.memo(EventsList);
