@@ -174,14 +174,15 @@
 }
 
 .dbca-logo {
-  /* Use transform: translateZ(0) to enable GPU acceleration without will-change overhead */
+  /* Eliminated infinite animation to ensure 0 CPU usage when idle */
   transform: translateZ(0);
-  animation: dbca-subtle-pulse 4s ease-in-out infinite;
+  transition: transform 0.5s ease;
 }
 
 .dbca-logo:hover {
-  animation-duration: 2s;
   transform: translateZ(0) scale(1.1);
+  /* Optional: Add a subtle pulse ONLY on hover if desired, or just static scale */
+  /* animation: dbca-subtle-pulse 2s ease-in-out infinite; */
 }
 
 /* Blurred background image style */
