@@ -160,57 +160,28 @@
   }
 }
 
-/* DBCA Logo animations */
-@keyframes dbca-gradient-rotate {
-  0% {
-    transform: scale(1) rotate(0deg);
-    filter: hue-rotate(0deg);
-  }
-
-  25% {
-    transform: scale(1.05) rotate(90deg);
-    filter: hue-rotate(45deg);
-  }
-
-  50% {
-    transform: scale(1.1) rotate(180deg);
-    filter: hue-rotate(90deg);
-  }
-
-  75% {
-    transform: scale(1.05) rotate(270deg);
-    filter: hue-rotate(135deg);
-  }
-
-  100% {
-    transform: scale(1) rotate(360deg);
-    filter: hue-rotate(180deg);
-  }
-}
-
-@keyframes dbca-zoom-pulse {
+/* DBCA Logo animations - Optimized for performance */
+@keyframes dbca-subtle-pulse {
 
   0%,
   100% {
-    transform: scale(1);
-    box-shadow: 0 0 20px rgba(255, 107, 107, 0.3);
+    transform: translateZ(0) scale(1);
   }
 
   50% {
-    transform: scale(1.1);
-    box-shadow: 0 0 40px rgba(78, 205, 196, 0.7);
+    transform: translateZ(0) scale(1.05);
   }
 }
 
 .dbca-logo {
-  will-change: transform, filter;
-  animation: dbca-zoom-pulse 3s ease-in-out infinite,
-    dbca-gradient-rotate 8s linear infinite;
+  /* Use transform: translateZ(0) to enable GPU acceleration without will-change overhead */
+  transform: translateZ(0);
+  animation: dbca-subtle-pulse 4s ease-in-out infinite;
 }
 
 .dbca-logo:hover {
-  animation-duration: 1.5s, 4s;
-  transform: scale(1.15);
+  animation-duration: 2s;
+  transform: translateZ(0) scale(1.1);
 }
 
 /* Blurred background image style */
