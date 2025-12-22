@@ -6,30 +6,19 @@ import Navigation from './Navigation';
 const Header: React.FC = () => {
   const headerRef = useRef<HTMLElement>(null);
 
-  useEffect(() => {
-    let rafId: number | null = null;
+  const handleMouseMove = (e: React.MouseEvent<HTMLElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
 
-    const handleMouseMove = (e: MouseEvent) => {
-      if (rafId) return;
-
-      rafId = requestAnimationFrame(() => {
-        document.documentElement.style.setProperty('--mouse-x', `${e.clientX}px`);
-        document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`);
-        rafId = null;
-      });
-    };
-
-    window.addEventListener('mousemove', handleMouseMove, { passive: true });
-
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      if (rafId) cancelAnimationFrame(rafId);
-    };
-  }, []);
+    e.currentTarget.style.setProperty('--mouse-x', `${x}px`);
+    e.currentTarget.style.setProperty('--mouse-y', `${y}px`);
+  };
 
   return (
     <header
       ref={headerRef}
+      onMouseMove={handleMouseMove}
       className="sticky top-0 z-50 text-white shadow-lg flex flex-col justify-center items-center cursor-default group transition-all duration-300 bg-[#001f3f] overflow-hidden"
     >
       {/* Background Layers - Optimized */}
@@ -41,14 +30,18 @@ const Header: React.FC = () => {
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60" />
       </div>
 
-      {/* Spotlight Effect (Simplified) */}
-      <div
-        className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-        style={{
-          background: `radial-gradient(400px circle at var(--mouse-x) var(--mouse-y), rgba(255,255,255,0.15), transparent 80%)`,
-          zIndex: 5
-        }}
-      />
+      {/* Spotlight Effect (Optimized with transform) */}
+      <div className="absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        <div
+          className="absolute w-[800px] h-[800px] -left-[400px] -top-[400px]"
+          style={{
+            background: 'radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%)',
+            transform: 'translate3d(var(--mouse-x), var(--mouse-y), 0)',
+            willChange: 'transform',
+            zIndex: 5
+          }}
+        />
+      </div>
 
       <div className="relative container mx-auto px-4 text-center flex flex-col justify-between z-10 py-4 lg:py-6 gap-3 lg:gap-5">
         {/* Top section with Logo and Social Icons */}

@@ -208,14 +208,27 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
       </div >
 
       {/* Footer / Últimos Movimientos */}
-      <div className="bg-gradient-to-r from-gray-800 to-gray-700 p-6 space-y-4 relative group/footer">
-        {/* Spotlight effect for footer area too */}
-        <div
-          className="absolute inset-0 pointer-events-none opacity-0 group-hover/footer:opacity-100 transition-opacity duration-500"
-          style={{
-            background: `radial-gradient(300px circle at var(--mouse-x) var(--mouse-y), rgba(255,255,255,0.08), transparent 80%)`,
-          }}
-        />
+      <div
+        className="bg-gradient-to-r from-gray-800 to-gray-700 p-6 space-y-4 relative group/footer overflow-hidden"
+        onMouseMove={(e) => {
+          const rect = e.currentTarget.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          e.currentTarget.style.setProperty('--mouse-x', `${x}px`);
+          e.currentTarget.style.setProperty('--mouse-y', `${y}px`);
+        }}
+      >
+        {/* Spotlight effect for footer area too - Optimized */}
+        <div className="absolute inset-0 pointer-events-none opacity-0 group-hover/footer:opacity-100 transition-opacity duration-300 overflow-hidden">
+          <div
+            className="absolute w-[600px] h-[600px] -left-[300px] -top-[300px]"
+            style={{
+              background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, transparent 70%)',
+              transform: 'translate3d(var(--mouse-x), var(--mouse-y), 0)',
+              willChange: 'transform'
+            }}
+          />
+        </div>
 
         <div className="relative z-10 text-center text-green-400 font-bold text-sm">
           <div className="flex items-center justify-center gap-2">
