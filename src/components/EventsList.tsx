@@ -207,11 +207,19 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
           })}
       </div >
 
-      {/* Footer */}
-      < div className="bg-gradient-to-r from-gray-800 to-gray-700 p-6 space-y-4" >
-        <div className="text-center text-green-400 font-bold text-sm">
+      {/* Footer / Últimos Movimientos */}
+      <div className="bg-gradient-to-r from-gray-800 to-gray-700 p-6 space-y-4 relative group/footer">
+        {/* Spotlight effect for footer area too */}
+        <div
+          className="absolute inset-0 pointer-events-none opacity-0 group-hover/footer:opacity-100 transition-opacity duration-500"
+          style={{
+            background: `radial-gradient(300px circle at var(--mouse-x) var(--mouse-y), rgba(255,255,255,0.08), transparent 80%)`,
+          }}
+        />
+
+        <div className="relative z-10 text-center text-green-400 font-bold text-sm">
           <div className="flex items-center justify-center gap-2">
-            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+            <div className="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_8px_rgba(74,222,128,0.5)]"></div>
             Última actualización: {lastUpdate}
           </div>
         </div>

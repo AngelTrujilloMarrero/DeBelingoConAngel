@@ -7,28 +7,22 @@ const Header: React.FC = () => {
   const headerRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
-    const header = headerRef.current;
-    if (!header) return;
-
     let rafId: number | null = null;
 
     const handleMouseMove = (e: MouseEvent) => {
       if (rafId) return;
 
       rafId = requestAnimationFrame(() => {
-        const rect = header.getBoundingClientRect();
-        const x = e.clientX - rect.left;
-        const y = e.clientY - rect.top;
-        header.style.setProperty('--mouse-x', `${x}px`);
-        header.style.setProperty('--mouse-y', `${y}px`);
+        document.documentElement.style.setProperty('--mouse-x', `${e.clientX}px`);
+        document.documentElement.style.setProperty('--mouse-y', `${e.clientY}px`);
         rafId = null;
       });
     };
 
-    header.addEventListener('mousemove', handleMouseMove, { passive: true });
+    window.addEventListener('mousemove', handleMouseMove, { passive: true });
 
     return () => {
-      header.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('mousemove', handleMouseMove);
       if (rafId) cancelAnimationFrame(rafId);
     };
   }, []);
