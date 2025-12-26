@@ -61,7 +61,12 @@ export function useEvents() {
           return { type, event };
         });
 
-      const combinedActivity = [...currentActivity, ...deletedEventsRef.current];
+      const currentYear = new Date().getFullYear();
+      const combinedActivity = [...currentActivity, ...deletedEventsRef.current]
+        .filter(item => {
+          const eventDate = new Date(item.event.day);
+          return eventDate.getFullYear() >= currentYear;
+        });
 
       const sortedActivity = combinedActivity
         .sort((a, b) => {
