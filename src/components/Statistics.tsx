@@ -44,6 +44,7 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
   const [selectedComparativaOrquesta, setSelectedComparativaOrquesta] = useState<{ name: string; month: string } | null>(null);
   const [showTotal, setShowTotal] = useState(false);
   const [visibleItems, setVisibleItems] = useState(20);
+  const [expandedCompMonth, setExpandedCompMonth] = useState<string | null>(null);
 
   useEffect(() => {
     setVisibleItems(20);
@@ -509,8 +510,50 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
               </p>
             </div>
 
-            <div className="p-4 space-y-6">
+            <div className="p-4">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
+                {monthsToRender.map(month => {
+                  const isExpanded = expandedCompMonth === month;
+                  const currentData = monthlyData[month] || {};
+                  const prevData = prevYearMonthlyData[month] || {};
+                  const allOrquestas = new Set([...Object.keys(currentData), ...Object.keys(prevData)]);
+                  const count = Array.from(allOrquestas).filter(orq => (prevData[orq] || 0) > 0).length;
+
+                  return (
+                    <button
+                      key={month}
+                      onClick={() => setExpandedCompMonth(isExpanded ? null : month)}
+                      className={`
+                        relative group flex flex-col items-center justify-center p-4 rounded-3xl transition-all duration-300 border
+                        ${isExpanded
+                          ? 'bg-pink-600 border-pink-400 shadow-[0_0_20px_rgba(219,39,119,0.5)] scale-105 z-10'
+                          : 'bg-gradient-to-br from-gray-800 to-gray-900 border-white/20 shadow-lg hover:border-pink-400/50 hover:from-gray-700 hover:to-gray-800 hover:scale-110 hover:shadow-pink-500/20'
+                        }
+                      `}
+                    >
+                      <span className={`text-lg font-bold capitalize mb-1 transition-colors ${isExpanded ? 'text-white' : 'text-gray-200 group-hover:text-white'}`}>
+                        {month}
+                      </span>
+
+                      <div className={`
+                        flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold transition-colors
+                        ${isExpanded ? 'bg-white/20 text-white' : 'bg-black/40 text-gray-300 group-hover:text-white'}
+                      `}>
+                        <TrendingUp className="w-3 h-3" />
+                        {count}
+                      </div>
+
+                      {isExpanded && (
+                        <span className="absolute -bottom-2 w-1.5 h-1.5 bg-pink-400 rounded-full animate-pulse" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
               {monthsToRender.map(month => {
+                if (expandedCompMonth !== month) return null;
+
                 const currentData = monthlyData[month] || {};
                 const prevData = prevYearMonthlyData[month] || {};
                 const monthIndex = monthsOrder.indexOf(month);
@@ -570,40 +613,50 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
                 const significantDrop = comparativaVia.filter(item => item.prev > 0 && item.current > 0 && item.variation <= -50);
 
                 return (
-                  <div key={month} className="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
-                    <h3 className="text-xl font-bold text-white capitalize mb-4 flex items-center gap-2 border-b border-gray-700 pb-2">
-                      <Calendar className="w-5 h-5 text-pink-500" />
-                      {month}
-                    </h3>
+                  <div key={month} className="bg-gray-800/50 rounded-2xl p-6 border border-white/10 animate-fadeInUp">
+                    <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
+                      <h3 className="text-2xl font-bold text-white capitalize flex items-center gap-3">
+                        <Calendar className="w-6 h-6 text-pink-500" />
+                        {month}
+                      </h3>
+                      <button
+                        onClick={() => setExpandedCompMonth(null)}
+                        className="p-2 hover:bg-white/10 rounded-full transition-colors text-gray-400 hover:text-white"
+                      >
+                        <ChevronDown className="w-6 h-6 rotate-180" />
+                      </button>
+                    </div>
 
                     {visibleRows.length > 0 ? (
                       <div className="overflow-x-auto">
                         <table className="w-full text-sm">
                           <thead>
-                            <tr className="text-gray-400 border-b border-gray-700">
-                              <th className="text-left py-2 px-4">Orquesta</th>
-                              <th className="text-right py-2 px-4">Var.</th>
-                              <th className="text-center py-2 px-2 text-xs">Detalles</th>
+                            <tr className="text-gray-400 border-b border-white/10 shadow-sm">
+                              <th className="text-left py-3 px-4 font-bold uppercase tracking-wider text-xs">Orquesta</th>
+                              <th className="text-right py-3 px-4 font-bold uppercase tracking-wider text-xs">Variación</th>
+                              <th className="text-center py-3 px-2 font-bold uppercase tracking-wider text-xs">Acción</th>
                             </tr>
                           </thead>
                           <tbody>
                             {visibleRows.map((item, idx) => (
                               <tr
                                 key={idx}
-                                className="border-b border-gray-700/50 hover:bg-gray-700/30 cursor-pointer transition-colors"
+                                className="border-b border-white/5 hover:bg-white/5 cursor-pointer transition-all duration-200 group/row"
                                 onClick={() => setSelectedComparativaOrquesta({ name: item.name, month })}
                               >
-                                <td className="py-3 px-4 font-medium text-gray-200">{item.name}</td>
-                                <td className="py-3 px-4 text-right">
-                                  <span className={`font-bold ${item.variation > 0 ? 'text-green-400' :
-                                    item.variation < 0 ? 'text-red-400' : 'text-gray-500'}`}>
+                                <td className="py-4 px-4 font-semibold text-gray-100 group-hover/row:text-white">{item.name}</td>
+                                <td className="py-4 px-4 text-right">
+                                  <span className={`px-3 py-1 rounded-full text-xs font-black shadow-sm ${item.variation > 0 ? 'bg-green-500/10 text-green-400 border border-green-500/20' :
+                                      item.variation < 0 ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-gray-500/10 text-gray-400 border border-gray-500/20'
+                                    }`}>
                                     {item.variation > 0 ? '+' : ''}{item.variation.toFixed(0)}%
                                   </span>
                                 </td>
-                                <td className="py-3 px-2 text-center">
-                                  <span className="text-xs text-blue-400 hover:text-blue-300">
-                                    👆 Click
-                                  </span>
+                                <td className="py-4 px-2 text-center">
+                                  <div className="flex items-center justify-center gap-1 text-pink-400 group-hover/row:text-pink-300 transition-colors">
+                                    <MousePointerClick className="w-4 h-4" />
+                                    <span className="text-[10px] font-bold uppercase tracking-tighter">Detalles</span>
+                                  </div>
                                 </td>
                               </tr>
                             ))}
@@ -611,26 +664,33 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
                         </table>
                       </div>
                     ) : (
-                      <p className="text-center text-gray-500 py-4 italic text-sm">
-                        No hay orquestas comparables con el año anterior en este mes.
-                      </p>
+                      <div className="text-center py-12 bg-black/20 rounded-2xl border border-white/5">
+                        <BarChart3 className="w-12 h-12 mx-auto mb-4 text-gray-600" />
+                        <p className="text-gray-400 italic">No hay orquestas comparables para este mes.</p>
+                      </div>
                     )}
 
                     {(lostAll.length > 0 || significantDrop.length > 0) && (
-                      <div className="mt-4 bg-gray-900/80 rounded-lg p-3 border-l-4 border-red-500">
-                        <h4 className="text-red-400 font-bold text-xs uppercase mb-2 flex items-center gap-2">
-                          <TrendingDown className="w-4 h-4" /> Análisis de Pérdidas
+                      <div className="mt-8 bg-gradient-to-br from-red-950/40 to-black/40 rounded-2xl p-6 border border-red-500/20 shadow-xl">
+                        <h4 className="text-red-400 font-black text-sm uppercase mb-4 flex items-center gap-2">
+                          <TrendingDown className="w-5 h-5" /> REPORTE DE INCIDENCIAS
                         </h4>
-                        <div className="space-y-2 text-sm">
+                        <div className="space-y-3">
                           {lostAll.map(item => (
-                            <p key={item.name} className="text-gray-300">
-                              <span className="font-bold text-white">{item.name}</span> tuvo <span className="text-yellow-400">{item.prev}</span> actuaciones el año pasado pero este mes <span className="text-red-400 font-bold">las ha perdido todas</span>.
-                            </p>
+                            <div key={item.name} className="flex gap-3 text-sm items-start bg-black/20 p-3 rounded-lg border border-white/5">
+                              <div className="w-1.5 h-1.5 rounded-full bg-red-500 mt-1.5 flex-shrink-0" />
+                              <p className="text-gray-300 leading-relaxed">
+                                <span className="font-bold text-white">{item.name}</span> tuvo <span className="text-pink-400 font-bold">{item.prev}</span> actuaciones el año pasado pero este mes <span className="text-red-500 font-extrabold underline decoration-red-500/50">ha desaparecido del mapa</span>.
+                              </p>
+                            </div>
                           ))}
                           {significantDrop.map(item => (
-                            <p key={item.name} className="text-gray-300">
-                              <span className="font-bold text-white">{item.name}</span> ha reducido drásticamente su presencia (de <span className="text-yellow-400">{item.prev}</span> a <span className="text-red-400 font-bold">{item.current}</span>).
-                            </p>
+                            <div key={item.name} className="flex gap-3 text-sm items-start bg-black/20 p-3 rounded-lg border border-white/5">
+                              <div className="w-1.5 h-1.5 rounded-full bg-orange-500 mt-1.5 flex-shrink-0" />
+                              <p className="text-gray-300 leading-relaxed">
+                                <span className="font-bold text-white">{item.name}</span> ha sufrido una caída crítica (de <span className="text-pink-400 font-bold">{item.prev}</span> a <span className="text-red-400 font-bold">{item.current}</span>).
+                              </p>
+                            </div>
                           ))}
                         </div>
                       </div>
