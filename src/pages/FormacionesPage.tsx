@@ -26,6 +26,13 @@ const FormacionesPage: React.FC<FormacionesPageProps> = ({ events }) => {
         return () => unsubscribe();
     }, []);
 
+    // Clear selected orchestra when search term changes
+    useEffect(() => {
+        if (searchTerm && selectedOrquesta) {
+            setSelectedOrquesta(null);
+        }
+    }, [searchTerm]);
+
     // Extract unique orchestras and calculate stats
     const formaciones = useMemo(() => {
         const currentYear = new Date().getFullYear();
