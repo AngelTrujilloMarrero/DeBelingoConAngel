@@ -218,14 +218,14 @@ const MessageBoard: React.FC = () => {
                 </div>
 
                 <div className="max-w-7xl mx-auto p-6 md:p-10">
-                    <div className="grid lg:grid-cols-5 gap-10">
+                    <div className="grid lg:grid-cols-5 gap-0 lg:gap-10">
                         {/* Messages List */}
-                        <div className="lg:col-span-3 space-y-6">
-                            <h4 className="text-xs font-bold text-blue-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                        <div className="lg:col-span-3 space-y-4">
+                            <h4 className="text-xs font-bold text-blue-400 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
                                 <span className="w-8 h-px bg-blue-400/30"></span>
                                 Mensajes Recientes
                             </h4>
-                            <div className="h-[500px] overflow-y-auto pr-4 custom-scrollbar space-y-4">
+                            <div className="max-h-[500px] min-h-[200px] overflow-y-auto pr-4 custom-scrollbar space-y-4">
                                 {loading ? (
                                     <div className="flex flex-col items-center justify-center h-48 space-y-4">
                                         <RefreshCw className="w-10 h-10 text-blue-500 animate-spin" />
@@ -235,7 +235,6 @@ const MessageBoard: React.FC = () => {
                                     messages.slice().reverse().map((msg) => (
                                         <div key={msg.id} className="group/msg animate-in fade-in slide-in-from-left-4 duration-500">
                                             <div className="flex items-center gap-3 mb-1 ml-1">
-                                                <span className="text-[10px] font-black uppercase tracking-tighter text-purple-400 bg-purple-400/10 px-2 py-0.5 rounded">Anónimo</span>
                                                 <span className="text-[10px] text-gray-500 font-mono">
                                                     {new Date(msg.timestamp).toLocaleDateString()} · {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                 </span>
@@ -256,9 +255,9 @@ const MessageBoard: React.FC = () => {
                         </div>
 
                         {/* Input Form */}
-                        <div className="lg:col-span-2">
+                        <div className="lg:col-span-2 lg:pl-6">
                             <div className="sticky top-24">
-                                <form onSubmit={handleSubmit} className="space-y-6 bg-gray-800/40 p-8 rounded-3xl border border-gray-700/50 backdrop-blur-sm shadow-xl">
+                                <form onSubmit={handleSubmit} className="space-y-6 bg-gray-800/40 p-6 lg:p-8 rounded-3xl border border-gray-700/50 backdrop-blur-sm shadow-xl">
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between">
                                             <label className="text-sm font-bold text-blue-300 uppercase tracking-widest ml-1">Tu Mensaje</label>
