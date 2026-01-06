@@ -53,11 +53,11 @@ const Header: React.FC = () => {
     <header
       ref={headerRef}
       onMouseMove={handleMouseMove}
-      className={`sticky top-0 z-50 text-white shadow-xl flex flex-col justify-center items-center cursor-default group transition-all duration-500 ease-in-out bg-[#001f3f] rounded-b-[32px] md:rounded-b-[48px] ${headerClasses}`}
+      className={`sticky top-0 z-50 text-white shadow-xl flex flex-col justify-center items-center cursor-default group transition-all duration-500 ease-in-out bg-[#001f3f] ${location.pathname === '/' ? '' : 'rounded-b-[32px] md:rounded-b-[48px]'} ${headerClasses}`}
       style={{ overflow: 'visible' }}
     >
       {/* Background Layers - Optimized */}
-      <div className="absolute inset-0 pointer-events-none rounded-b-[32px] md:rounded-b-[48px] overflow-hidden">
+      <div className={`absolute inset-0 pointer-events-none overflow-hidden ${location.pathname === '/' ? '' : 'rounded-b-[32px] md:rounded-b-[48px]'}`}>
         <div
           className={`absolute inset-0 bg-[url('/eltablero.jpg')] bg-cover bg-center transition-opacity duration-700 ${(isEventosPage && isScrolled) || !isEventosPage ? 'opacity-20' : 'opacity-40'
             }`}
@@ -66,7 +66,7 @@ const Header: React.FC = () => {
       </div>
 
       {/* Spotlight Effect - Hidden when scrolled or in other pages to save CPU */}
-      <div className={`absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-b-[32px] md:rounded-b-[48px] overflow-hidden ${(isEventosPage && isScrolled) || !isEventosPage ? 'hidden' : ''}`}>
+      <div className={`absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 overflow-hidden ${location.pathname === '/' ? '' : 'rounded-b-[32px] md:rounded-b-[48px]'} ${(isEventosPage && isScrolled) || !isEventosPage ? 'hidden' : ''}`}>
         <div
           className="absolute w-[800px] h-[800px] -left-[400px] -top-[400px]"
           style={{

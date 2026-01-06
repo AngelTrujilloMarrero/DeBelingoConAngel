@@ -4,6 +4,7 @@ import VisitCounter from './components/VisitCounter';
 import { useEvents } from './hooks/useEvents';
 import { Loader2 } from 'lucide-react';
 import { EventosPage, MapaPage, EstadisticasPage, RedesPage, FormacionesPage } from './pages';
+import MessageBoard from './components/MessageBoard';
 import { useEffect } from 'react';
 
 function App() {
@@ -33,7 +34,7 @@ function App() {
       <Header />
 
       {/* Main Content - Cambia según la ruta */}
-      <div className={`${pathname === '/' ? 'w-full' : 'container mx-auto px-4'} py-8`}>
+      <div className={`${pathname === '/' ? 'w-full p-0' : 'container mx-auto px-4 py-8'}`}>
         <Routes>
           <Route path="/" element={<EventosPage events={events} recentActivity={recentActivity} />} />
           <Route path="/mapa" element={<MapaPage events={events} />} />
@@ -44,8 +45,11 @@ function App() {
         </Routes>
       </div>
 
+      {/* Message Board - Only on main page */}
+      {pathname === '/' && <MessageBoard />}
+
       {/* Footer - Siempre visible */}
-      <footer className="footer-rounded bg-gray-900 text-white py-12 relative overflow-hidden">
+      <footer className={`${pathname === '/' ? '' : 'footer-rounded'} bg-gray-900 text-white py-12 relative overflow-hidden`}>
         {/* Background Layers - Consistent with Header */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute inset-0 bg-[url('/eltablero.jpg')] bg-cover bg-center opacity-20" />

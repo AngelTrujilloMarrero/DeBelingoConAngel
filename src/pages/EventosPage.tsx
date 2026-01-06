@@ -808,92 +808,90 @@ const EventosPage: React.FC<EventosPageProps> = ({ events, recentActivity }) => 
                 onExportFestival={showFestivalSelection}
             />
 
-            <div className="container mx-auto px-4 mt-8 mb-4">
-
-            </div>
-
             {/* Festival Selection Modal */}
-            {festivalSelectionVisible && (
-                <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[110] p-4">
-                    <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
-                        <h3 className="text-xl md:text-2xl font-bold mb-6 text-gray-800 text-center">
-                            Exportar Fiesta
-                        </h3>
+            {
+                festivalSelectionVisible && (
+                    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-[110] p-4">
+                        <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl animate-in zoom-in-95 duration-200">
+                            <h3 className="text-xl md:text-2xl font-bold mb-6 text-gray-800 text-center">
+                                Exportar Fiesta
+                            </h3>
 
-                        {getUniqueFestivals().length > 0 ? (
-                            <>
-                                <div className="mb-8">
-                                    <label className="block text-sm font-semibold text-gray-600 mb-3 text-center">
-                                        Selecciona una fiesta de la lista:
-                                    </label>
-                                    <Select
-                                        value={selectedFestival}
-                                        onValueChange={setSelectedFestival}
-                                    >
-                                        <SelectTrigger className="w-full bg-gray-50 border-gray-200 h-12 text-gray-800 focus:ring-2 focus:ring-blue-500 rounded-xl">
-                                            <SelectValue placeholder="Toca para ver las fiestas..." />
-                                        </SelectTrigger>
-                                        <SelectContent
-                                            position="item-aligned"
-                                            className="z-[120] min-w-[320px] md:min-w-[700px] border-zinc-200 shadow-2xl"
-                                            viewportClassName="max-h-[60vh] md:max-h-[500px] overflow-y-auto"
+                            {getUniqueFestivals().length > 0 ? (
+                                <>
+                                    <div className="mb-8">
+                                        <label className="block text-sm font-semibold text-gray-600 mb-3 text-center">
+                                            Selecciona una fiesta de la lista:
+                                        </label>
+                                        <Select
+                                            value={selectedFestival}
+                                            onValueChange={setSelectedFestival}
                                         >
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-1 p-1">
-                                                {getUniqueFestivals().map((festival, index) => (
-                                                    <SelectItem
-                                                        key={index}
-                                                        value={JSON.stringify(festival)}
-                                                        className="py-3 px-4 cursor-pointer hover:bg-blue-50 transition-colors border-b border-gray-50 last:border-0"
-                                                    >
-                                                        <span className="font-medium text-sm">Verbenas de {festival.label}</span>
-                                                    </SelectItem>
-                                                ))}
-                                            </div>
-                                        </SelectContent>
-                                    </Select>
-                                </div>
+                                            <SelectTrigger className="w-full bg-gray-50 border-gray-200 h-12 text-gray-800 focus:ring-2 focus:ring-blue-500 rounded-xl">
+                                                <SelectValue placeholder="Toca para ver las fiestas..." />
+                                            </SelectTrigger>
+                                            <SelectContent
+                                                position="item-aligned"
+                                                className="z-[120] min-w-[320px] md:min-w-[700px] border-zinc-200 shadow-2xl"
+                                                viewportClassName="max-h-[60vh] md:max-h-[500px] overflow-y-auto"
+                                            >
+                                                <div className="grid grid-cols-1 md:grid-cols-2 gap-1 p-1">
+                                                    {getUniqueFestivals().map((festival, index) => (
+                                                        <SelectItem
+                                                            key={index}
+                                                            value={JSON.stringify(festival)}
+                                                            className="py-3 px-4 cursor-pointer hover:bg-blue-50 transition-colors border-b border-gray-50 last:border-0"
+                                                        >
+                                                            <span className="font-medium text-sm">Verbenas de {festival.label}</span>
+                                                        </SelectItem>
+                                                    ))}
+                                                </div>
+                                            </SelectContent>
+                                        </Select>
+                                    </div>
 
-                                <div className="flex gap-3 justify-end">
-                                    <button
-                                        onClick={() => {
-                                            setFestivalSelectionVisible(false);
-                                            setSelectedFestival('');
-                                        }}
-                                        className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium"
-                                    >
-                                        Cancelar
-                                    </button>
-                                    <button
-                                        onClick={() => {
-                                            if (selectedFestival) {
-                                                exportFestivalToImage(selectedFestival);
+                                    <div className="flex gap-3 justify-end">
+                                        <button
+                                            onClick={() => {
                                                 setFestivalSelectionVisible(false);
                                                 setSelectedFestival('');
-                                            } else {
-                                                alert('Por favor selecciona una fiesta');
-                                            }
-                                        }}
-                                        disabled={!selectedFestival}
-                                        className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 disabled:from-gray-400 disabled:to-gray-400 text-white px-6 py-2 rounded-lg font-medium transition-all duration-300"
+                                            }}
+                                            className="px-4 py-2 text-gray-600 hover:text-gray-800 font-medium"
+                                        >
+                                            Cancelar
+                                        </button>
+                                        <button
+                                            onClick={() => {
+                                                if (selectedFestival) {
+                                                    exportFestivalToImage(selectedFestival);
+                                                    setFestivalSelectionVisible(false);
+                                                    setSelectedFestival('');
+                                                } else {
+                                                    alert('Por favor selecciona una fiesta');
+                                                }
+                                            }}
+                                            disabled={!selectedFestival}
+                                            className="bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 disabled:from-gray-400 disabled:to-gray-400 text-white px-6 py-2 rounded-lg font-medium transition-all duration-300"
+                                        >
+                                            Exportar
+                                        </button>
+                                    </div>
+                                </>
+                            ) : (
+                                <>
+                                    <p className="text-gray-600 mb-4">No hay fiestas disponibles para exportar en este momento.</p>
+                                    <button
+                                        onClick={() => setFestivalSelectionVisible(false)}
+                                        className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
                                     >
-                                        Exportar
+                                        Cerrar
                                     </button>
-                                </div>
-                            </>
-                        ) : (
-                            <>
-                                <p className="text-gray-600 mb-4">No hay fiestas disponibles para exportar en este momento.</p>
-                                <button
-                                    onClick={() => setFestivalSelectionVisible(false)}
-                                    className="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded"
-                                >
-                                    Cerrar
-                                </button>
-                            </>
-                        )}
+                                </>
+                            )}
+                        </div>
                     </div>
-                </div>
-            )}
+                )
+            }
         </>
     );
 };
