@@ -52,7 +52,7 @@ function App() {
       <footer className={`${pathname === '/' ? '' : 'footer-rounded'} bg-gray-900 text-white py-12 relative overflow-hidden`}>
         {/* Background Layers - Consistent with Header */}
         <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-0 bg-[url('/eltablero.jpg')] bg-cover bg-center opacity-20" />
+          <div className="absolute inset-0 bg-[url('/fotos/eltablero.jpg')] bg-cover bg-center opacity-20" />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
         </div>
 

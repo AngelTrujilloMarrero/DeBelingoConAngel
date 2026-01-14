@@ -59,7 +59,7 @@ const Header: React.FC = () => {
       {/* Background Layers - Optimized */}
       <div className={`absolute inset-0 pointer-events-none overflow-hidden ${location.pathname === '/' ? '' : 'rounded-b-[32px] md:rounded-b-[48px]'}`}>
         <div
-          className={`absolute inset-0 bg-[url('/eltablero.jpg')] bg-cover bg-center transition-opacity duration-700 ${(isEventosPage && isScrolled) || !isEventosPage ? 'opacity-20' : 'opacity-40'
+          className={`absolute inset-0 bg-[url('/fotos/eltablero.jpg')] bg-cover bg-center transition-opacity duration-700 ${(isEventosPage && isScrolled) || !isEventosPage ? 'opacity-20' : 'opacity-40'
             }`}
         />
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60" />
