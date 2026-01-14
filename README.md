@@ -1,50 +1,207 @@
-# React + TypeScript + Vite
+# Verbenas en Tenerife
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicación web para descubrir y seguir las verbenas y eventos musicales en Tenerife. Desarrollada con React, TypeScript y tecnologías modernas para ofrecer una experiencia completa y accesible.
 
-Currently, two official plugins are available:
+## 🎭 ¿Qué es Verbenas en Tenerife?
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+Una plataforma digital que centraliza información sobre verbenas, conciertos y eventos culturales en la isla de Tenerife. La aplicación permite:
 
-## Expanding the ESLint configuration
+- 🗓️ Descubrir eventos próximos con filtrado por fechas y ubicaciones
+- 🗺️ Visualizar eventos en mapa interactivo 
+- 📊 Análisis estadístico de orquestas y eventos
+- 📱 Comentarios y participación comunitaria
+- 📈 Estadísticas en tiempo real de asistencia
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+## 🎯 Público Objetivo
 
-- Configure the top-level `parserOptions` property like this:
+- **Residentes locales**: Descubrir eventos cercanos y planificar actividades
+- **Turistas**: Explorar la cultura musical tinerfeña durante su visita
+- **Organizadores**: Promocionar y dar visibilidad a sus eventos
+- **Amantes de la música**: Seguir a sus orquestas favoritas
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## 🚀 Características Principales
+
+### 📋 Listado de Eventos
+- Vista completa de verbenas y conciertos
+- Filtrado por fechas, ubicaciones y orquestas
+- Información detallada de cada evento
+- Actualizaciones en tiempo real
+
+### 🗺️ Mapa Interactivo
+- Geolocalización de eventos
+- Filtros por zonas y municipios
+- Navegación intuitiva con Leaflet
+- Clusters para mejor visualización
+
+### 📊 Estadísticas y Análisis
+- Datos comparativos entre orquestas
+- Gráficos interactivos de tendencias
+- Análisis de popularidad y asistencia
+- Métricas detalladas de rendimiento
+
+### 💬 Comunidad
+- Tablero de mensajes y comentarios
+- Sistema de respuestas anidadas
+- Interacción entre usuarios
+- Feedback directo
+
+### 📱 Responsive Design
+- Experiencia optimizada para móviles
+- Diseño adaptativo para tablets y desktop
+- Navegación intuitiva en todos los dispositivos
+
+## 🛠️ Stack Tecnológico
+
+### Frontend
+- **React 19** - Framework principal con componentes modernos
+- **TypeScript** - Tipado estático para mayor robustez
+- **Vite** - Herramienta de desarrollo ultrarrápida
+- **Tailwind CSS** - Framework de CSS utility-first
+- **React Router Dom** - Gestión de rutas client-side
+
+### UI Components
+- **Radix UI** - Componentes accesibles y personalizables
+- **Lucide React** - Iconos modernos y consistentes
+- **Sonner** - Sistema de notificaciones toast
+
+### Visualización y Datos
+- **Chart.js & React Chart.js 2** - Gráficos interactivos
+- **Recharts** - Visualizaciones de datos complejas
+- **Leaflet & React Leaflet** - Mapas interactivos
+
+### Backend y Servicios
+- **Firebase** - Base de datos y autenticación
+- **AEMET API** - Datos meteorológicos en tiempo real
+
+### Desarrollo
+- **ESLint** - Linting y calidad de código
+- **PostCSS** - Procesamiento de CSS
+- **pnpm** - Gestión de paquetes eficiente
+
+## 📦 Instalación
+
+### Prerrequisitos
+- Node.js (versión 18 o superior)
+- pnpm (recomendado) o npm
+
+### Pasos de instalación
+
+1. **Clonar el repositorio**
+   ```bash
+   git clone <url-del-repositorio>
+   cd WebDebelingo
+   ```
+
+2. **Instalar dependencias**
+   ```bash
+   pnpm install
+   ```
+
+3. **Configurar variables de entorno**
+   ```bash
+   cp .env.example .env.local
+   ```
+   Editar `.env.local` con tus configuraciones de Firebase y otras API keys.
+
+4. **Ejecutar en desarrollo**
+   ```bash
+   pnpm dev
+   ```
+
+5. **Acceder a la aplicación**
+   Abre [http://localhost:5173](http://localhost:5173) en tu navegador.
+
+## 🏗️ Arquitectura del Proyecto
+
+```
+src/
+├── components/          # Componentes reutilizables
+│   ├── ui/             # Componentes UI base (Radix UI)
+│   ├── EventsList.tsx  # Listado de eventos
+│   ├── MapComponent.tsx # Mapa interactivo
+│   └── ...
+├── pages/              # Páginas principales
+│   ├── EventosPage.tsx # Página principal de eventos
+│   ├── MapaPage.tsx    # Página del mapa
+│   ├── EstadisticasPage.tsx # Estadísticas
+│   └── ...
+├── hooks/              # Hooks personalizados
+│   ├── useEvents.ts    # Gestión de eventos
+│   ├── useAemetAlerts.ts # Alertas meteorológicas
+│   └── ...
+├── utils/              # Utilidades
+│   ├── firebase.ts     # Configuración Firebase
+│   ├── geocoding.ts    # Utilidades de geolocalización
+│   └── ...
+├── types/              # Definiciones TypeScript
+└── lib/                # Librerías compartidas
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+## 🎨 Decisiones de Diseño
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+### Component-First Architecture
+- Componentes modulares y reutilizables
+- Separación clara entre lógica y presentación
+- Uso de composición sobre herencia
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+### State Management
+- Estado local con React Hooks
+- Estado global compartido a través de Context
+- Datos asíncronos con custom hooks
+
+### Performance
+- Code splitting con React.lazy
+- Optimización de renders con useMemo y useCallback
+- Bundle analysis con Vite
+
+### Accessibility
+- Componentes Radix UI con semántica correcta
+- Navegación por teclado
+- Contenido accesible para screen readers
+
+## 🤝 Contribuir al Proyecto
+
+¡Las contribuciones son bienvenidas! Por favor consulta el archivo [CONTRIBUTING.md](./CONTRIBUTING.md) para详细了解 cómo colaborar.
+
+### Áreas de Contribución
+
+1. **🐛 Reporte de bugs**: Abre issues detallando problemas encontrados
+2. **✨ Nuevas funcionalidades**: Propone mejoras y nuevas características
+3. **📝 Documentación**: Mejora la documentación existente
+4. **🎨 UI/UX**: Sugerencias de diseño y experiencia de usuario
+5. **🧪 Testing**: Añade pruebas unitarias y de integración
+
+## 📈 Hoja de Ruta
+
+Consulta [ROADMAP.md](./ROADMAP.md) para ver las funcionalidades planeadas y el estado actual del desarrollo.
+
+### Próximas Versiones
+
+- **v1.1**: Sistema de notificaciones push
+- **v1.2**: Modo offline con PWA
+- **v1.3**: Integración con redes sociales
+- **v2.0**: Aplicación móvil nativa
+
+## 📝 Historial de Cambios
+
+Todos los cambios importantes están documentados en [CHANGELOG.md](./CHANGELOG.md).
+
+## 📄 Licencia
+
+Este proyecto está licenciado bajo la [MIT License](./LICENSE).
+
+## 🙏 Agradecimientos
+
+- A la comunidad de Tenerife por inspirar este proyecto
+- A los desarrolladores de las librerías open source utilizadas
+- A los organizadores de verbenas que comparten sus eventos
+
+## 📞 Contacto
+
+- **Proyecto**: De Belingo Con Ángel - Verbenas en Tenerife
+- **Web**: [https://debelingoconangel.web.app]
+- **Issues**: [GitHub Issues]
+
+---
+
+Desarrollado con 💙 para la comunidad de Tenerife
