@@ -557,7 +557,7 @@ Otras soluciones que has considerado.
 - **Issues**: Para bugs y funcionalidades
 - **Discussions**: Para preguntas generales
 - **Discord**: Para chat en tiempo real
-- **Email**: dev@verbenastenerife.com
+- **Email**: atrujimar@gmail.com
 
 ---
 
