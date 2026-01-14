@@ -4,6 +4,8 @@ import { onValue, orchestrasRef } from '../utils/firebase';
 import { orchestraDetails } from '../data/orchestras';
 import { Event, RecentActivityItem } from '../types';
 import { groupEventsByDay, sortEventsByDateTime, formatDayName, getLastUpdateDate } from '../utils/helpers';
+import WeatherIcon from './WeatherIcon';
+import { useAemetAlerts } from '../hooks/useAemetAlerts';
 
 interface EventsListProps {
   events: Event[];
@@ -18,6 +20,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
   const [endDate, setEndDate] = useState('');
   const [expandedEventIds, setExpandedEventIds] = useState<string[]>([]);
   const [dbOrchestras, setDbOrchestras] = useState<Record<string, any>>({});
+  const { getAlertForEvent } = useAemetAlerts();
 
   useEffect(() => {
     const unsubscribe = onValue(orchestrasRef, (snapshot) => {
@@ -118,16 +121,23 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                           </span>
                         </div>
 
-                        <a
-                          href={generateDirectionsLink(event)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-300 rounded-lg text-sm font-medium border border-emerald-500/30 hover:from-emerald-500/30 hover:to-teal-500/30 hover:border-emerald-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/20"
-                          title={`Cómo llegar a ${event.lugar ? event.lugar + ', ' : ''}${event.municipio}`}
-                        >
-                          <Navigation className="w-4 h-4" />
-                          <span className="hidden sm:inline">Cómo llegar</span>
-                        </a>
+                        <div className="flex items-center gap-3">
+                          <WeatherIcon
+                            date={event.day}
+                            municipio={event.municipio}
+                            alert={getAlertForEvent(event.municipio, event.day)}
+                          />
+                          <a
+                            href={generateDirectionsLink(event)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-300 rounded-lg text-sm font-medium border border-emerald-500/30 hover:from-emerald-500/30 hover:to-teal-500/30 hover:border-emerald-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/20"
+                            title={`Cómo llegar a ${event.lugar ? event.lugar + ', ' : ''}${event.municipio}`}
+                          >
+                            <Navigation className="w-4 h-4" />
+                            <span className="hidden sm:inline">Cómo llegar</span>
+                          </a>
+                        </div>
 
                         <div className="flex items-center gap-2 text-green-400 font-semibold min-w-0 max-w-full overflow-hidden">
                           <Music2 className="w-5 h-5 flex-shrink-0" />
