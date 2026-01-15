@@ -23,13 +23,15 @@ export function useEvents() {
       const allEvents: Event[] = [];
       const data = snapshot.val();
 
-      const currentYear = new Date().getFullYear();
+      const storedYears = Object.keys(historicalData.years).map(Number);
+      const thresholdYear = storedYears.length > 0 ? Math.max(...storedYears) + 1 : 0;
+
       if (data) {
         Object.entries(data).forEach(([key, value]: [string, any]) => {
           const event: Event = { id: key, ...value };
           const eventYear = new Date(event.day).getFullYear();
 
-          if (eventYear >= currentYear) {
+          if (eventYear >= thresholdYear) {
             allEvents.push(event);
             if (!event.cancelado) {
               loadedEvents.push(event);
@@ -75,7 +77,7 @@ export function useEvents() {
       const combinedActivity = [...currentActivity, ...deletedEventsRef.current]
         .filter(item => {
           const eventDate = new Date(item.event.day);
-          return eventDate.getFullYear() >= currentYear;
+          return eventDate.getFullYear() >= thresholdYear;
         });
 
       const sortedActivity = combinedActivity
