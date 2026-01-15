@@ -1,5 +1,9 @@
 @import "tailwindcss";
-@config "../tailwind.config.js";
+
+@theme {
+  --color-border: 220 13% 91%;
+  --color-foreground: 240 10% 3.9%;
+}
 
 @layer base {
   :root {
