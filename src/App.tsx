@@ -3,8 +3,9 @@ import Header from './components/Header';
 import VisitCounter from './components/VisitCounter';
 import { useEvents } from './hooks/useEvents';
 import { Loader2 } from 'lucide-react';
-import { EventosPage, MapaPage, EstadisticasPage, RedesPage, FormacionesPage } from './pages';
+import { EventosPage, MapaPage, EstadisticasPage, RedesPage, FormacionesPage, BlogPage } from './pages';
 import MessageBoard from './components/MessageBoard';
+import BlogPost from './components/BlogPost';
 import { useEffect } from 'react';
 
 function App() {
@@ -34,14 +35,15 @@ function App() {
       <Header />
 
       {/* Main Content - Cambia según la ruta */}
-      <div className={`${pathname === '/' ? 'w-full p-0' : 'container mx-auto px-4 py-8'}`}>
+      <div className={`${pathname === '/' || pathname.startsWith('/blog') ? 'w-full p-0' : 'container mx-auto px-4 py-8'}`}>
         <Routes>
           <Route path="/" element={<EventosPage events={events} recentActivity={recentActivity} />} />
           <Route path="/mapa" element={<MapaPage events={events} />} />
           <Route path="/estadisticas" element={<EstadisticasPage events={events} />} />
-
           <Route path="/formaciones" element={<FormacionesPage events={events} />} />
           <Route path="/redes" element={<RedesPage />} />
+          <Route path="/blog" element={<BlogPage />} />
+          <Route path="/blog/:slug" element={<BlogPost />} />
         </Routes>
       </div>
 
