@@ -2,6 +2,12 @@ import { useState, useEffect, useRef } from 'react';
 import { onValue } from '../utils/firebase';
 import { eventsRef } from '../utils/firebase';
 import { Event, RecentActivityItem } from '../types';
+import historicalStatsRaw from '../data/historicalStats.json';
+
+const historicalData = historicalStatsRaw as {
+  years: any;
+  events: Event[];
+};
 
 export function useEvents() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -17,12 +23,17 @@ export function useEvents() {
       const allEvents: Event[] = [];
       const data = snapshot.val();
 
+      const currentYear = new Date().getFullYear();
       if (data) {
         Object.entries(data).forEach(([key, value]: [string, any]) => {
           const event: Event = { id: key, ...value };
-          allEvents.push(event);
-          if (!event.cancelado) {
-            loadedEvents.push(event);
+          const eventYear = new Date(event.day).getFullYear();
+
+          if (eventYear >= currentYear) {
+            allEvents.push(event);
+            if (!event.cancelado) {
+              loadedEvents.push(event);
+            }
           }
         });
       }
@@ -61,7 +72,6 @@ export function useEvents() {
           return { type, event };
         });
 
-      const currentYear = new Date().getFullYear();
       const combinedActivity = [...currentActivity, ...deletedEventsRef.current]
         .filter(item => {
           const eventDate = new Date(item.event.day);
@@ -76,7 +86,7 @@ export function useEvents() {
         })
         .slice(0, 5);
 
-      setEvents(loadedEvents);
+      setEvents([...historicalData.events, ...loadedEvents]);
       setRecentActivity(sortedActivity);
       setLoading(false);
     });

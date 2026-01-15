@@ -17,6 +17,16 @@ import { zonasIsla, diasSemana } from '../utils/zones';
 import OrquestaAnalysis from './OrquestaAnalysis';
 import ComparativaDetailedAnalysis from './ComparativaDetailedAnalysis';
 
+import historicalStatsRaw from '../data/historicalStats.json';
+const historicalData = historicalStatsRaw as {
+  years: Record<string, {
+    orquestaCount: OrquestaCount;
+    monthlyOrquestaCount: MonthlyOrquestaCount;
+    monthlyEventCount: Record<string, number>;
+  }>;
+  events: Event[];
+};
+
 ChartJS.register(
   CategoryScale,
   LinearScale,
@@ -63,20 +73,42 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
     }));
   };
 
-  const availableYears = [...new Set(events.map(event => new Date(event.day).getFullYear()))].sort((a, b) => b - a);
+  const availableYears = useMemo(() => {
+    const liveYears = events.map(event => new Date(event.day).getFullYear());
+    const staticYears = Object.keys(historicalData.years).map(Number);
+    return [...new Set([...liveYears, ...staticYears])].sort((a, b) => b - a);
+  }, [events]);
 
   useEffect(() => {
     calculateStatistics();
   }, [events, selectedYear]);
 
   const calculateStatistics = () => {
-    const currentOrquestaCount: OrquestaCount = {};
-    const nextOrquestaCount: OrquestaCount = {};
-    const monthlyOrquestaCount: MonthlyOrquestaCount = {};
-    const monthlyEvents: { [month: string]: number } = {};
+    let currentOrquestaCount: OrquestaCount = {};
+    let monthlyOrquestaCount: MonthlyOrquestaCount = {};
+    let monthlyEvents: { [month: string]: number } = {};
 
-    const prevMonthlyOrquestaCount: MonthlyOrquestaCount = {};
-    const prevMonthlyEvents: { [month: string]: number } = {};
+    let prevMonthlyOrquestaCount: MonthlyOrquestaCount = {};
+    let prevMonthlyEvents: { [month: string]: number } = {};
+
+    // 1. Try to load from historical stats first
+    const yearStr = selectedYear.toString();
+    const prevYearStr = (selectedYear - 1).toString();
+
+    if (historicalData.years[yearStr]) {
+      currentOrquestaCount = historicalData.years[yearStr].orquestaCount;
+      monthlyOrquestaCount = historicalData.years[yearStr].monthlyOrquestaCount;
+      monthlyEvents = historicalData.years[yearStr].monthlyEventCount;
+    }
+
+    if (historicalData.years[prevYearStr]) {
+      prevMonthlyOrquestaCount = historicalData.years[prevYearStr].monthlyOrquestaCount;
+      prevMonthlyEvents = historicalData.years[prevYearStr].monthlyEventCount;
+    }
+
+    // 2. Process live events if they belong to selected or prev year
+    // and are not already fully covered by static data (though we prefer live if available for current/future)
+    const nextOrquestaCount: OrquestaCount = {};
 
     events.forEach(event => {
       if (event.cancelado) return;
@@ -86,7 +118,8 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
       const month = eventDate.toLocaleDateString('es-ES', { month: 'long' });
       const orquestas = event.orquesta.split(',').map(orq => orq.trim()).filter(orq => orq !== 'DJ');
 
-      if (eventYear === selectedYear) {
+      // Only process live events for years NOT in historical stats OR if it's current year+
+      if (eventYear === selectedYear && !historicalData.years[yearStr]) {
         monthlyEvents[month] = (monthlyEvents[month] || 0) + 1;
         orquestas.forEach(orq => {
           currentOrquestaCount[orq] = (currentOrquestaCount[orq] || 0) + 1;
@@ -103,7 +136,7 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
         });
       }
 
-      if (eventYear === selectedYear - 1) {
+      if (eventYear === selectedYear - 1 && !historicalData.years[prevYearStr]) {
         prevMonthlyEvents[month] = (prevMonthlyEvents[month] || 0) + 1;
         orquestas.forEach(orq => {
           if (!prevMonthlyOrquestaCount[month]) {

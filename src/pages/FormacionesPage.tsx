@@ -5,6 +5,16 @@ import { Instagram, Facebook, Globe, Mail, Phone, Search, Music, Users, External
 import { onValue, orchestrasRef } from '../utils/firebase';
 import { scrapeProfileImage } from '../utils/socialScraper';
 import OrquestaAnalysis from '../components/OrquestaAnalysis';
+import historicalStatsRaw from '../data/historicalStats.json';
+
+const historicalData = historicalStatsRaw as {
+    years: Record<string, {
+        orquestaCount: Record<string, number>;
+        monthlyOrquestaCount: Record<string, Record<string, number>>;
+        monthlyEventCount: Record<string, number>;
+    }>;
+    events: Event[];
+};
 
 interface FormacionesPageProps {
     events: Event[];
@@ -39,7 +49,33 @@ const FormacionesPage: React.FC<FormacionesPageProps> = ({ events }) => {
         const prevYear = currentYear - 1;
         const stats: Record<string, { currentCount: number; prevCount: number; lastEvent: string }> = {};
 
-        // 1. Calculate stats from events
+        // 1. Calculate stats from events (lives) and historicalStats (static)
+        const yearStats = historicalData.years[currentYear.toString()]?.orquestaCount || {};
+        const prevYearStats = historicalData.years[prevYear.toString()]?.orquestaCount || {};
+
+        // Merge historical stats into initial stats
+        Object.entries(yearStats).forEach(([orq, count]) => {
+            if (!stats[orq]) stats[orq] = { currentCount: 0, prevCount: 0, lastEvent: '' };
+            stats[orq].currentCount = count as number;
+        });
+        Object.entries(prevYearStats).forEach(([orq, count]) => {
+            if (!stats[orq]) stats[orq] = { currentCount: 0, prevCount: 0, lastEvent: '' };
+            stats[orq].prevCount = count as number;
+        });
+
+        // Add lastEvent from historical events
+        historicalData.events.forEach(event => {
+            const orquestas = event.orquesta.split(',').map(o => o.trim()).filter(o => o !== 'DJ' && o.length > 0);
+            orquestas.forEach(orq => {
+                if (!stats[orq]) {
+                    stats[orq] = { currentCount: 0, prevCount: 0, lastEvent: event.day };
+                }
+                if (!stats[orq].lastEvent || new Date(event.day) > new Date(stats[orq].lastEvent)) {
+                    stats[orq].lastEvent = event.day;
+                }
+            });
+        });
+
         events.forEach(event => {
             if (event.cancelado) return;
             const eventYear = new Date(event.day).getFullYear();
@@ -50,13 +86,14 @@ const FormacionesPage: React.FC<FormacionesPageProps> = ({ events }) => {
                     stats[orq] = { currentCount: 0, prevCount: 0, lastEvent: event.day };
                 }
 
-                if (eventYear === currentYear) {
+                // If year is in historical stats, we already got it, but let's be safe and only add if NOT in historical
+                if (eventYear === currentYear && !historicalData.years[currentYear.toString()]) {
                     stats[orq].currentCount += 1;
-                } else if (eventYear === prevYear) {
+                } else if (eventYear === prevYear && !historicalData.years[prevYear.toString()]) {
                     stats[orq].prevCount += 1;
                 }
 
-                if (new Date(event.day) > new Date(stats[orq].lastEvent)) {
+                if (!stats[orq].lastEvent || new Date(event.day) > new Date(stats[orq].lastEvent)) {
                     stats[orq].lastEvent = event.day;
                 }
             });

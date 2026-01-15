@@ -1,0 +1,99 @@
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+const DB_URL = "https://debelingoconangel-default-rtdb.europe-west1.firebasedatabase.app/events.json";
+const OUTPUT_FILE = path.join(__dirname, '../src/data/historicalStats.json');
+
+async function generate() {
+    const currentYear = new Date().getFullYear();
+    const prevYear = currentYear - 1;
+    const isForce = process.argv.includes('--force');
+
+    // Comprobar si ya tenemos los datos del año pasado
+    if (fs.existsSync(OUTPUT_FILE) && !isForce) {
+        try {
+            const existingData = JSON.parse(fs.readFileSync(OUTPUT_FILE, 'utf8'));
+            if (existingData.years && existingData.years[prevYear.toString()]) {
+                console.log(`ℹ️  Los datos de ${prevYear} ya están presentes en el archivo estático. Saltando consulta a DB.`);
+                return;
+            }
+        } catch (e) {
+            console.log("⚠️  Error leyendo archivo existente, regenerando...");
+        }
+    }
+
+    console.log("🚀 Iniciando generación de estadísticas históricas (Consultando Firebase)...");
+
+    try {
+        const response = await fetch(DB_URL);
+        const eventsData = await response.json();
+
+        const historicalStats = {
+            years: {},
+            events: [] // Todos los eventos históricos para análisis detallado
+        };
+
+        function getMonthName(dateStr) {
+            const date = new Date(dateStr);
+            const months = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+            return months[date.getMonth()];
+        }
+
+        Object.entries(eventsData).forEach(([id, event]) => {
+            if (event.cancelado) return;
+
+            const dayStr = event.day;
+            if (!dayStr) return;
+
+            const eventDate = new Date(dayStr);
+            const year = eventDate.getFullYear();
+
+            // Solo procesar años anteriores al actual
+            if (year >= currentYear) return;
+
+            historicalStats.events.push({ id, ...event });
+
+            const yearStr = year.toString();
+            if (!historicalStats.years[yearStr]) {
+                historicalStats.years[yearStr] = {
+                    orquestaCount: {},
+                    monthlyOrquestaCount: {},
+                    monthlyEventCount: {}
+                };
+            }
+
+            const month = getMonthName(dayStr);
+            const orquestas = (event.orquesta || "")
+                .split(',')
+                .map(o => o.trim())
+                .filter(o => o && o !== 'DJ');
+
+            const stats = historicalStats.years[yearStr];
+
+            stats.monthlyEventCount[month] = (stats.monthlyEventCount[month] || 0) + 1;
+
+            orquestas.forEach(orq => {
+                stats.orquestaCount[orq] = (stats.orquestaCount[orq] || 0) + 1;
+
+                if (!stats.monthlyOrquestaCount[month]) {
+                    stats.monthlyOrquestaCount[month] = {};
+                }
+                stats.monthlyOrquestaCount[month][orq] = (stats.monthlyOrquestaCount[month][orq] || 0) + 1;
+            });
+        });
+
+        fs.writeFileSync(OUTPUT_FILE, JSON.stringify(historicalStats, null, 2));
+        console.log(`✅ ¡Éxito! Archivo generado en ${OUTPUT_FILE}`);
+        console.log(`Años procesados: ${Object.keys(historicalStats.years).join(', ')}`);
+        console.log(`Total eventos históricos: ${historicalStats.events.length}`);
+
+    } catch (error) {
+        console.error("❌ Error generando estadísticas:", error);
+    }
+}
+
+generate();
