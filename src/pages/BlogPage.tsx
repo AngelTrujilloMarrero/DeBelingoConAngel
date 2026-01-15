@@ -34,12 +34,17 @@ const BlogPage = () => {
       {/* Header simple sin imagen de fondo */}
       <div className="bg-gradient-to-r from-gray-800 to-gray-900 p-6">
         <div className="text-center">
-          <div className="flex items-center justify-center mb-2">
+          <a
+            href="https://de-belingo-con-angel.hashnode.dev"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center mb-2 hover:opacity-80 transition-opacity"
+          >
             <BookOpen className="w-6 h-6 text-white mr-2" />
             <h1 className="text-2xl md:text-3xl font-bold text-white">
               Blog
             </h1>
-          </div>
+          </a>
           <p className="text-sm text-white/80 max-w-2xl mx-auto">
             Noticias y artículos de opinión sobre las verbenas y la cultura de Tenerife
           </p>
@@ -127,9 +132,9 @@ const BlogPage = () => {
                     </div>
 
                     {/* Tags */}
-                    {post.tags.length > 0 && (
+                    {(post.tags || []).length > 0 && (
                       <div className="flex flex-wrap gap-2 mb-4">
-                        {post.tags.slice(0, 3).map((tag) => (
+                        {(post.tags || []).slice(0, 3).map((tag) => (
                           <span
                             key={tag.slug}
                             className="inline-block px-2 py-1 bg-blue-500/30 text-blue-300 text-xs font-medium rounded"
@@ -137,9 +142,9 @@ const BlogPage = () => {
                             {tag.name}
                           </span>
                         ))}
-                        {post.tags.length > 3 && (
+                        {(post.tags || []).length > 3 && (
                           <span className="inline-block px-2 py-1 bg-white/20 text-white/60 text-xs font-medium rounded">
-                            +{post.tags.length - 3}
+                            +{(post.tags || []).length - 3}
                           </span>
                         )}
                       </div>

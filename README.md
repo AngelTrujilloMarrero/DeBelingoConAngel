@@ -44,6 +44,7 @@ Una plataforma digital que centraliza información sobre verbenas, conciertos y 
 - Sistema de respuestas anidadas
 - Interacción entre usuarios
 - Feedback directo
+- **Blog integrado** alojado en Hashnode con noticias sobre verbenas y eventos
 
 ### 📱 Responsive Design
 - Experiencia optimizada para móviles
@@ -77,6 +78,8 @@ Una plataforma digital que centraliza información sobre verbenas, conciertos y 
 - **ESLint** - Linting y calidad de código
 - **PostCSS** - Procesamiento de CSS
 - **pnpm** - Gestión de paquetes eficiente
+
+
 
 ## 📦 Instalación
 
@@ -182,6 +185,8 @@ Consulta [ROADMAP.md](./ROADMAP.md) para ver las funcionalidades planeadas y el 
 - **v1.3**: Integración con redes sociales
 - **v2.0**: Aplicación móvil nativa
 
+
+
 ## 📝 Historial de Cambios
 
 Todos los cambios importantes están documentados en [CHANGELOG.md](./CHANGELOG.md).
@@ -200,6 +205,7 @@ Este proyecto está licenciado bajo la [MIT License](./LICENSE).
 
 - **Proyecto**: De Belingo Con Ángel - Verbenas en Tenerife
 - **Web**: [https://debelingoconangel.web.app]
+- **Blog**: [https://de-belingo-con-angel.hashnode.dev](https://de-belingo-con-angel.hashnode.dev)
 - **Issues**: [GitHub Issues]
 
 ---

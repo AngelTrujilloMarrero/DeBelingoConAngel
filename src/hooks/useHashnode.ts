@@ -55,7 +55,7 @@ export const useHashnode = (host: string = 'de-belingo-con-angel.hashnode.dev') 
             query: `
               query GetPublicationPosts($host: String!) {
                 publication(host: $host) {
-                  posts(first: 10) {
+                  posts(first: 20) {
                     edges {
                       node {
                         id
@@ -97,7 +97,7 @@ export const useHashnode = (host: string = 'de-belingo-con-angel.hashnode.dev') 
 
         const data: HashnodeResponse = await response.json();
         const postsList = data.data.publication.posts.edges.map(edge => edge.node);
-        
+
         setPosts(postsList);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Error desconocido');

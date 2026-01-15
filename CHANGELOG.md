@@ -6,6 +6,13 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 
 ## [Unreleased]
 
+### Añadido
+- **📝 Blog integrado**: Inclusión de blog funcional alojado en Hashnode
+  - Página de blog accesible desde navegación principal
+  - Componente BlogPost para visualización individual de artículos
+  - Hook personalizado useHashnode para integración con API
+  - Contenido dinámico con noticias sobre verbenas y eventos
+
 ### Planeado
 - Sistema de notificaciones push
 - Modo offline con PWA

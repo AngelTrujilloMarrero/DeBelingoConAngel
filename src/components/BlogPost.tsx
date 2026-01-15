@@ -15,7 +15,7 @@ const BlogPostComponent = () => {
   useEffect(() => {
     const fetchPost = async () => {
       if (!slug) return;
-      
+
       try {
         setLoading(true);
         const postData = await getPostBySlug(slug);
@@ -123,9 +123,9 @@ const BlogPostComponent = () => {
             </div>
 
             {/* Tags */}
-            {post.tags.length > 0 && (
+            {(post.tags || []).length > 0 && (
               <div className="flex flex-wrap gap-2 mb-8">
-                {post.tags.map((tag) => (
+                {(post.tags || []).map((tag) => (
                   <span
                     key={tag.slug}
                     className="inline-flex items-center px-3 py-1 bg-blue-500/30 text-blue-300 text-xs font-medium rounded-full"
