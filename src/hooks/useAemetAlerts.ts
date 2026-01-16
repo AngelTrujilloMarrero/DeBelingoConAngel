@@ -89,15 +89,14 @@ export const useAemetAlerts = () => {
                     else if (title.toLowerCase().includes("este, sur y oeste")) zone = "Sur";
                     else if (title.toLowerCase().includes("cumbres")) zone = "Cumbres";
 
-                    // Extraer fecha (AEMET RSS suele ponerla en el título o descripción)
-                    // Formato típico: "Aviso de nivel amarillo por Lluvias en Norte de Tenerife desde las 00:00 del 15/01 hasta las..."
-                    const dateMatch = title.match(/(\d{2})\/(\d{2})/); // Simplificado para DD/MM
+                    // Extraer fecha (AEMET RSS usa formato DD-MM-YYYY en descripción)
+                    // Formato en descripción: "de 00:00 18-01-2026 WET (UTC) a 23:59 18-01-2026 WET (UTC)"
+                    const dateMatch = description.match(/(\d{2})-(\d{2})-(\d{4})/);
                     let alertDate = "";
                     if (dateMatch) {
-                        const year = new Date().getFullYear();
-                        alertDate = `${year}-${dateMatch[2]}-${dateMatch[1]}`;
+                        alertDate = `${dateMatch[3]}-${dateMatch[2]}-${dateMatch[1]}`;
                     } else {
-                        // Si no hay fecha en el título, a veces está en pubDate
+                        // Si no hay fecha en descripción, buscar en pubDate
                         const pubDate = item.querySelector("pubDate")?.textContent;
                         if (pubDate) {
                             const d = new Date(pubDate);

@@ -106,11 +106,12 @@ const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, alert }) => 
 
             {alert && (
                 <a
-                    href={alert.link}
+                    href={`https://www.aemet.es/es/eltiempo/prediccion/avisos?p=6596`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className={`transition-all duration-300 hover:scale-125 ${getAlertColor(alert.level || '')}`}
                     onClick={(e) => e.stopPropagation()}
+                    title={`Ver alerta ${alert.level} en web de AEMET`}
                 >
                     <AlertTriangle className="w-5 h-5 animate-pulse" />
                 </a>
@@ -142,10 +143,16 @@ const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, alert }) => 
                                     Alerta AEMET: {alert.level}
                                 </span>
                                 <p className="text-[11px] leading-tight text-gray-300 italic">{alert.phenomenon} en {alert.zone}</p>
-                                <div className="mt-1 flex items-center gap-1 text-[10px] text-blue-400 font-bold group/link">
+                                <a
+                                    href={`https://www.aemet.es/es/eltiempo/prediccion/avisos?p=6596`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="mt-1 flex items-center gap-1 text-[10px] text-blue-400 font-bold group/link hover:text-blue-300 transition-colors"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
                                     <ExternalLink className="w-3 h-3" />
-                                    Ver detalles de la alerta
-                                </div>
+                                    Ver alerta en AEMET
+                                </a>
                             </div>
                         )}
                     </div>
