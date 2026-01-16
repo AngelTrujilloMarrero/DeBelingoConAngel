@@ -1,16 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useHashnode, BlogPost } from '../hooks/useHashnode';
+import { useRSS, BlogPost as BlogPostType } from '../hooks/useRSS';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { ArrowLeft, Calendar, Clock, User, Tag } from 'lucide-react';
 
 const BlogPostComponent = () => {
   const { slug } = useParams<{ slug: string }>();
-  const [post, setPost] = useState<BlogPost | null>(null);
+  const [post, setPost] = useState<BlogPostType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { getPostBySlug } = useHashnode();
+  const { getPostBySlug } = useRSS();
 
   useEffect(() => {
     const fetchPost = async () => {
@@ -72,28 +72,17 @@ const BlogPostComponent = () => {
           Volver al Blog
         </Link>
 
-        {/* Article Header */}
+        {/* Article Header - Centrado sin imagen */}
         <article className="bg-gradient-to-br from-gray-800/50 to-gray-700/50 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden">
-          {/* Cover Image */}
-          {post.coverImage?.url && (
-            <div className="w-full h-64 md:h-96">
-              <img
-                src={post.coverImage.url}
-                alt={post.title}
-                className="w-full h-full object-cover"
-              />
-            </div>
-          )}
-
-          {/* Article Content */}
-          <div className="p-8">
+          {/* Article Content - Centrado */}
+          <div className="p-8 text-center">
             {/* Title */}
             <h1 className="text-3xl md:text-4xl font-bold text-white mb-6">
               {post.title}
             </h1>
 
             {/* Meta Information */}
-            <div className="flex flex-wrap items-center gap-4 text-sm text-white/60 mb-8 pb-6 border-b border-white/20">
+            <div className="flex flex-wrap justify-center items-center gap-4 text-sm text-white/60 mb-8 pb-6 border-b border-white/20">
               {/* Author */}
               <div className="flex items-center">
                 {post.author.profilePicture && (
@@ -124,7 +113,7 @@ const BlogPostComponent = () => {
 
             {/* Tags */}
             {(post.tags || []).length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-8">
+              <div className="flex flex-wrap justify-center gap-2 mb-8">
                 {(post.tags || []).map((tag) => (
                   <span
                     key={tag.slug}
@@ -137,15 +126,15 @@ const BlogPostComponent = () => {
               </div>
             )}
 
-            {/* Article Body */}
+            {/* Article Body - Centrado */}
             <div
-              className="prose prose-lg prose-invert max-w-none prose-headings:text-white prose-p:text-white/90 prose-strong:text-white prose-li:text-white/90 prose-blockquote:text-white/70 prose-code:text-white prose-blockquote:border-l-blue-500/50"
+              className="prose prose-lg prose-invert max-w-4xl mx-auto prose-headings:text-white prose-headings:text-center prose-p:text-white/90 prose-strong:text-white prose-li:text-white/90 prose-blockquote:text-white/70 prose-code:text-white prose-blockquote:border-l-blue-500/50 text-justify"
               dangerouslySetInnerHTML={{ __html: post.content.html }}
             />
 
             {/* Brief */}
             {post.brief && (
-              <div className="mt-8 pt-6 border-t border-white/20">
+              <div className="mt-8 pt-6 border-t border-white/20 max-w-4xl mx-auto text-center">
                 <h3 className="text-lg font-semibold text-white mb-2">Resumen</h3>
                 <p className="text-white/70 italic">{post.brief}</p>
               </div>
