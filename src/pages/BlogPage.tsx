@@ -35,16 +35,15 @@ const BlogPage = () => {
       <div className="bg-gradient-to-r from-gray-800 to-gray-900 p-6">
         <div className="text-center">
           <div className="flex items-center justify-center mb-2">
-            <a
-              href="https://de-belingo-con-angel.hashnode.dev"
-              target="_blank"
+            <BookOpen className="w-6 h-6 text-white mr-2" />
+            <a 
+              href="https://de-belingo-con-angel.hashnode.dev" 
+              target="_blank" 
               rel="noopener noreferrer"
-              className="flex items-center hover:opacity-80 transition-opacity"
+              className="text-2xl md:text-3xl font-bold text-white hover:text-blue-400 transition-colors"
+              title="Ir al blog para redactar artículos"
             >
-              <BookOpen className="w-6 h-6 text-white mr-2" />
-              <h1 className="text-2xl md:text-3xl font-bold text-white">
-                Blog
-              </h1>
+              Blog
             </a>
             <button
               onClick={refreshPosts}
@@ -61,66 +60,7 @@ const BlogPage = () => {
         </div>
       </div>
 
-      {/* Suscripción al newsletter */}
-      <div className="mx-4 md:mx-8 mt-4 mb-6 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-lg p-6">
-        <div className="text-center mb-4">
-          <h3 className="text-lg font-semibold text-white mb-2">
-            📧 Suscríbete a nuestro Newsletter
-          </h3>
-          <p className="text-white/70 text-sm mb-4">
-            Recibe las últimas noticias de De Belingo con Ángel directamente en tu correo
-          </p>
-        </div>
-        
-        <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-          <input
-            type="email"
-            placeholder="Tu correo electrónico"
-            className="flex-1 px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-white/40 focus:bg-white/15 transition-all"
-            id="newsletter-email"
-          />
-          <button
-            onClick={() => {
-              const email = (document.getElementById('newsletter-email') as HTMLInputElement)?.value;
-              if (email && email.includes('@')) {
-                window.open(`https://de-belingo-con-angel.hashnode.dev/newsletter?email=${encodeURIComponent(email)}`, '_blank');
-              } else {
-                alert('Por favor, introduce un correo electrónico válido');
-              }
-            }}
-            className="px-6 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium transition-colors"
-          >
-            Suscribirse
-          </button>
-        </div>
-        
-        <p className="text-center text-white/60 text-xs mt-3">
-          No spam. Solo noticias importantes sobre nuestras verbenas y eventos.
-        </p>
-      </div>
 
-      {/* Enlace al blog original siempre visible */}
-      <div className="mx-4 md:mx-8 mt-4 mb-6 bg-gradient-to-r from-blue-500/20 to-purple-500/20 border border-blue-500/30 rounded-lg p-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <div className="w-3 h-3 bg-blue-400 rounded-full mr-3"></div>
-            <div>
-              <p className="text-blue-300 font-medium text-sm">
-                📝 Blog oficial de De Belingo con Ángel
-              </p>
-              <p className="text-blue-200/70 text-xs mt-1">
-                Noticias reales y actualidad sobre música, verbenas y eventos en Tenerife
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={() => window.open('https://de-belingo-con-angel.hashnode.dev', '_blank')}
-            className="px-3 py-1 bg-blue-500/30 hover:bg-blue-500/40 rounded text-blue-300 text-sm transition-colors"
-          >
-            Ver todas las noticias →
-          </button>
-        </div>
-      </div>
 
       {/* Content */}
       <div className="p-4 md:p-8">
@@ -215,6 +155,44 @@ const BlogPage = () => {
             ))}
           </div>
         )}
+
+        {/* Suscripción al newsletter */}
+        <div className="mx-4 md:mx-8 mt-8 mb-6 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-lg p-6">
+          <div className="text-center mb-4">
+            <h3 className="text-lg font-semibold text-white mb-2">
+              📧 Suscríbete a nuestro Newsletter
+            </h3>
+            <p className="text-white/70 text-sm mb-4">
+              Recibe las últimas noticias de De Belingo con Ángel directamente en tu correo
+            </p>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
+            <input
+              type="email"
+              placeholder="Tu correo electrónico"
+              className="flex-1 px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-white/40 focus:bg-white/15 transition-all"
+              id="newsletter-email"
+            />
+            <button
+              onClick={() => {
+                const email = (document.getElementById('newsletter-email') as HTMLInputElement)?.value;
+                if (email && email.includes('@')) {
+                  window.open(`https://de-belingo-con-angel.hashnode.dev/newsletter?email=${encodeURIComponent(email)}`, '_blank');
+                } else {
+                  alert('Por favor, introduce un correo electrónico válido');
+                }
+              }}
+              className="px-6 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium transition-colors"
+            >
+              Suscribirse
+            </button>
+          </div>
+          
+          <p className="text-center text-white/60 text-xs mt-3">
+            No spam. Solo noticias importantes sobre nuestras verbenas y eventos.
+          </p>
+        </div>
       </div>
     </div>
   );
