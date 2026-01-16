@@ -132,13 +132,7 @@ const BlogPostComponent = () => {
               dangerouslySetInnerHTML={{ __html: post.content.html }}
             />
 
-            {/* Brief */}
-            {post.brief && (
-              <div className="mt-8 pt-6 border-t border-white/20 max-w-4xl mx-auto text-center">
-                <h3 className="text-lg font-semibold text-white mb-2">Resumen</h3>
-                <p className="text-white/70 italic">{post.brief}</p>
-              </div>
-            )}
+
           </div>
         </article>
       </div>

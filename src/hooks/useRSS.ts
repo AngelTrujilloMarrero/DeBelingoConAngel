@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { staticPosts } from '../data/staticPosts';
 
 export interface BlogPost {
   id: string;
@@ -29,66 +30,53 @@ let cachedPosts: BlogPost[] = [];
 let cachedAt: number = 0;
 let fetchPromise: Promise<BlogPost[]> | null = null;
 
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
+const CACHE_DURATION = 2 * 60 * 1000; // 2 minutos (más agresivo)
 
 // API GraphQL de Hashnode
 const HASHNODE_API = 'https://gql.hashnode.com/';
 const PUBLICATION_HOST = 'de-belingo-con-angel.hashnode.dev';
 
-// Fallback con posts actualizados manualmente
+// Función fallback que usa posts estáticos
 const getFallbackPosts = (): BlogPost[] => {
-  const now = new Date();
-  return [
-    {
-      id: 'fallback-1',
-      title: '🎵 De Belingo con Ángel: Música y Tradición Canaria',
-      brief: 'Descubre la historia de una de las orquestas más queridas de Tenerife. Llevamos la alegría de las verbenas a cada rincón de la isla con nuestra música tropical.',
-      slug: 'de-belingo-tradicion',
-      publishedAt: now.toISOString(),
-      readTimeInMinutes: 3,
-      author: {
-        name: 'De Belingo con Ángel',
-        profilePicture: 'https://debelingoconangel.web.app/fotos/dbca.jpg'
-      },
-      coverImage: { url: 'https://debelingoconangel.web.app/fotos/dbca.jpg' },
-      content: {
-        html: '<p>Contenido sobre la orquesta...</p>',
-        markdown: ''
-      },
-      tags: [
-        { name: 'Orquesta', slug: 'orquesta' },
-        { name: 'Música', slug: 'musica' }
-      ]
-    }
-  ];
+  console.log('Using fallback posts from static data');
+  return staticPosts.map(post => ({
+    ...post,
+    id: `fallback-${post.id}`,
+    url: `https://de-belingo-con-angel.hashnode.dev/${post.slug}`
+  }));
 };
 
+// Método principal usando la técnica exacta de belingo_viewer.html
 const fetchFromHashnodeAPI = async (): Promise<BlogPost[]> => {
   try {
-    console.log('Fetching from Hashnode GraphQL API...');
-    
+    console.log('Fetching from Hashnode GraphQL API (belingo_viewer.html method)...');
+
+    const timestamp = new Date().getTime();
+
+    // Query mejorada con contenido completo del artículo
     const query = `
-      query getPublicationPosts {
-        publication(host: "${PUBLICATION_HOST}") {
+      query GetUserArticles($host: String!) {
+        publication(host: $host) {
+          id
           posts(first: 10) {
             edges {
               node {
                 id
                 title
                 brief
-                slug
+                url
+                publishedAt
                 coverImage {
                   url
-                }
-                publishedAt
-                readTimeInMinutes
-                author {
-                  name
-                  profilePicture
                 }
                 content {
                   html
                   markdown
+                }
+                readTimeInMinutes
+                author {
+                  name
+                  profilePicture
                 }
                 tags {
                   name
@@ -100,51 +88,70 @@ const fetchFromHashnodeAPI = async (): Promise<BlogPost[]> => {
         }
       }
     `;
-    
-    const response = await fetch(HASHNODE_API, {
+
+    // Headers exactamente igual que belingo_viewer.html
+    const response = await fetch(`${HASHNODE_API}?nocache=${timestamp}`, {
       method: 'POST',
-      headers: {
+      headers: { 
         'Content-Type': 'application/json',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
       },
-      body: JSON.stringify({ query }),
-      signal: AbortSignal.timeout(15000) // 15 segundos timeout
+      body: JSON.stringify({
+        query: query,
+        variables: { 
+          host: PUBLICATION_HOST,
+          // Este valor no hace nada en la lógica pero cambia el hash de la petición
+          _cb: timestamp 
+        }
+      }),
+      cache: 'no-store',
+      signal: AbortSignal.timeout(15000)
     });
 
     if (!response.ok) {
       throw new Error(`Hashnode API error: ${response.status} ${response.statusText}`);
     }
 
-    const data = await response.json();
+    const result = await response.json();
+
+    if (result.errors) {
+      throw new Error(result.errors[0].message);
+    }
     
-    if (data.errors) {
-      throw new Error(`GraphQL errors: ${data.errors.map((e: any) => e.message).join(', ')}`);
+    if (!result.data?.publication) {
+      throw new Error("Publicación no encontrada.");
     }
 
-    const posts = data.data?.publication?.posts?.edges?.map((edge: any) => edge.node) || [];
-    
+    const posts = result.data.publication.posts.edges.map((edge: any) => edge.node);
+
     if (posts.length === 0) {
       console.warn('No posts found from Hashnode API');
       return [];
     }
 
     console.log(`Successfully fetched ${posts.length} posts from Hashnode API`);
+
+    // Convertir al formato BlogPost con datos reales
     return posts.map((post: any) => ({
       id: post.id,
       title: post.title,
-      brief: post.brief,
-      slug: post.slug,
+      brief: post.brief || '',
+      slug: post.url ? post.url.split('/').pop() : post.id,
       coverImage: post.coverImage,
       publishedAt: post.publishedAt,
-      readTimeInMinutes: post.readTimeInMinutes,
+      readTimeInMinutes: post.readTimeInMinutes || 3,
       author: {
         name: post.author?.name || 'De Belingo con Ángel',
-        profilePicture: post.author?.profilePicture
+        profilePicture: post.author?.profilePicture || 'https://debelingoconangel.web.app/fotos/dbca.jpg'
       },
       content: {
-        html: post.content?.html || '',
-        markdown: post.content?.markdown || ''
+        html: post.content?.html || `<p>${post.brief || ''}</p>`,
+        markdown: post.content?.markdown || post.brief || ''
       },
-      tags: post.tags || []
+      tags: post.tags || [],
+      url: post.url
     }));
 
   } catch (error) {
@@ -185,12 +192,17 @@ const fetchRSSDirect = async (): Promise<BlogPost[]> => {
   try {
     console.log('Trying direct RSS fetch...');
     
-    const response = await fetch(`https://de-belingo-con-angel.hashnode.dev/rss.xml`, {
+    const timestamp = Date.now();
+    const response = await fetch(`https://de-belingo-con-angel.hashnode.dev/rss.xml?_t=${timestamp}&force_refresh=1`, {
       headers: {
-        'Accept': 'application/rss+xml, application/xml, text/xml',
-        'User-Agent': 'Mozilla/5.0 (compatible; BlogReader/1.0)'
+        'Accept': 'application/rss+xml, application/xml, text/xml, */*',
+        'User-Agent': 'Mozilla/5.0 (compatible; DebelingoBlog/1.0; +https://debelingoconangel.web.app)',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache'
       },
-      signal: AbortSignal.timeout(10000)
+      cache: 'no-store',
+      mode: 'cors',
+      signal: AbortSignal.timeout(15000)
     });
 
     if (!response.ok) {
@@ -326,11 +338,24 @@ export const useRSS = () => {
       setLoading(true);
       setError(null);
       
-      // Limpiar caché para forzar nueva carga
+      // Limpieza agresiva de caché como en belingo_viewer.html
       cachedPosts = [];
       cachedAt = 0;
       fetchPromise = null;
       
+      // Forzar limpieza de caches del navegador
+      if ('caches' in window) {
+        try {
+          const cacheNames = await caches.keys();
+          await Promise.all(
+            cacheNames.map(cacheName => caches.delete(cacheName))
+          );
+        } catch (e) {
+          console.warn('Could not clear caches:', e);
+        }
+      }
+      
+      // Forzar recarga completa sin caché
       const data = await fetchBlogPosts();
       setPosts(data);
       

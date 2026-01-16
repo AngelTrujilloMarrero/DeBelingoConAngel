@@ -155,44 +155,6 @@ const BlogPage = () => {
             ))}
           </div>
         )}
-
-        {/* Suscripción al newsletter */}
-        <div className="mx-4 md:mx-8 mt-8 mb-6 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-lg p-6">
-          <div className="text-center mb-4">
-            <h3 className="text-lg font-semibold text-white mb-2">
-              📧 Suscríbete a nuestro Newsletter
-            </h3>
-            <p className="text-white/70 text-sm mb-4">
-              Recibe las últimas noticias de De Belingo con Ángel directamente en tu correo
-            </p>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto">
-            <input
-              type="email"
-              placeholder="Tu correo electrónico"
-              className="flex-1 px-4 py-2 bg-white/10 border border-white/20 rounded-lg text-white placeholder-white/50 focus:outline-none focus:border-white/40 focus:bg-white/15 transition-all"
-              id="newsletter-email"
-            />
-            <button
-              onClick={() => {
-                const email = (document.getElementById('newsletter-email') as HTMLInputElement)?.value;
-                if (email && email.includes('@')) {
-                  window.open(`https://de-belingo-con-angel.hashnode.dev/newsletter?email=${encodeURIComponent(email)}`, '_blank');
-                } else {
-                  alert('Por favor, introduce un correo electrónico válido');
-                }
-              }}
-              className="px-6 py-2 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium transition-colors"
-            >
-              Suscribirse
-            </button>
-          </div>
-          
-          <p className="text-center text-white/60 text-xs mt-3">
-            No spam. Solo noticias importantes sobre nuestras verbenas y eventos.
-          </p>
-        </div>
       </div>
     </div>
   );
