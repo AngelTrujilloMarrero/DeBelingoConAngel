@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Calendar, Clock, MapPin, Music2, Download, Navigation, Plus, Edit, Trash2, Info, ExternalLink, ChevronDown, Facebook, Instagram, Globe, Phone } from 'lucide-react';
+import { Calendar, Clock, MapPin, Music2, Download, Navigation, Plus, Edit, Trash2, Info, ExternalLink, ChevronDown, Facebook, Instagram, Globe, Phone, Bus } from 'lucide-react';
 import { onValue, orchestrasRef } from '../utils/firebase';
 import { orchestraDetails } from '../data/orchestras';
 import { Event, RecentActivityItem } from '../types';
 import { groupEventsByDay, sortEventsByDateTime, formatDayName, getLastUpdateDate } from '../utils/helpers';
 import WeatherIcon from './WeatherIcon';
+import TITSALogo from './TITSALogo';
 import { useAemetAlerts } from '../hooks/useAemetAlerts';
 
 interface EventsListProps {
@@ -43,6 +44,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
     );
   };
 
+
   const getOrchestraInfo = useMemo(() => (name: string) => {
     const cleanName = name.trim();
     const dbInfo = Object.values(dbOrchestras).find((o: any) => o.name === cleanName) || {};
@@ -62,6 +64,12 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
     const address = event.lugar ? `${event.lugar}, ${event.municipio}, Tenerife` : `${event.municipio}, Tenerife`;
     const encodedAddress = encodeURIComponent(address);
     return `https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}&travelmode=driving`;
+  };
+
+  const generateTransitLink = (event: Event) => {
+    const address = event.lugar ? `${event.lugar}, ${event.municipio}, Tenerife` : `${event.municipio}, Tenerife`;
+    const encodedAddress = encodeURIComponent(address);
+    return `https://www.google.com/maps/dir/?api=1&destination=${encodedAddress}&travelmode=transit`;
   };
 
   return (
@@ -127,6 +135,23 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                             municipio={event.municipio}
                             alert={getAlertForEvent(event.municipio, event.day)}
                           />
+                          <a
+                            href={generateTransitLink(event)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-green-500/20 to-green-600/20 text-green-300 rounded-lg text-sm font-medium border border-green-500/30 hover:from-green-500/30 hover:to-green-600/30 hover:border-green-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-green-500/20"
+                            title={`Cómo llegar en guagua a ${event.municipio}`}
+                          >
+                            <TITSALogo />
+                          </a>
+                          <button
+                            onClick={() => toggleEvent(event.id)}
+                            className="p-1.5 text-gray-400 hover:text-white transition-colors"
+                            title="Ver detalles de la formación"
+                          >
+                            <ChevronDown className={`w-5 h-5 transition-transform duration-300 ${expandedEventIds.includes(event.id) ? 'rotate-180' : ''}`} />
+                          </button>
+
                           <a
                             href={generateDirectionsLink(event)}
                             target="_blank"

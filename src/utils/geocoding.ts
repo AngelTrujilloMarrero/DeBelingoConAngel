@@ -33,6 +33,16 @@ export const municipioMapping: MunicipioMapping = {
   "Silos": "Los Silos"
 };
 
+export const normalizarMunicipio = (municipio: string): string => {
+  if (!municipio) return '';
+  const search = municipio.trim();
+  for (const [key, value] of Object.entries(municipioMapping)) {
+    if (search.includes(key)) return value;
+  }
+  return search;
+};
+
+
 // Coordenadas estáticas para evitar llamadas a la API
 export const municipioCoordinates: Record<string, Coordinates> = {
   "Adeje": { lat: 28.1263, lng: -16.7433 },

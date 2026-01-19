@@ -3,7 +3,7 @@ import L from 'leaflet';
 // CORRECCIÓN: Se renombra el icono 'Map' a 'MapIcon' para evitar conflictos con el objeto nativo Map de JS.
 import { Map as MapIcon, Navigation, AlertCircle, MapPin, Calendar, Clock, Search } from 'lucide-react';
 import { Event } from '../types';
-import { geocodeAddress, municipioMapping } from '../utils/geocoding';
+import { geocodeAddress, municipioMapping, normalizarMunicipio } from '../utils/geocoding';
 import 'leaflet/dist/leaflet.css';
 
 interface MapComponentProps {
@@ -91,15 +91,41 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
 
       mapInstanceRef.current = map;
 
-      // Custom red marker icon
-      const redIcon = new L.Icon({
-        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-        iconSize: [40, 66],
-        iconAnchor: [20, 66],
-        popupAnchor: [1, -34],
-        shadowSize: [66, 66]
-      });
+      // Función para obtener icono según zona del evento
+      const getMarkerIcon = (municipio: string) => {
+        const colorMap: Record<string, string> = {
+          'Santa Cruz de Tenerife': 'red',
+          'San Cristóbal de La Laguna': 'blue',
+          'Adeje': 'green',
+          'Arona': 'yellow',
+          'Granadilla de Abona': 'violet',
+          'Puerto de la Cruz': 'orange',
+          'La Orotava': 'grey',
+          'Los Realejos': 'black',
+          'Candelaria': 'gold',
+          'Güímar': 'red'
+        };
+
+        const municipioNorm = normalizarMunicipio(municipio);
+        const color = colorMap[municipioNorm] || 'red';
+
+        return new L.Icon({
+          iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
+          shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+          iconSize: [40, 66],
+          iconAnchor: [20, 66],
+          popupAnchor: [1, -34],
+          shadowSize: [66, 66]
+        });
+      };
+
+      // Función para obtener emoji según tipo de evento
+      const getEventEmoji = (event: Event) => {
+        if (event.tipo === 'Baile Infantil') return '👶';
+        if (event.tipo === 'Orquesta') return '🎵';
+        if (event.tipo === 'DJ') return '🎧';
+        return '🎉';
+      };
 
       // Load markers
       const loadMarkers = async () => {
@@ -143,32 +169,38 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
               const googleMapsLink = `https://www.google.com/maps?q=${coordinates.lat},${coordinates.lng}`;
 
               let popupContent = `
-                <div style="padding: 8px; min-width: 250px; max-height: 300px; overflow-y: auto;">
-                  <div style="font-weight: bold; font-size: 16px; color: #1e40af; text-align: center; border-bottom: 1px solid #ccc; padding-bottom: 8px; margin-bottom: 8px;">
+                <div style="padding: 8px; min-width: 280px; max-height: 350px; overflow-y: auto;">
+                  <div style="font-weight: bold; font-size: 18px; color: #1e40af; text-align: center; border-bottom: 2px solid #ccc; padding-bottom: 8px; margin-bottom: 8px; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-radius: 4px;">
                     📍 ${locationName}
                   </div>`;
 
               eventsAtLocation.forEach(event => {
                 const eventDay = new Date(event.day).toLocaleDateString('es-ES', { weekday: 'long' });
+                const eventEmoji = getEventEmoji(event);
+                const tipoColor = event.tipo === 'Baile Infantil' ? '#10b981' :
+                  event.tipo === 'DJ' ? '#8b5cf6' : '#3b82f6';
+
                 popupContent += `
-                  <div style="border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 8px;">
-                    <div style="font-weight: bold; font-size: 1.1em; color: #1e40af; margin-bottom: 4px;">${event.orquesta}</div>
+                  <div style="border-bottom: 1px solid #e5e7eb; padding-bottom: 8px; margin-bottom: 8px; background: #f9fafb; border-radius: 4px; padding: 8px;">
+                    <div style="font-weight: bold; font-size: 1.1em; color: ${tipoColor}; margin-bottom: 4px;">${eventEmoji} ${event.orquesta}</div>
                     <div><strong>📅 Fecha:</strong> ${event.day} (${eventDay})</div>
                     <div><strong>🕐 Hora:</strong> ${event.hora}</div>
+                    ${event.tipo !== 'Baile Normal' ? `<div style="background: ${tipoColor}20; color: ${tipoColor}; padding: 2px 6px; border-radius: 4px; display: inline-block; font-size: 0.85em; margin-top: 4px;">${event.tipo}</div>` : ''}
                   </div>
                 `;
               });
 
               popupContent += `
-                  <div style="text-align: center; margin-top: 8px;">
-                    <a href="${googleMapsLink}" target="_blank" rel="noopener noreferrer" style="background: #3b82f6; color: white; padding: 6px 12px; border-radius: 4px; text-decoration: none; font-size: 14px;">
+                  <div style="text-align: center; margin-top: 8px; display: flex; gap: 8px; justify-content: center;">
+                    <a href="${googleMapsLink}" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                       🧭 Cómo llegar
                     </a>
                   </div>
                 </div>
               `;
 
-              const marker = L.marker([coordinates.lat, coordinates.lng], { icon: redIcon })
+              const markerIcon = getMarkerIcon(eventsAtLocation[0].municipio);
+              const marker = L.marker([coordinates.lat, coordinates.lng], { icon: markerIcon })
                 .bindPopup(popupContent);
 
               marker.addTo(mapInstanceRef.current);
