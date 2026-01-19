@@ -167,6 +167,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
 
               const locationName = eventsAtLocation[0].lugar || municipioMapping[eventsAtLocation[0].municipio] || eventsAtLocation[0].municipio;
               const googleMapsLink = `https://www.google.com/maps?q=${coordinates.lat},${coordinates.lng}`;
+              const transitLink = `https://www.google.com/maps/dir/?api=1&destination=${coordinates.lat},${coordinates.lng}&travelmode=transit`;
 
               let popupContent = `
                 <div style="padding: 8px; min-width: 280px; max-height: 350px; overflow-y: auto;">
@@ -191,9 +192,12 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
               });
 
               popupContent += `
-                  <div style="text-align: center; margin-top: 8px; display: flex; gap: 8px; justify-content: center;">
-                    <a href="${googleMapsLink}" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 14px; font-weight: 600; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                  <div style="text-align: center; margin-top: 8px; display: flex; flex-direction: column; gap: 8px; justify-content: center;">
+                    <a href="${googleMapsLink}" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 10px 16px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: flex; items-center; justify-content: center; gap: 8px;">
                       🧭 Cómo llegar
+                    </a>
+                    <a href="${transitLink}" target="_blank" rel="noopener noreferrer" style="background: linear-gradient(135deg, #00a54e 0%, #00823d 100%); color: white; padding: 8px 16px; border-radius: 8px; text-decoration: none; font-size: 14px; font-weight: 600; box-shadow: 0 4px 6px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px;">
+                      <img src="https://movil.titsa.com/images/logo-titsa.png" alt="TITSA" style="height: 18px; width: auto; brightness: 1.5; filter: contrast(1.2);">
                     </a>
                   </div>
                 </div>

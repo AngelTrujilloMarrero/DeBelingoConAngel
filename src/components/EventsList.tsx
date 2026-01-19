@@ -139,7 +139,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                             href={generateTransitLink(event)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-green-500/20 to-green-600/20 text-green-300 rounded-lg text-sm font-medium border border-green-500/30 hover:from-green-500/30 hover:to-green-600/30 hover:border-green-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-green-500/20"
+                            className="flex items-center px-3 py-1.5 bg-gradient-to-r from-green-500/20 to-green-600/20 text-green-300 rounded-lg text-sm font-medium border border-green-500/30 hover:from-green-500/30 hover:to-green-600/30 hover:border-green-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-green-500/20"
                             title={`Cómo llegar en guagua a ${event.municipio}`}
                           >
                             <TITSALogo />

@@ -237,13 +237,12 @@ const NearbyEvents: React.FC<NearbyEventsProps> = ({ events, userLocation }) => 
                         href={transportRoute}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-1 px-2 py-1 bg-green-600/30 hover:bg-green-600/40 text-green-200 rounded text-xs border border-green-600/50 hover:border-green-500/60 transition-all duration-300"
+                        className="flex items-center px-3 py-1.5 bg-gradient-to-r from-green-500/20 to-green-600/20 text-green-300 rounded-lg text-sm font-medium border border-green-500/30 hover:from-green-500/30 hover:to-green-600/30 hover:border-green-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-green-500/20"
                         title="Cómo llegar en transporte público"
                       >
                         <TITSALogo />
                       </a>
                     )}
-
                     {/* Coche */}
                     {directionsLink && (
                       <a
@@ -325,31 +324,7 @@ const NearbyEvents: React.FC<NearbyEventsProps> = ({ events, userLocation }) => 
                     </div>
 
                     {/* Alternativas */}
-                    <div>
-                      <h4 className="font-semibold text-white mb-2">Alternativas:</h4>
-                      <div className="space-y-2">
-                        {taxiInfo.alternativas.filter(alt => alt.disponible).map((alt, idx) => (
-                          <div key={idx} className="bg-gray-700/50 p-3 rounded flex items-center justify-between">
-                            <span className="font-medium text-white">{alt.nombre}</span>
-                            <div className="flex gap-2">
-                              {alt.app && (
-                                <span className="text-xs text-gray-400">{alt.app}</span>
-                              )}
-                              {alt.web && (
-                                <a
-                                  href={alt.web}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-blue-400 hover:text-blue-300"
-                                >
-                                  <ExternalLink className="w-4 h-4" />
-                                </a>
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
+                    {/* Sin alternativas de VTC por petición del usuario */}
                   </div>
                 );
               })()}
