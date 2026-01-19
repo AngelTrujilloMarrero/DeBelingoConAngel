@@ -4,14 +4,14 @@
       "empresas": [
         {
           "nombre": "Radio Taxi Santa Cruz",
-          "telefono": "+34 922 272 727",
+          "telefono": "+34 922 226 666",
           "web": "https://www.radiotaxisantacruz.com/",
           "centralita": "+34 922 226 666"
         },
         {
           "nombre": "Teletaxi Santa Cruz",
-          "telefono": "+34 922 240 751",
-          "web": "https://www.teletaxist.com/",
+          "telefono": "+34 922 607 037",
+          "web": null,
           "app": "Teletaxi App"
         },
         {
@@ -24,7 +24,7 @@
         {
           "nombre": "Uber",
           "disponible": true,
-          "web": "https://www.uber.com/es/cities/santa-cruz-de-tenerife/",
+          "web": "https://www.uber.com/es/es-es/r/cities/santa-cruz-de-tenerife/",
           "app": "Uber App"
         },
         {
@@ -36,7 +36,7 @@
         {
           "nombre": "Cabify",
           "disponible": true,
-          "web": "https://www.cabify.com/es/tenerife",
+          "web": "https://www.cabify.com/es/",
           "app": "Cabify App"
         }
       ]
@@ -45,9 +45,9 @@
       "empresas": [
         {
           "nombre": "Radio Taxi La Laguna",
-          "telefono": "+34 922 630 000",
+          "telefono": "+34 922 255 555",
           "web": null,
-          "centralita": "+34 922 634 444"
+          "centralita": "+34 922 255 555"
         },
         {
           "nombre": "Taxi Laguna",
@@ -59,7 +59,7 @@
         {
           "nombre": "Uber",
           "disponible": true,
-          "web": "https://www.uber.com/es/cities/santa-cruz-de-tenerife/",
+          "web": "https://www.uber.com/es/es-es/r/cities/santa-cruz-de-tenerife/",
           "app": "Uber App"
         },
         {
@@ -71,7 +71,7 @@
         {
           "nombre": "Cabify",
           "disponible": true,
-          "web": "https://www.cabify.com/es/tenerife",
+          "web": "https://www.cabify.com/es/",
           "app": "Cabify App"
         }
       ]
@@ -82,7 +82,8 @@
           "nombre": "Radio Taxi Adeje",
           "telefono": "+34 922 710 710",
           "web": null,
-          "centralita": "+34 922 716 161"
+          "centralita": "+34 922 716 161",
+          "reserva_rapida": "922 979 293"
         },
         {
           "nombre": "Taxi Costa Adeje",
@@ -94,7 +95,7 @@
         {
           "nombre": "Uber",
           "disponible": true,
-          "web": "https://www.uber.com/es/cities/tenerife-sur/",
+          "web": "https://www.uber.com/es/es-es/r/cities/tenerife-sur/",
           "app": "Uber App"
         },
         {
@@ -106,13 +107,20 @@
         {
           "nombre": "Cabify",
           "disponible": true,
-          "web": "https://www.cabify.com/es/tenerife",
+          "web": "https://www.cabify.com/es/",
           "app": "Cabify App"
         }
       ]
     },
     "Arona": {
       "empresas": [
+        {
+          "nombre": "Servitaxi Tenesur Arona",
+          "telefono": "+34 922 747 511",
+          "web": null,
+          "centralita": "+34 922 747 511",
+          "complemento": "922 796 608"
+        },
         {
           "nombre": "Radio Taxi Arona",
           "telefono": "+34 922 787 878",
@@ -129,7 +137,7 @@
         {
           "nombre": "Uber",
           "disponible": true,
-          "web": "https://www.uber.com/es/cities/tenerife-sur/",
+          "web": "https://www.uber.com/es/es-es/r/cities/tenerife-sur/",
           "app": "Uber App"
         },
         {
@@ -141,7 +149,7 @@
         {
           "nombre": "Cabify",
           "disponible": true,
-          "web": "https://www.cabify.com/es/tenerife",
+          "web": "https://www.cabify.com/es/",
           "app": "Cabify App"
         }
       ]
@@ -158,13 +166,19 @@
           "nombre": "Taxi El Médano",
           "telefono": "+34 922 548 548",
           "web": null
+        },
+        {
+          "nombre": "Taxi Aeropuerto Tenerife Sur",
+          "telefono": "+34 922 397 074",
+          "web": null,
+          "alternativo": "922 397 475"
         }
       ],
       "alternativas": [
         {
           "nombre": "Uber",
           "disponible": true,
-          "web": "https://www.uber.com/es/cities/tenerife-sur/",
+          "web": "https://www.uber.com/es/es-es/r/cities/tenerife-sur/",
           "app": "Uber App"
         },
         {
@@ -193,7 +207,7 @@
         {
           "nombre": "Uber",
           "disponible": true,
-          "web": "https://www.uber.com/es/cities/puerto-de-la-cruz/",
+          "web": "https://www.uber.com/es/es-es/r/cities/puerto-de-la-cruz/",
           "app": "Uber App"
         },
         {
@@ -205,7 +219,7 @@
         {
           "nombre": "Cabify",
           "disponible": true,
-          "web": "https://www.cabify.com/es/tenerife",
+          "web": "https://www.cabify.com/es/",
           "app": "Cabify App"
         }
       ]
@@ -214,16 +228,17 @@
       "empresas": [
         {
           "nombre": "Radio Taxi La Orotava",
-          "telefono": "+34 922 330 330",
+          "telefono": "+34 922 330 080",
           "web": null,
-          "centralita": "+34 922 332 332"
+          "centralita": "+34 922 332 332",
+          "alternativo": "922 331 199"
         }
       ],
       "alternativas": [
         {
           "nombre": "Uber",
           "disponible": true,
-          "web": "https://www.uber.com/es/cities/puerto-de-la-cruz/",
+          "web": "https://www.uber.com/es/es-es/r/cities/puerto-de-la-cruz/",
           "app": "Uber App"
         },
         {
@@ -247,7 +262,7 @@
         {
           "nombre": "Uber",
           "disponible": true,
-          "web": "https://www.uber.com/es/cities/puerto-de-la-cruz/",
+          "web": "https://www.uber.com/es/es-es/r/cities/puerto-de-la-cruz/",
           "app": "Uber App"
         },
         {
@@ -264,14 +279,15 @@
           "nombre": "Radio Taxi Candelaria",
           "telefono": "+34 922 500 500",
           "web": null,
-          "centralita": "+34 922 503 503"
+          "centralita": "+34 922 503 503",
+          "servicio_24h": "922 500 123"
         }
       ],
       "alternativas": [
         {
           "nombre": "Uber",
           "disponible": true,
-          "web": "https://www.uber.com/es/cities/santa-cruz-de-tenerife/",
+          "web": "https://www.uber.com/es/es-es/r/cities/santa-cruz-de-tenerife/",
           "app": "Uber App"
         },
         {
@@ -295,7 +311,7 @@
         {
           "nombre": "Uber",
           "disponible": true,
-          "web": "https://www.uber.com/es/cities/santa-cruz-de-tenerife/",
+          "web": "https://www.uber.com/es/es-es/r/cities/santa-cruz-de-tenerife/",
           "app": "Uber App"
         },
         {
@@ -319,7 +335,7 @@
         {
           "nombre": "Uber",
           "disponible": true,
-          "web": "https://www.uber.com/es/cities/santa-cruz-de-tenerife/",
+          "web": "https://www.uber.com/es/es-es/r/cities/santa-cruz-de-tenerife/",
           "app": "Uber App"
         },
         {
@@ -343,7 +359,7 @@
         {
           "nombre": "Uber",
           "disponible": true,
-          "web": "https://www.uber.com/es/cities/santa-cruz-de-tenerife/",
+          "web": "https://www.uber.com/es/es-es/r/cities/santa-cruz-de-tenerife/",
           "app": "Uber App"
         },
         {
@@ -367,7 +383,7 @@
         {
           "nombre": "Uber",
           "disponible": true,
-          "web": "https://www.uber.com/es/cities/santa-cruz-de-tenerife/",
+          "web": "https://www.uber.com/es/es-es/r/cities/santa-cruz-de-tenerife/",
           "app": "Uber App"
         },
         {
@@ -391,7 +407,7 @@
         {
           "nombre": "Uber",
           "disponible": true,
-          "web": "https://www.uber.com/es/cities/santa-cruz-de-tenerife/",
+          "web": "https://www.uber.com/es/es-es/r/cities/santa-cruz-de-tenerife/",
           "app": "Uber App"
         },
         {
@@ -415,7 +431,7 @@
         {
           "nombre": "Uber",
           "disponible": true,
-          "web": "https://www.uber.com/es/cities/santa-cruz-de-tenerife/",
+          "web": "https://www.uber.com/es/es-es/r/cities/santa-cruz-de-tenerife/",
           "app": "Uber App"
         },
         {
@@ -439,7 +455,7 @@
         {
           "nombre": "Uber",
           "disponible": true,
-          "web": "https://www.uber.com/es/cities/tenerife-sur/",
+          "web": "https://www.uber.com/es/es-es/r/cities/tenerife-sur/",
           "app": "Uber App"
         },
         {
@@ -463,7 +479,7 @@
         {
           "nombre": "Uber",
           "disponible": true,
-          "web": "https://www.uber.com/es/cities/santa-cruz-de-tenerife/",
+          "web": "https://www.uber.com/es/es-es/r/cities/santa-cruz-de-tenerife/",
           "app": "Uber App"
         },
         {
@@ -487,7 +503,7 @@
         {
           "nombre": "Uber",
           "disponible": true,
-          "web": "https://www.uber.com/es/cities/santa-cruz-de-tenerife/",
+          "web": "https://www.uber.com/es/es-es/r/cities/santa-cruz-de-tenerife/",
           "app": "Uber App"
         },
         {
@@ -504,14 +520,15 @@
           "nombre": "Radio Taxi Fasnia",
           "telefono": "+34 922 540 540",
           "web": null,
-          "centralita": "+34 922 543 543"
+          "centralita": "+34 922 543 543",
+          "coordinacion": "+34 922 662 660"
         }
       ],
       "alternativas": [
         {
           "nombre": "Uber",
           "disponible": true,
-          "web": "https://www.uber.com/es/cities/santa-cruz-de-tenerife/",
+          "web": "https://www.uber.com/es/es-es/r/cities/santa-cruz-de-tenerife/",
           "app": "Uber App"
         },
         {
@@ -528,14 +545,15 @@
           "nombre": "Radio Taxi Garachico",
           "telefono": "+34 922 840 840",
           "web": null,
-          "centralita": "+34 922 843 843"
+          "centralita": "+34 922 843 843",
+          "parada_oficial": "922 830 056"
         }
       ],
       "alternativas": [
         {
           "nombre": "Uber",
           "disponible": true,
-          "web": "https://www.uber.com/es/cities/puerto-de-la-cruz/",
+          "web": "https://www.uber.com/es/es-es/r/cities/puerto-de-la-cruz/",
           "app": "Uber App"
         },
         {
@@ -552,14 +570,16 @@
           "nombre": "Radio Taxi Guía de Isora",
           "telefono": "+34 922 850 850",
           "web": null,
-          "centralita": "+34 922 853 853"
+          "centralita": "+34 922 853 853",
+          "adicional1": "922 640 000",
+          "adicional2": "922 850 218"
         }
       ],
       "alternativas": [
         {
           "nombre": "Uber",
           "disponible": true,
-          "web": "https://www.uber.com/es/cities/tenerife-sur/",
+          "web": "https://www.uber.com/es/es-es/r/cities/tenerife-sur/",
           "app": "Uber App"
         },
         {
@@ -576,14 +596,16 @@
           "nombre": "Radio Taxi Icod",
           "telefono": "+34 922 810 810",
           "web": null,
-          "centralita": "+34 922 813 813"
+          "centralita": "+34 922 813 813",
+          "contacto1": "922 122 272",
+          "contacto2": "922 813 346"
         }
       ],
       "alternativas": [
         {
           "nombre": "Uber",
           "disponible": true,
-          "web": "https://www.uber.com/es/cities/puerto-de-la-cruz/",
+          "web": "https://www.uber.com/es/es-es/r/cities/puerto-de-la-cruz/",
           "app": "Uber App"
         },
         {
@@ -607,7 +629,7 @@
         {
           "nombre": "Uber",
           "disponible": true,
-          "web": "https://www.uber.com/es/cities/puerto-de-la-cruz/",
+          "web": "https://www.uber.com/es/es-es/r/cities/puerto-de-la-cruz/",
           "app": "Uber App"
         },
         {
@@ -624,14 +646,15 @@
           "nombre": "Radio Taxi Los Silos",
           "telefono": "+34 922 830 830",
           "web": null,
-          "centralita": "+34 922 833 833"
+          "centralita": "+34 922 833 833",
+          "taxi_adaptado": "608 668 193"
         }
       ],
       "alternativas": [
         {
           "nombre": "Uber",
           "disponible": true,
-          "web": "https://www.uber.com/es/cities/puerto-de-la-cruz/",
+          "web": "https://www.uber.com/es/es-es/r/cities/puerto-de-la-cruz/",
           "app": "Uber App"
         },
         {
@@ -645,6 +668,12 @@
     "Buenavista del Norte": {
       "empresas": [
         {
+          "nombre": "Auto Taxi Buenavista",
+          "telefono": "636 928 845",
+          "web": null,
+          "alternativo": "629 073 481"
+        },
+        {
           "nombre": "Radio Taxi Buenavista",
           "telefono": "+34 922 860 860",
           "web": null,
@@ -655,7 +684,7 @@
         {
           "nombre": "Uber",
           "disponible": true,
-          "web": "https://www.uber.com/es/cities/puerto-de-la-cruz/",
+          "web": "https://www.uber.com/es/es-es/r/cities/puerto-de-la-cruz/",
           "app": "Uber App"
         },
         {
@@ -679,7 +708,7 @@
         {
           "nombre": "Uber",
           "disponible": true,
-          "web": "https://www.uber.com/es/cities/tenerife-sur/",
+          "web": "https://www.uber.com/es/es-es/r/cities/tenerife-sur/",
           "app": "Uber App"
         },
         {
@@ -696,14 +725,15 @@
           "nombre": "Radio Taxi El Tanque",
           "telefono": "+34 922 880 880",
           "web": null,
-          "centralita": "+34 922 883 883"
+          "centralita": "+34 922 883 883",
+          "reserva_nocturna": "663 268 674"
         }
       ],
       "alternativas": [
         {
           "nombre": "Uber",
           "disponible": true,
-          "web": "https://www.uber.com/es/cities/puerto-de-la-cruz/",
+          "web": "https://www.uber.com/es/es-es/r/cities/puerto-de-la-cruz/",
           "app": "Uber App"
         },
         {
@@ -727,7 +757,7 @@
         {
           "nombre": "Uber",
           "disponible": true,
-          "web": "https://www.uber.com/es/cities/tenerife-sur/",
+          "web": "https://www.uber.com/es/es-es/r/cities/tenerife-sur/",
           "app": "Uber App"
         },
         {
@@ -751,7 +781,7 @@
         {
           "nombre": "Uber",
           "disponible": true,
-          "web": "https://www.uber.com/es/cities/tenerife-sur/",
+          "web": "https://www.uber.com/es/es-es/r/cities/tenerife-sur/",
           "app": "Uber App"
         },
         {
