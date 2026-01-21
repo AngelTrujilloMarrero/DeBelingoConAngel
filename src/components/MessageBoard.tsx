@@ -32,7 +32,9 @@ const MessageBoard: React.FC = () => {
                 startOfToday.setHours(0, 0, 0, 0);
                 const startTime = startOfToday.getTime();
 
-                const snapshot = await get(messagesRef);
+                // Fetch only the last 11 messages to see if 10 or more are from today
+                const q = query(messagesRef, limitToLast(11));
+                const snapshot = await get(q);
                 const data = snapshot.val();
 
                 if (data) {
@@ -123,7 +125,7 @@ const MessageBoard: React.FC = () => {
         // Crear la respuesta con replyTo y depth
         const parentMessage = messages.find(msg => msg.id === parentMessageId);
         const parentDepth = parentMessage?.depth || 0;
-        
+
         await push(messagesRef, {
             text: replyText,
             author: 'Anónimo',
@@ -262,10 +264,10 @@ const MessageBoard: React.FC = () => {
                                         // Organizar mensajes en hilos
                                         const mainMessages = messages.filter(msg => !msg.replyTo);
                                         const replies = messages.filter(msg => msg.replyTo);
-                                        
+
                                         return mainMessages.slice().reverse().map((mainMsg) => {
                                             const messageReplies = replies.filter(reply => reply.replyTo === mainMsg.id).sort((a, b) => a.timestamp - b.timestamp);
-                                            
+
                                             return (
                                                 <div key={mainMsg.id} className="space-y-3">
                                                     {/* Mensaje principal */}
@@ -282,7 +284,7 @@ const MessageBoard: React.FC = () => {
                                                         </div>
                                                         <div className="bg-gradient-to-r from-gray-800/80 to-gray-700/80 backdrop-blur-sm rounded-2xl rounded-tl-none p-5 border border-gray-600/30 group-hover/msg:border-blue-500/40 transition-all duration-300 shadow-lg hover:shadow-blue-900/10">
                                                             <p className="text-gray-200 leading-relaxed font-medium">{mainMsg.text}</p>
-                                                            
+
                                                             {/* Botón de respuesta */}
                                                             <button
                                                                 onClick={() => setReplyingTo(mainMsg.id)}

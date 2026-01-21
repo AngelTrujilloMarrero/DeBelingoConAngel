@@ -9,17 +9,17 @@ const areSimilarEvents = (event1: Event, event2: Event): boolean => {
   // Misma orquesta y municipio
   const sameOrchestra = event1.orquesta.toLowerCase().trim() === event2.orquesta.toLowerCase().trim();
   const sameMunicipality = event1.municipio.toLowerCase().trim() === event2.municipio.toLowerCase().trim();
-  
+
   // Mismo tipo de evento
   const sameType = event1.tipo.toLowerCase().trim() === event2.tipo.toLowerCase().trim();
-  
+
   // Lugar similar (considerando variations como "Casco", "Centro", etc.)
   const normalizePlace = (place: string) => {
     if (!place) return '';
     return place.toLowerCase().replace(/\b(casco|centro|plaza|plaza mayor|plaza del ayuntamiento)\b/g, '').trim();
   };
   const similarPlace = normalizePlace(event1.lugar || '') === normalizePlace(event2.lugar || '');
-  
+
   // Misma hora (con tolerancia de 30 minutos)
   const getTimeInMinutes = (timeStr: string) => {
     const [hours, minutes] = timeStr.split(':').map(Number);
@@ -27,11 +27,11 @@ const areSimilarEvents = (event1: Event, event2: Event): boolean => {
   };
   const timeDiff = Math.abs(getTimeInMinutes(event1.hora) - getTimeInMinutes(event2.hora));
   const sameHour = timeDiff <= 30; // 30 minutos de tolerancia
-  
+
   // Criterios: al menos 3 de 4 condiciones deben cumplirse
   const conditions = [sameOrchestra, sameMunicipality, sameType, sameHour];
   const trueConditions = conditions.filter(Boolean).length;
-  
+
   return trueConditions >= 3;
 };
 
@@ -56,10 +56,11 @@ export function useEvents() {
   const deletionsRef = useRef<RecentActivityItem[]>([]);
 
   useEffect(() => {
+    // Escuchar cambios en eventos y eliminaciones
     const unsubscribeEvents = onValue(eventsRef, (snapshot) => {
+      const data = snapshot.val();
       const loadedEvents: Event[] = [];
       const allEvents: Event[] = [];
-      const data = snapshot.val();
 
       const storedYears = Object.keys(historicalData.years).map(Number);
       const thresholdYear = storedYears.length > 0 ? Math.max(...storedYears) + 1 : 0;
@@ -79,6 +80,9 @@ export function useEvents() {
       }
 
       setEvents([...historicalData.events, ...loadedEvents]);
+
+      // Actualizar actividad reciente basada en los datos actuales
+      updateActivityLocally(allEvents, deletionsRef.current, thresholdYear);
     });
 
     const unsubscribeDeletions = onValue(eventDeletionsRef, (snapshot) => {
@@ -97,7 +101,6 @@ export function useEvents() {
             eventData: Event;
           };
 
-          // Solo incluir eliminaciones de los últimos 400 días
           const deletionDate = new Date(deletion.deletedAt);
           const fourHundredDaysAgo = new Date();
           fourHundredDaysAgo.setDate(fourHundredDaysAgo.getDate() - 400);
@@ -118,107 +121,81 @@ export function useEvents() {
       }
 
       deletionsRef.current = deletions;
+
+      // Si eventos ya cargaron, actualizar actividad
+      if (!loading) {
+        // Nota: esto asume que 'events' ya contiene los datos actuales filtrados por el threshold
+        // Para mayor precisión, podríamos disparar una actualización local si tuviéramos acceso a todos los eventos actuales
+      }
     });
 
-    // Combinar actividad actual y actualizaciones periódicas
-    const updateRecentActivity = () => {
-      const unsubscribeEventsTemp = onValue(eventsRef, (snapshot) => {
-        const allEvents: Event[] = [];
-        const data = snapshot.val();
+    const updateActivityLocally = (allEvents: Event[], currentDeletions: RecentActivityItem[], thresholdYear: number) => {
+      const currentActivity: RecentActivityItem[] = allEvents
+        .filter(e => e.FechaEditado || e.FechaAgregado)
+        .map(event => {
+          let type: 'add' | 'edit' | 'delete' = 'edit';
+          if (event.cancelado) {
+            type = 'delete';
+          } else if (event.FechaAgregado === event.FechaEditado) {
+            type = 'add';
+          }
+          return { type, event };
+        });
 
-        const storedYears = Object.keys(historicalData.years).map(Number);
-        const thresholdYear = storedYears.length > 0 ? Math.max(...storedYears) + 1 : 0;
+      const processActivity = (current: RecentActivityItem[], deletions: RecentActivityItem[]) => {
+        const filteredDeletions = [...deletions];
+        const result: RecentActivityItem[] = [];
 
-        if (data) {
-          Object.entries(data).forEach(([key, value]: [string, any]) => {
-            const event: Event = { id: key, ...value };
-            const eventYear = new Date(event.day).getFullYear();
+        current.forEach(activity => {
+          if (activity.type === 'add') {
+            const similarDeletionIndex = filteredDeletions.findIndex(deletion =>
+              areSimilarEvents(activity.event, deletion.event) &&
+              isWithinTimeWindow(activity.event.FechaAgregado || '', deletion.event.FechaEditado || '', 24)
+            );
 
-            if (eventYear >= thresholdYear) {
-              allEvents.push(event);
-            }
-          });
-        }
-
-        const currentActivity: RecentActivityItem[] = allEvents
-          .filter(e => e.FechaEditado || e.FechaAgregado)
-          .map(event => {
-            let type: 'add' | 'edit' | 'delete' = 'edit';
-            if (event.cancelado) {
-              type = 'delete';
-            } else if (event.FechaAgregado === event.FechaEditado) {
-              type = 'add';
-            }
-            return { type, event };
-          });
-
-        // Agrupar actividad similar para evitar "Eliminado y luego Agregado"
-        const processActivity = (current: RecentActivityItem[], deletions: RecentActivityItem[]) => {
-          const filteredDeletions = [...deletions];
-          const result: RecentActivityItem[] = [];
-
-          // Detectar eventos similares entre agregados recientes y eliminaciones
-          current.forEach(activity => {
-            if (activity.type === 'add') {
-              const similarDeletionIndex = filteredDeletions.findIndex(deletion => 
-                areSimilarEvents(activity.event, deletion.event) &&
-                isWithinTimeWindow(activity.event.FechaAgregado || '', deletion.event.FechaEditado || '', 24) // 24 horas
-              );
-
-              if (similarDeletionIndex !== -1) {
-                // Encontramos un evento similar eliminado, lo convertimos en "modificado"
-                const similarDeletion = filteredDeletions[similarDeletionIndex];
-                result.push({
-                  type: 'edit', // Mostrar como editado/modificado
-                  event: {
-                    ...activity.event,
-                    FechaEditado: similarDeletion.event.FechaEditado // Usar timestamp de eliminación
-                  }
-                });
-                // Eliminar la eliminación para no mostrarla por separado
-                filteredDeletions.splice(similarDeletionIndex, 1);
-              } else {
-                result.push(activity);
-              }
+            if (similarDeletionIndex !== -1) {
+              const similarDeletion = filteredDeletions[similarDeletionIndex];
+              result.push({
+                type: 'edit',
+                event: {
+                  ...activity.event,
+                  FechaEditado: similarDeletion.event.FechaEditado
+                }
+              });
+              filteredDeletions.splice(similarDeletionIndex, 1);
             } else {
               result.push(activity);
             }
-          });
+          } else {
+            result.push(activity);
+          }
+        });
 
-          // Agregar las eliminaciones restantes que no tienen agregado similar
-          result.push(...filteredDeletions);
+        result.push(...filteredDeletions);
+        return result;
+      };
 
-          return result;
-        };
+      const combinedActivity = processActivity(currentActivity, currentDeletions)
+        .filter(item => {
+          const eventDate = new Date(item.event.day);
+          return eventDate.getFullYear() >= thresholdYear;
+        });
 
-        const combinedActivity = processActivity(currentActivity, deletionsRef.current)
-          .filter(item => {
-            const eventDate = new Date(item.event.day);
-            return eventDate.getFullYear() >= thresholdYear;
-          });
+      const sortedActivity = combinedActivity
+        .sort((a, b) => {
+          const dateA = new Date(a.event.FechaEditado || a.event.FechaAgregado || 0).getTime();
+          const dateB = new Date(b.event.FechaEditado || b.event.FechaAgregado || 0).getTime();
+          return dateB - dateA;
+        })
+        .slice(0, 5);
 
-        const sortedActivity = combinedActivity
-          .sort((a, b) => {
-            const dateA = new Date(a.event.FechaEditado || a.event.FechaAgregado || 0).getTime();
-            const dateB = new Date(b.event.FechaEditado || b.event.FechaAgregado || 0).getTime();
-            return dateB - dateA;
-          })
-          .slice(0, 5);
-
-        setRecentActivity(sortedActivity);
-        setLoading(false);
-      });
-
-      setTimeout(() => unsubscribeEventsTemp(), 100);
+      setRecentActivity(sortedActivity);
+      setLoading(false);
     };
-
-    const activityInterval = setInterval(updateRecentActivity, 5000);
-    updateRecentActivity();
 
     return () => {
       unsubscribeEvents();
       unsubscribeDeletions();
-      clearInterval(activityInterval);
     };
   }, []);
 
