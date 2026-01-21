@@ -297,7 +297,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                             'text-red-300'
                           }`}>
                           {item.type === 'add' ? 'Nuevo:' :
-                            item.type === 'edit' ? 'Editado:' :
+                            item.type === 'edit' ? 'Modificado:' :
                               'Eliminado:'}
                         </span>
                         <span className="text-gray-300 truncate">
