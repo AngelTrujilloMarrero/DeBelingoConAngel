@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Instagram, Facebook, MessageCircle, Send } from 'lucide-react';
+import { Instagram, MessageCircle } from 'lucide-react';
 import DBCALogo from './DBCALogo';
 import Navigation from './Navigation';
 
@@ -87,28 +87,22 @@ const Header: React.FC = () => {
         <div className={`flex flex-col items-center justify-center w-full relative transition-all duration-500 ease-in-out ${isDynamicHeaderPage && isScrolled ? 'max-h-0 opacity-0 pointer-events-none mb-0 overflow-hidden' : 'max-h-[200px] opacity-100 mb-0.5 overflow-visible'
           }`}>
           <div className={`flex items-center gap-2 sm:gap-4 md:gap-6 lg:gap-8 transition-all duration-500 ${!isDynamicHeaderPage ? 'scale-[0.45]' : 'py-1'}`}>
-            {/* Social Icons Left Group */}
-            <div className="flex items-center gap-1 sm:gap-2">
-              <a href="https://www.instagram.com/debelingoconangel/" target="_blank" rel="noopener noreferrer" className="w-6 h-6 sm:w-7 sm:h-7 lg:w-9 lg:h-9 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110">
-                <Instagram className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4.5 lg:h-4.5 text-white" />
-              </a>
-              <a href="https://www.facebook.com/debelingoconangel/" target="_blank" rel="noopener noreferrer" className="w-6 h-6 sm:w-7 sm:h-7 lg:w-9 lg:h-9 bg-gradient-to-br from-blue-500 to-blue-700 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110">
-                <Facebook className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4.5 lg:h-4.5 text-white" />
+            {/* Instagram Icon - Left */}
+            <div className="flex items-center">
+              <a href="https://www.instagram.com/debelingoconangel/" target="_blank" rel="noopener noreferrer" className="w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110">
+                <Instagram className="w-4 h-4 sm:w-4.5 sm:h-4.5 lg:w-6 lg:h-6 text-white" />
               </a>
             </div>
 
-            {/* Logo Grouped in the middle of icons */}
-            <div className="transform scale-[0.4] xs:scale-[0.45] sm:scale-[0.5] md:scale-[0.6] lg:scale-[0.7] transition-transform duration-300 relative z-20">
+            {/* Logo in the center */}
+            <div className="transform scale-[0.44] xs:scale-[0.5] sm:scale-[0.55] md:scale-[0.66] lg:scale-[0.77] transition-transform duration-300 relative z-20">
               <DBCALogo />
             </div>
 
-            {/* Social Icons Right Group */}
-            <div className="flex items-center gap-1 sm:gap-2">
-              <a href="https://www.whatsapp.com/channel/0029Va8nc2A77qVZokI0aC2K" target="_blank" rel="noopener noreferrer" className="w-6 h-6 sm:w-7 sm:h-7 lg:w-9 lg:h-9 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110">
-                <MessageCircle className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4.5 lg:h-4.5 text-white" />
-              </a>
-              <a href="https://t.me/debelingoconangel" target="_blank" rel="noopener noreferrer" className="w-6 h-6 sm:w-7 sm:h-7 lg:w-9 lg:h-9 bg-gradient-to-br from-sky-400 to-sky-600 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110">
-                <Send className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4.5 lg:h-4.5 text-white" />
+            {/* WhatsApp Icon - Right */}
+            <div className="flex items-center">
+              <a href="https://www.whatsapp.com/channel/0029Va8nc2A77qVZokI0aC2K" target="_blank" rel="noopener noreferrer" className="w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110">
+                <MessageCircle className="w-4 h-4 sm:w-4.5 sm:h-4.5 lg:w-6 lg:h-6 text-white" />
               </a>
             </div>
           </div>

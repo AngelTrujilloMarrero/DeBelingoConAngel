@@ -1,5 +1,5 @@
 import React from 'react';
-import { Facebook, MessageCircle, Send, Instagram, Heart, BookOpen, Scroll } from 'lucide-react';
+import { MessageCircle, Instagram, Heart, BookOpen, Scroll } from 'lucide-react';
 import { socialFollowersRef, onValue, set, get } from '../utils/firebase';
 
 interface SocialLink {
@@ -11,20 +11,16 @@ interface SocialLink {
 }
 
 interface FollowersData {
-  Facebook: string;
   Instagram: string;
   WhatsApp: string;
-  Telegram: string;
   lastUpdated?: string;
 }
 
-// Valores por defecto (fallback) - actualizados el 8/12/2025
+// Valores por defecto (fallback) - actualizados el 23/01/2026
 const DEFAULT_FOLLOWERS: FollowersData = {
-  Facebook: '35.297',
   Instagram: '8.895',
   WhatsApp: '2.100',
-  Telegram: '130',
-  lastUpdated: '2025-12-08'
+  lastUpdated: '2026-01-23'
 };
 
 const SocialMedia: React.FC = () => {
@@ -60,10 +56,8 @@ const SocialMedia: React.FC = () => {
         if (snapshot.exists()) {
           const data = snapshot.val() as FollowersData;
           setFollowers({
-            Facebook: data.Facebook || DEFAULT_FOLLOWERS.Facebook,
             Instagram: data.Instagram || DEFAULT_FOLLOWERS.Instagram,
             WhatsApp: data.WhatsApp || DEFAULT_FOLLOWERS.WhatsApp,
-            Telegram: data.Telegram || DEFAULT_FOLLOWERS.Telegram,
             lastUpdated: data.lastUpdated || DEFAULT_FOLLOWERS.lastUpdated
           });
           setDataSource('firebase');
@@ -89,11 +83,11 @@ const SocialMedia: React.FC = () => {
 
   const socialLinks: SocialLink[] = [
     {
-      name: 'Facebook',
-      url: 'https://www.facebook.com/debelingoconangel/',
-      icon: Facebook,
-      color: 'from-blue-600 to-blue-700',
-      hoverColor: 'hover:from-blue-700 hover:to-blue-800'
+      name: 'Instagram',
+      url: 'https://www.instagram.com/debelingoconangel/',
+      icon: Instagram,
+      color: 'from-pink-500 to-purple-600',
+      hoverColor: 'hover:from-pink-600 hover:to-purple-700'
     },
     {
       name: 'WhatsApp',
@@ -101,20 +95,6 @@ const SocialMedia: React.FC = () => {
       icon: MessageCircle,
       color: 'from-green-500 to-green-600',
       hoverColor: 'hover:from-green-600 hover:to-green-700'
-    },
-    {
-      name: 'Telegram',
-      url: 'https://t.me/debelingoconangel',
-      icon: Send,
-      color: 'from-blue-500 to-blue-600',
-      hoverColor: 'hover:from-blue-600 hover:to-blue-700'
-    },
-    {
-      name: 'Instagram',
-      url: 'https://www.instagram.com/debelingoconangel/',
-      icon: Instagram,
-      color: 'from-pink-500 to-purple-600',
-      hoverColor: 'hover:from-pink-600 hover:to-purple-700'
     }
   ];
 
@@ -134,7 +114,7 @@ const SocialMedia: React.FC = () => {
         </div>
 
         <div className="p-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
             {socialLinks.map((social) => {
               const IconComponent = social.icon;
               return (
@@ -167,7 +147,7 @@ const SocialMedia: React.FC = () => {
                         </span>
                       </div>
                       <p className="text-xs font-medium opacity-90 uppercase tracking-widest text-white/80">
-                        {social.name === 'Facebook' || social.name === 'Instagram' ? 'Seguidores' : 'Suscriptores'}
+                        {social.name === 'Instagram' ? 'Seguidores' : 'Suscriptores'}
                       </p>
                     </div>
 
@@ -311,6 +291,10 @@ const SocialMedia: React.FC = () => {
 
             <p>
               En diciembre de 2024 nace esta web, para tratar de mitigar los problemas de las redes sociales de la actualización de los bailes en tiempo y forma.
+            </p>
+
+            <p className="bg-purple-900/30 border-l-4 border-purple-500 p-4 italic">
+              <strong className="text-purple-300">Nota importante:</strong> A partir del 23 de enero de 2026, se cierran las cuentas de Facebook y Telegram por diferencias con estas plataformas que no le llegan seguidores. Seguimos activos en Instagram y WhatsApp para seguir compartiendo las mejores verbenas de Tenerife.
             </p>
 
             <p className="text-center font-semibold text-lg md:text-xl mt-6 md:mt-8 text-purple-200">
