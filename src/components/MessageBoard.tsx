@@ -121,6 +121,28 @@ const MessageBoard: React.FC = () => {
         }
     };
 
+    const handleImageClick = (imageUrl: string) => {
+        if (imageUrl.startsWith('data:')) {
+            // For data URLs, create a temporary link and download/open it
+            try {
+                const link = document.createElement('a');
+                link.href = imageUrl;
+                link.target = '_blank';
+                link.download = `image_${Date.now()}.${imageUrl.includes('png') ? 'png' : 'jpg'}`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch (error) {
+                console.error('Error opening image:', error);
+                // Fallback: try to open in new window
+                window.open(imageUrl, '_blank');
+            }
+        } else {
+            // For regular URLs, open in new tab
+            window.open(imageUrl, '_blank');
+        }
+    };
+
     const sendReply = async (parentMessageId: string, replyText: string, replyImageUrl?: string, replyImageInfo?: ImageInfo) => {
         const isClean = await moderateMessage(replyText);
         if (!isClean) {
@@ -317,7 +339,7 @@ const MessageBoard: React.FC = () => {
                                                                         alt="Imagen del mensaje"
                                                                         className="max-w-full h-auto rounded-lg border border-gray-600/50 cursor-pointer hover:border-blue-500/50 transition-colors"
                                                                         style={{ maxHeight: '300px' }}
-                                                                        onClick={() => window.open(mainMsg.imageUrl, '_blank')}
+                                                                        onClick={() => handleImageClick(mainMsg.imageUrl)}
                                                                     />
                                                                     {mainMsg.imageInfo && (
                                                                         <div className="mt-1 text-xs text-gray-500">
@@ -368,7 +390,7 @@ const MessageBoard: React.FC = () => {
                                                                             alt="Imagen de la respuesta"
                                                                             className="max-w-full h-auto rounded-lg border border-blue-500/30 cursor-pointer hover:border-blue-400/50 transition-colors"
                                                                             style={{ maxHeight: '200px' }}
-                                                                            onClick={() => window.open(reply.imageUrl, '_blank')}
+                                                                            onClick={() => handleImageClick(reply.imageUrl)}
                                                                         />
                                                                         {reply.imageInfo && (
                                                                             <div className="mt-1 text-xs text-gray-500">
