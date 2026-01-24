@@ -4,7 +4,7 @@ const TITSALogo: React.FC = () => {
   return (
     <div className="flex-shrink-0 flex items-center justify-center p-0.5" title="TITSA">
       <img
-        src="https://movil.titsa.com/images/logo-titsa.png"
+        src="/fotos/titsa-logo.png"
         alt="TITSA"
         className="h-5 w-auto object-contain brightness-110 contrast-110"
         onError={(e) => {
