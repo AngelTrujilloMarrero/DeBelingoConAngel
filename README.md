@@ -59,7 +59,7 @@ Una plataforma digital que centraliza información sobre verbenas, conciertos y 
 ### 📱 Redes Sociales
 - Enlaces a redes sociales oficiales
 - Contador de seguidores en tiempo real
-- Integración con Facebook, Instagram, WhatsApp y Telegram
+- Integración con Instagram y WhatsApp 
 - Actualizaciones automáticas de métricas
 - Contenido dinámico de la comunidad
 
