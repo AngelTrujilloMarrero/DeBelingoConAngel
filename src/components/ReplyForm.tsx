@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
-import { Send, X, MessageSquare } from 'lucide-react';
+import { Send, X, MessageSquare, Image as ImageIcon } from 'lucide-react';
+import { ImageUpload } from './ImageUpload';
+import { ImageInfo } from '@/types/messages';
 
 interface ReplyFormProps {
   messageId: string;
   messageAuthor: string;
-  onSubmit: (messageId: string, text: string) => Promise<void>;
+  onSubmit: (messageId: string, text: string, imageUrl?: string, imageInfo?: ImageInfo) => Promise<void>;
   onCancel: () => void;
 }
 
@@ -14,6 +16,9 @@ const ReplyForm: React.FC<ReplyFormProps> = ({ messageId, messageAuthor, onSubmi
   const [captcha, setCaptcha] = useState({ num1: 0, num2: 0, answer: '' });
   const [userCaptcha, setUserCaptcha] = useState('');
   const [status, setStatus] = useState<{ type: 'success' | 'error' | null, message: string }>({ type: null, message: '' });
+  const [imageUrl, setImageUrl] = useState<string>('');
+  const [imageInfo, setImageInfo] = useState<ImageInfo | null>(null);
+  const [showImageUpload, setShowImageUpload] = useState(false);
 
   React.useEffect(() => {
     generateCaptcha();
@@ -41,9 +46,12 @@ const ReplyForm: React.FC<ReplyFormProps> = ({ messageId, messageAuthor, onSubmi
     setStatus({ type: null, message: '' });
 
     try {
-      await onSubmit(messageId, replyText.trim());
+      await onSubmit(messageId, replyText.trim(), imageUrl || undefined, imageInfo || undefined);
       setReplyText('');
       setUserCaptcha('');
+      setImageUrl('');
+      setImageInfo(null);
+      setShowImageUpload(false);
       generateCaptcha();
       setStatus({ type: 'success', message: '¡Respuesta enviada!' });
 
@@ -90,7 +98,30 @@ const ReplyForm: React.FC<ReplyFormProps> = ({ messageId, messageAuthor, onSubmi
 
         <div className="flex items-center justify-between text-xs text-gray-400">
           <span>{replyText.length}/150 caracteres</span>
+          <button
+            type="button"
+            onClick={() => setShowImageUpload(!showImageUpload)}
+            className="flex items-center gap-1 text-blue-400 hover:text-blue-300 transition-colors"
+            disabled={sending}
+          >
+            <ImageIcon className="w-4 h-4" />
+            {imageUrl ? 'Imagen añadida' : 'Añadir imagen'}
+          </button>
         </div>
+
+        {/* Image Upload */}
+        {showImageUpload && (
+          <div className="mt-3">
+            <ImageUpload
+              onImageUploaded={(url, info) => {
+                setImageUrl(url);
+                setImageInfo(info);
+              }}
+              disabled={sending}
+              className="mb-3"
+            />
+          </div>
+        )}
 
         {/* Captcha */}
         <div className="flex items-center gap-3 p-3 bg-gray-900/50 rounded-lg">

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { db, onValue, set, get } from '../utils/firebase';
 import { ref, push, limitToLast, query, serverTimestamp } from 'firebase/database';
-import { MessageSquare, Send, ShieldAlert, CheckCircle2, AlertCircle, RefreshCw, Reply } from 'lucide-react';
-import { Message } from '../types';
+import { MessageSquare, Send, ShieldAlert, CheckCircle2, AlertCircle, RefreshCw, Reply, Image as ImageIcon } from 'lucide-react';
+import { Message } from '../types/messages';
+import { ImageInfo } from '../types/messages';
 import ReplyForm from './ReplyForm';
+import { ImageUpload } from './ImageUpload';
 
 const MessageBoard: React.FC = () => {
     const [messages, setMessages] = useState<Message[]>([]);
@@ -12,6 +14,9 @@ const MessageBoard: React.FC = () => {
     const [sending, setSending] = useState(false);
     const [dailyLimitReached, setDailyLimitReached] = useState(false);
     const [status, setStatus] = useState<{ type: 'success' | 'error' | null, message: string }>({ type: null, message: '' });
+    const [imageUrl, setImageUrl] = useState<string>('');
+    const [imageInfo, setImageInfo] = useState<ImageInfo | null>(null);
+    const [showImageUpload, setShowImageUpload] = useState(false);
 
     // Reply state
     const [replyingTo, setReplyingTo] = useState<string | null>(null);
@@ -116,7 +121,7 @@ const MessageBoard: React.FC = () => {
         }
     };
 
-    const sendReply = async (parentMessageId: string, replyText: string) => {
+    const sendReply = async (parentMessageId: string, replyText: string, replyImageUrl?: string, replyImageInfo?: ImageInfo) => {
         const isClean = await moderateMessage(replyText);
         if (!isClean) {
             throw new Error('Contenido no permitido');
@@ -126,16 +131,24 @@ const MessageBoard: React.FC = () => {
         const parentMessage = messages.find(msg => msg.id === parentMessageId);
         const parentDepth = parentMessage?.depth || 0;
 
-        await push(messagesRef, {
+        const replyData: any = {
             text: replyText,
             author: 'Anónimo',
             timestamp: serverTimestamp(),
             replyTo: parentMessageId,
             depth: parentDepth + 1,
-        });
+        };
+
+        if (replyImageUrl && replyImageInfo) {
+            replyData.imageUrl = replyImageUrl;
+            replyData.imageInfo = replyImageInfo;
+        }
+
+        await push(messagesRef, replyData);
 
         // Intentar enviar notificación
-        sendEmailNotification(`Respuesta: "${replyText}" (a mensaje de ${parentMessage?.author || 'Anónimo'})`);
+        const notificationText = replyImageUrl ? `Respuesta con imagen: "${replyText}"` : `Respuesta: "${replyText}"`;
+        sendEmailNotification(`${notificationText} (a mensaje de ${parentMessage?.author || 'Anónimo'})`);
     };
 
     const sendEmailNotification = async (message: string) => {
@@ -190,16 +203,27 @@ const MessageBoard: React.FC = () => {
                 return;
             }
 
-            await push(messagesRef, {
+            const messageData: any = {
                 text: newMessage.trim(),
                 author: 'Anónimo',
                 timestamp: serverTimestamp(),
-            });
+            };
+
+            if (imageUrl && imageInfo) {
+                messageData.imageUrl = imageUrl;
+                messageData.imageInfo = imageInfo;
+            }
+
+            await push(messagesRef, messageData);
 
             // Intentar enviar notificación
-            sendEmailNotification(newMessage.trim());
+            const notificationText = imageUrl ? `Mensaje con imagen: "${newMessage.trim()}"` : newMessage.trim();
+            sendEmailNotification(notificationText);
 
             setNewMessage('');
+            setImageUrl('');
+            setImageInfo(null);
+            setShowImageUpload(false);
             setUserCaptcha('');
             generateCaptcha();
             setStatus({ type: 'success', message: '¡Enviado! Tu mensaje ya es público.' });
@@ -284,6 +308,24 @@ const MessageBoard: React.FC = () => {
                                                         </div>
                                                         <div className="bg-gradient-to-r from-gray-800/80 to-gray-700/80 backdrop-blur-sm rounded-2xl rounded-tl-none p-5 border border-gray-600/30 group-hover/msg:border-blue-500/40 transition-all duration-300 shadow-lg hover:shadow-blue-900/10">
                                                             <p className="text-gray-200 leading-relaxed font-medium">{mainMsg.text}</p>
+                                                            
+                                                            {/* Mostrar imagen si existe */}
+                                                            {mainMsg.imageUrl && (
+                                                                <div className="mt-3">
+                                                                    <img
+                                                                        src={mainMsg.imageUrl}
+                                                                        alt="Imagen del mensaje"
+                                                                        className="max-w-full h-auto rounded-lg border border-gray-600/50 cursor-pointer hover:border-blue-500/50 transition-colors"
+                                                                        style={{ maxHeight: '300px' }}
+                                                                        onClick={() => window.open(mainMsg.imageUrl, '_blank')}
+                                                                    />
+                                                                    {mainMsg.imageInfo && (
+                                                                        <div className="mt-1 text-xs text-gray-500">
+                                                                            {mainMsg.imageInfo.name} • {Math.round(mainMsg.imageInfo.size / 1024)}KB
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            )}
 
                                                             {/* Botón de respuesta */}
                                                             <button
@@ -317,6 +359,24 @@ const MessageBoard: React.FC = () => {
                                                             </div>
                                                             <div className="bg-gradient-to-r from-blue-900/20 to-purple-900/10 backdrop-blur-sm rounded-2xl rounded-tl-none p-4 border border-blue-500/20 transition-all duration-300 shadow-lg hover:shadow-blue-900/10">
                                                                 <p className="text-gray-200 leading-relaxed text-sm">{reply.text}</p>
+                                                                
+                                                                {/* Mostrar imagen si existe en respuesta */}
+                                                                {reply.imageUrl && (
+                                                                    <div className="mt-2">
+                                                                        <img
+                                                                            src={reply.imageUrl}
+                                                                            alt="Imagen de la respuesta"
+                                                                            className="max-w-full h-auto rounded-lg border border-blue-500/30 cursor-pointer hover:border-blue-400/50 transition-colors"
+                                                                            style={{ maxHeight: '200px' }}
+                                                                            onClick={() => window.open(reply.imageUrl, '_blank')}
+                                                                        />
+                                                                        {reply.imageInfo && (
+                                                                            <div className="mt-1 text-xs text-gray-500">
+                                                                                {reply.imageInfo.name} • {Math.round(reply.imageInfo.size / 1024)}KB
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     ))}
@@ -341,7 +401,18 @@ const MessageBoard: React.FC = () => {
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between">
                                             <label className="text-sm font-bold text-blue-300 uppercase tracking-widest ml-1">Tu Mensaje</label>
-                                            <span className="text-[10px] font-mono text-gray-500 bg-black/30 px-2 py-0.5 rounded-full">{newMessage.length}/150</span>
+                                            <div className="flex items-center gap-3">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowImageUpload(!showImageUpload)}
+                                                    className="flex items-center gap-1 text-xs text-gray-400 hover:text-blue-400 transition-colors"
+                                                    disabled={dailyLimitReached || sending}
+                                                >
+                                                    <ImageIcon className="w-4 h-4" />
+                                                    {imageUrl ? 'Imagen añadida' : 'Añadir imagen'}
+                                                </button>
+                                                <span className="text-[10px] font-mono text-gray-500 bg-black/30 px-2 py-0.5 rounded-full">{newMessage.length}/150</span>
+                                            </div>
                                         </div>
                                         <textarea
                                             value={newMessage}
@@ -350,6 +421,18 @@ const MessageBoard: React.FC = () => {
                                             placeholder={dailyLimitReached ? "Límite alcanzado, borra mensajes para publicar..." : "Cuéntanos algo..."}
                                             className="w-full bg-gray-900/60 border border-gray-600/50 rounded-2xl p-5 text-sm focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none resize-none min-h-[160px] text-white placeholder:text-gray-600 shadow-inner"
                                         />
+                                        
+                                        {/* Image Upload */}
+                                        {showImageUpload && (
+                                            <ImageUpload
+                                                onImageUploaded={(url, info) => {
+                                                    setImageUrl(url);
+                                                    setImageInfo(info);
+                                                }}
+                                                disabled={dailyLimitReached || sending}
+                                                className="mb-3"
+                                            />
+                                        )}
                                     </div>
 
                                     <div className="space-y-6">
