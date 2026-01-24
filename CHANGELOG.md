@@ -7,11 +7,46 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
 ## [Unreleased]
 
 ### Añadido
+- **🎵 Página de Formaciones (Orquestas)**
+  - Listado completo de orquestas de Tenerife
+  - Información de contacto y redes sociales de cada formación
+  - Análisis detallado de actividad y estadísticas
+  - Imágenes dinámicas obtenidas de redes sociales
+  - Sistema de búsqueda y filtrado avanzado
+  - Análisis individual por orquesta con métricas detalladas
+
+- **📱 Página de Redes Sociales**
+  - Enlaces a todas las redes sociales oficiales del proyecto
+  - Contador de seguidores en tiempo real
+  - Integración con Facebook, Instagram, WhatsApp y Telegram
+  - Actualizaciones automáticas de métricas mediante scraping
+  - Diseño moderno y atractivo con gradientes
+
+- **🚌 Integración de Transporte TITSA**
+  - Información de rutas de guaguas en el mapa interactivo
+  - Paradas cercanas a cada evento
+  - Opciones de transporte alternativo (taxi)
+  - Función "¿Dónde estás?" para localización del usuario
+  - Cálculo de distancias y eventos cercanos
+
 - **📝 Blog integrado**: Inclusión de blog funcional alojado en Hashnode
   - Página de blog accesible desde navegación principal
   - Componente BlogPost para visualización individual de artículos
   - Hook personalizado useHashnode para integración con API
   - Contenido dinámico con noticias sobre verbenas y eventos
+  - Sistema de navegación entre artículos
+
+- **🌤️ Mejoras en Alertas Meteorológicas**
+  - Integración completa con API de AEMET
+  - Alertas por zonas de Tenerife (Norte, Sur, Metropolitana, Cumbres)
+  - Colores según nivel de severidad (amarillo, naranja, rojo)
+  - Tooltips informativos con detalles de las alertas
+
+- **📊 Mejoras en Estadísticas**
+  - Rankings históricos y actuales
+  - Análisis por temporada
+  - Gráficos interactivos mejorados
+  - Estadísticas detalladas por formación
 
 ### Planeado
 - Sistema de notificaciones push

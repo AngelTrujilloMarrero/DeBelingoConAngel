@@ -504,6 +504,15 @@ Otras soluciones que has considerado.
 - Integrations with third-party services
 - Security improvements
 
+**Áreas Específicas del Proyecto**
+- **Eventos**: Mejoras en filtrado, búsqueda y visualización
+- **Mapa y TITSA**: Integración de transporte público, rutas y geolocalización
+- **Formaciones**: Gestión de orquestas, scraping de redes sociales
+- **Estadísticas**: Nuevos análisis, gráficos y métricas
+- **Redes Sociales**: Actualización automática de métricas y seguidores
+- **Blog**: Integración con Hashnode, visualización de artículos
+- **Alertas AEMET**: Mejoras en alertas meteorológicas por zonas
+
 ### 🎨 Diseño
 
 - UI/UX mockups

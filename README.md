@@ -7,10 +7,13 @@ Aplicación web para descubrir y seguir las verbenas y eventos musicales en Tene
 Una plataforma digital que centraliza información sobre verbenas, conciertos y eventos culturales en la isla de Tenerife. La aplicación permite:
 
 - 🗓️ Descubrir eventos próximos con filtrado por fechas y ubicaciones
-- 🗺️ Visualizar eventos en mapa interactivo 
-- 📊 Análisis estadístico de orquestas y eventos
-- 📱 Comentarios y participación comunitaria
-- 📈 Estadísticas en tiempo real de asistencia
+- 🗺️ Visualizar eventos en mapa interactivo con transporte público TITSA
+- 🎵 Explorar formaciones y orquestas de Tenerife con información detallada
+- 📊 Análisis estadístico de orquestas y eventos con rankings
+- 📱 Seguir redes sociales con métricas en tiempo real
+- 📝 Leer artículos y noticias en el blog integrado
+- 💬 Comentarios y participación comunitaria
+- 🌤️ Información meteorológica con alertas AEMET
 
 ## 🎯 Público Objetivo
 
@@ -26,30 +29,59 @@ Una plataforma digital que centraliza información sobre verbenas, conciertos y 
 - Filtrado por fechas, ubicaciones y orquestas
 - Información detallada de cada evento
 - Actualizaciones en tiempo real
+- Información meteorológica con alertas AEMET
 
 ### 🗺️ Mapa Interactivo
-- Geolocalización de eventos
-- Filtros por zonas y municipios
+- Geolocalización de eventos en tiempo real
+- Filtros por zonas y municipios de Tenerife
 - Navegación intuitiva con Leaflet
 - Clusters para mejor visualización
+- **Integración con transporte público TITSA**
+- Información de rutas y paradas cercanas
+- Opciones de taxi y ubicación del usuario
 
 ### 📊 Estadísticas y Análisis
 - Datos comparativos entre orquestas
 - Gráficos interactivos de tendencias
 - Análisis de popularidad y asistencia
 - Métricas detalladas de rendimiento
+- Rankings históricos y actuales
+- Estadísticas por temporada
+
+### 🎵 Formaciones (Orquestas)
+- Listado completo de orquestas de Tenerife
+- Información de contacto y redes sociales
+- Análisis detallado de actividad
+- Imágenes dinámicas de redes sociales
+- Búsqueda y filtrado avanzado
+- Estadísticas de eventos por formación
+
+### 📱 Redes Sociales
+- Enlaces a redes sociales oficiales
+- Contador de seguidores en tiempo real
+- Integración con Facebook, Instagram, WhatsApp y Telegram
+- Actualizaciones automáticas de métricas
+- Contenido dinámico de la comunidad
+
+### 📝 Blog Integrado
+- Artículos sobre verbenas y eventos
+- Noticias y actualizaciones culturales
+- Alojado en Hashnode
+- Integración fluida con la plataforma
+- Visualización optimizada de contenido
 
 ### 💬 Comunidad
 - Tablero de mensajes y comentarios
 - Sistema de respuestas anidadas
 - Interacción entre usuarios
-- Feedback directo
-- **Blog integrado** alojado en Hashnode con noticias sobre verbenas y eventos
+- Feedback directo para organizadores
+- Moderación y gestión de contenido
 
 ### 📱 Responsive Design
 - Experiencia optimizada para móviles
 - Diseño adaptativo para tablets y desktop
 - Navegación intuitiva en todos los dispositivos
+- Interfaz moderna con gradientes y animaciones
 
 ## 🛠️ Stack Tecnológico
 
@@ -122,23 +154,43 @@ src/
 │   ├── ui/             # Componentes UI base (Radix UI)
 │   ├── EventsList.tsx  # Listado de eventos
 │   ├── MapComponent.tsx # Mapa interactivo
+│   ├── Navigation.tsx  # Barra de navegación
+│   ├── Header.tsx      # Cabecera
+│   ├── VisitCounter.tsx # Contador de visitas
 │   └── ...
 ├── pages/              # Páginas principales
 │   ├── EventosPage.tsx # Página principal de eventos
-│   ├── MapaPage.tsx    # Página del mapa
-│   ├── EstadisticasPage.tsx # Estadísticas
+│   ├── MapaPage.tsx    # Página del mapa con TITSA
+│   ├── EstadisticasPage.tsx # Estadísticas y análisis
+│   ├── FormacionesPage.tsx # Información de orquestas
+│   ├── RedesPage.tsx   # Redes sociales
+│   ├── BlogPage.tsx    # Blog integrado
 │   └── ...
 ├── hooks/              # Hooks personalizados
 │   ├── useEvents.ts    # Gestión de eventos
 │   ├── useAemetAlerts.ts # Alertas meteorológicas
+│   ├── useHashnode.ts  # Integración con blog
 │   └── ...
 ├── utils/              # Utilidades
 │   ├── firebase.ts     # Configuración Firebase
 │   ├── geocoding.ts    # Utilidades de geolocalización
+│   ├── socialScraper.ts # Scraping de redes sociales
 │   └── ...
 ├── types/              # Definiciones TypeScript
 └── lib/                # Librerías compartidas
 ```
+
+## 🤝 Contribuir al Proyecto
+
+¡Las contribuciones son bienvenidas! Por favor consulta el archivo [CONTRIBUTING.md](./CONTRIBUTING.md) para más detalles sobre cómo colaborar.
+
+### Áreas de Contribución
+
+1. **🐛 Reporte de bugs**: Abre issues detallando problemas encontrados
+2. **✨ Nuevas funcionalidades**: Propone mejoras y nuevas características
+3. **📝 Documentación**: Mejora la documentación existente
+4. **🎨 UI/UX**: Sugerencias de diseño y experiencia de usuario
+5. **🧪 Testing**: Añade pruebas unitarias y de integración
 
 ## 🎨 Decisiones de Diseño
 
@@ -161,18 +213,6 @@ src/
 - Componentes Radix UI con semántica correcta
 - Navegación por teclado
 - Contenido accesible para screen readers
-
-## 🤝 Contribuir al Proyecto
-
-¡Las contribuciones son bienvenidas! Por favor consulta el archivo [CONTRIBUTING.md](./CONTRIBUTING.md) para详细了解 cómo colaborar.
-
-### Áreas de Contribución
-
-1. **🐛 Reporte de bugs**: Abre issues detallando problemas encontrados
-2. **✨ Nuevas funcionalidades**: Propone mejoras y nuevas características
-3. **📝 Documentación**: Mejora la documentación existente
-4. **🎨 UI/UX**: Sugerencias de diseño y experiencia de usuario
-5. **🧪 Testing**: Añade pruebas unitarias y de integración
 
 ## 📈 Hoja de Ruta
 

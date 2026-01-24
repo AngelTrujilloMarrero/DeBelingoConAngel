@@ -11,13 +11,17 @@ Convertirnos en la plataforma definitiva para el descubrimiento y seguimiento de
 ### ✅ Version 1.0 - Estable (Actual)
 
 #### Funcionalidades Implementadas
-- **📋 Listado de Eventos**: Visualización completa con filtros
-- **🗺️ Mapa Interactivo**: Geolocalización con clusters
-- **📊 Estadísticas**: Análisis comparativo y gráficos
-- **💬 Comunidad**: Sistema de mensajes y respuestas
+- **📋 Listado de Eventos**: Visualización completa con filtros avanzados
+- **🗺️ Mapa Interactivo**: Geolocalización con clusters y transporte TITSA
+- **🚌 Integración TITSA**: Información de rutas, paradas y opciones de transporte
+- **📊 Estadísticas**: Análisis comparativo, rankings históricos y gráficos interactivos
+- **🎵 Formaciones (Orquestas)**: Listado completo con información de contacto y redes sociales
+- **📱 Redes Sociales**: Página dedicada con métricas en tiempo real
+- **📝 Blog Integrado**: Artículos y noticias alojados en Hashnode
+- **💬 Comunidad**: Sistema de mensajes y respuestas anidadas
 - **📱 Responsive**: Diseño adaptativo multi-dispositivo
-- **🔔 Alertas Meteorológicas**: Integración con AEMET
-- **📈 Contador de Visitas**: Estadísticas de uso
+- **🔔 Alertas Meteorológicas**: Integración completa con AEMET por zonas
+- **📈 Contador de Visitas**: Estadísticas de uso en tiempo real
 
 #### Tecnología Actual
 - React 19 + TypeScript
@@ -25,6 +29,7 @@ Convertirnos en la plataforma definitiva para el descubrimiento y seguimiento de
 - Tailwind CSS + Radix UI
 - Leaflet Mapas
 - Chart.js Visualizaciones
+- Hashnode API para Blog
 
 ---
 
@@ -263,7 +268,7 @@ Convertirnos en la plataforma definitiva para el descubrimiento y seguimiento de
 
 - **GitHub Issues**: Reportar bugs y sugerir funcionalidades
 - **Discord**: Comunidad de desarrolladores
-- **Email**: contacto@verbenastenerife.com
+- **Email**: atrujimar@gmail.com
 
 ---
 
