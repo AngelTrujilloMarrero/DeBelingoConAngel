@@ -9,7 +9,12 @@ const IMGUR_CLIENT_IDS = [
   'f0ea1437e4b31e8',
   '43652b743b5a7a0',
   '15e30ce94329ec4',
-  '2879199e5e55f13'
+  '2879199e5e55f13',
+  '546c25a59c58ad7',
+  'fc393963e63920c',
+  'ccfd9203a017260',
+  '902a281867c2957',
+  '86134371e54a93f'
 ];
 
 // REEMPLAZA ESTO CON TU API KEY DE IMGBB: https://api.imgbb.com/
