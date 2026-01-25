@@ -9,11 +9,18 @@ const DB_URL = "https://debelingoconangel-default-rtdb.europe-west1.firebasedata
 const ORCH_DB_URL = "https://debelingoconangel-default-rtdb.europe-west1.firebasedatabase.app/orchestras.json";
 const OUTPUT_FILE = path.join(__dirname, '../src/data/historicalStats.json');
 const ORCH_OUTPUT_FILE = path.join(__dirname, '../src/data/orchestraArchive.json');
+const EVENTS_ARCHIVE_DIR = path.join(__dirname, '../public/events-archive');
 
 async function generate() {
     const currentYear = new Date().getFullYear();
     const prevYear = currentYear - 1;
     const isForce = process.argv.includes('--force');
+
+    // Asegurarse de que el directorio de eventos archive existe
+    if (!fs.existsSync(EVENTS_ARCHIVE_DIR)) {
+        fs.mkdirSync(EVENTS_ARCHIVE_DIR, { recursive: true });
+        console.log(`📁 Creado directorio ${EVENTS_ARCHIVE_DIR}`);
+    }
 
     // Comprobar si ya tenemos los datos del año pasado
     if (fs.existsSync(OUTPUT_FILE) && !isForce) {
@@ -111,7 +118,44 @@ async function generate() {
         console.log(`Años procesados: ${Object.keys(historicalStats.years).join(', ')}`);
         console.log(`Total eventos históricos: ${historicalStats.events.length}`);
 
-        console.log(`Total eventos históricos: ${historicalStats.events.length}`);
+        // --- NUEVO: GENERAR ARCHIVOS DE EVENTOS POR AÑO PARA FRONTEND ---
+        console.log("📂 Generando archivos de eventos por año para el frontend...");
+        
+        // Agrupar eventos por año para archivos separados
+        const eventsByYear = {};
+        historicalStats.events.forEach(event => {
+            const eventYear = new Date(event.day).getFullYear();
+            if (!eventsByYear[eventYear]) {
+                eventsByYear[eventYear] = [];
+            }
+            eventsByYear[eventYear].push(event);
+        });
+
+        // Generar un archivo JSON por cada año
+        Object.entries(eventsByYear).forEach(([year, yearEvents]) => {
+            const yearFilePath = path.join(EVENTS_ARCHIVE_DIR, `${year}.json`);
+            const yearData = {
+                year: parseInt(year),
+                totalEvents: yearEvents.length,
+                events: yearEvents,
+                exportDate: new Date().toISOString(),
+                migratedFromFirebase: true,
+                migrationVersion: "1.0-frontend-script"
+            };
+            
+            fs.writeFileSync(yearFilePath, JSON.stringify(yearData, null, 2));
+            console.log(`✅ Archivo generado: ${year}.json con ${yearEvents.length} eventos`);
+        });
+
+        // Generar índice de años disponibles
+        const indexPath = path.join(EVENTS_ARCHIVE_DIR, 'index.json');
+        const availableYears = Object.keys(eventsByYear).map(Number).sort((a, b) => b - a);
+        fs.writeFileSync(indexPath, JSON.stringify({
+            years: availableYears,
+            lastUpdated: new Date().toISOString(),
+            generatedBy: "Frontend Build Script"
+        }, null, 2));
+        console.log(`✅ Índice de años actualizado: ${availableYears.join(', ')}`);
 
         // --- NUEVO: MIGRACIÓN DE ORQUESTAS ---
         console.log("🎻 Generando archivo de orquestas archivadas...");

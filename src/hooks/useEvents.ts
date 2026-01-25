@@ -4,6 +4,22 @@ import { eventsRef, eventDeletionsRef } from '../utils/firebase';
 import { Event, RecentActivityItem } from '../types';
 import historicalStatsRaw from '../data/historicalStats.json';
 
+// Función para cargar eventos históricos desde archivos estáticos por año
+const loadEventsFromArchive = async (year: number): Promise<Event[]> => {
+  try {
+    const response = await fetch(`/events-archive/${year}.json`);
+    if (!response.ok) {
+      console.log(`No se encontró archivo de eventos para el año ${year}`);
+      return [];
+    }
+    const data = await response.json();
+    return data.events || [];
+  } catch (error) {
+    console.error(`Error cargando eventos del año ${year}:`, error);
+    return [];
+  }
+};
+
 // Función para verificar si dos eventos son similares
 const areSimilarEvents = (event1: Event, event2: Event): boolean => {
   // Misma orquesta y municipio
@@ -56,78 +72,83 @@ export function useEvents() {
   const deletionsRef = useRef<RecentActivityItem[]>([]);
 
   useEffect(() => {
-    // Escuchar cambios en eventos y eliminaciones
-    const unsubscribeEvents = onValue(eventsRef, (snapshot) => {
-      const data = snapshot.val();
-      const loadedEvents: Event[] = [];
-      const allEvents: Event[] = [];
+    let unsubscribeEvents: (() => void) | null = null;
+    let unsubscribeDeletions: (() => void) | null = null;
 
-      const storedYears = Object.keys(historicalData.years).map(Number);
-      const thresholdYear = storedYears.length > 0 ? Math.max(...storedYears) + 1 : 0;
+    const setupEventListeners = async () => {
+      setLoading(true);
+      
+      const currentYear = new Date().getFullYear();
+      const previousYear = currentYear - 1;
+      
+      // 1. Cargar eventos del año anterior desde archivos estáticos
+      const archivedEvents = await loadEventsFromArchive(previousYear);
+      
+      // 2. Escuchar cambios en eventos de Firebase (año actual)
+      unsubscribeEvents = onValue(eventsRef, (snapshot) => {
+        const data = snapshot.val();
+        const loadedEvents: Event[] = [];
+        const allEvents: Event[] = [];
 
-      if (data) {
-        Object.entries(data).forEach(([key, value]: [string, any]) => {
-          const event: Event = { id: key, ...value };
-          const eventYear = new Date(event.day).getFullYear();
+        if (data) {
+          Object.entries(data).forEach(([key, value]: [string, any]) => {
+            const event: Event = { id: key, ...value };
+            const eventYear = new Date(event.day).getFullYear();
 
-          if (eventYear >= thresholdYear) {
-            allEvents.push(event);
-            if (!event.cancelado) {
-              loadedEvents.push(event);
+            // Solo cargar eventos del año actual desde Firebase
+            if (eventYear >= currentYear) {
+              allEvents.push(event);
+              if (!event.cancelado) {
+                loadedEvents.push(event);
+              }
             }
-          }
-        });
-      }
+          });
+        }
 
-      setEvents([...historicalData.events, ...loadedEvents]);
+        // Combinar eventos históricos del archivo + eventos antiguos del historicalStats + eventos actuales
+        setEvents([...historicalData.events, ...archivedEvents, ...loadedEvents]);
 
-      // Actualizar actividad reciente basada en los datos actuales
-      updateActivityLocally(allEvents, deletionsRef.current, thresholdYear);
-    });
+        // Actualizar actividad reciente basada en los datos actuales
+        updateActivityLocally(allEvents, deletionsRef.current, currentYear);
+      });
 
-    const unsubscribeDeletions = onValue(eventDeletionsRef, (snapshot) => {
-      const deletions: RecentActivityItem[] = [];
-      const data = snapshot.val();
+      // 3. Escuchar eliminaciones de Firebase
+      unsubscribeDeletions = onValue(eventDeletionsRef, (snapshot) => {
+        const deletions: RecentActivityItem[] = [];
+        const data = snapshot.val();
 
-      const storedYears = Object.keys(historicalData.years).map(Number);
-      const thresholdYear = storedYears.length > 0 ? Math.max(...storedYears) + 1 : 0;
+        if (data) {
+          Object.entries(data).forEach(([key, value]: [string, any]) => {
+            const deletion = value as {
+              eventId: string;
+              deletedBy: string;
+              deletedAt: string;
+              eventData: Event;
+            };
 
-      if (data) {
-        Object.entries(data).forEach(([key, value]: [string, any]) => {
-          const deletion = value as {
-            eventId: string;
-            deletedBy: string;
-            deletedAt: string;
-            eventData: Event;
-          };
+            const deletionDate = new Date(deletion.deletedAt);
+            const fourHundredDaysAgo = new Date();
+            fourHundredDaysAgo.setDate(fourHundredDaysAgo.getDate() - 400);
 
-          const deletionDate = new Date(deletion.deletedAt);
-          const fourHundredDaysAgo = new Date();
-          fourHundredDaysAgo.setDate(fourHundredDaysAgo.getDate() - 400);
-
-          if (deletionDate >= fourHundredDaysAgo) {
-            const eventYear = new Date(deletion.eventData.day).getFullYear();
-            if (eventYear >= thresholdYear) {
-              deletions.push({
-                type: 'delete',
-                event: {
-                  ...deletion.eventData,
-                  FechaEditado: deletion.deletedAt
-                }
-              });
+            if (deletionDate >= fourHundredDaysAgo) {
+              const eventYear = new Date(deletion.eventData.day).getFullYear();
+              // Solo considerar eliminaciones del año actual o anterior (para mostrar actividad relevante)
+              if (eventYear >= previousYear) {
+                deletions.push({
+                  type: 'delete',
+                  event: {
+                    ...deletion.eventData,
+                    FechaEditado: deletion.deletedAt
+                  }
+                });
+              }
             }
-          }
-        });
-      }
+          });
+        }
 
-      deletionsRef.current = deletions;
-
-      // Si eventos ya cargaron, actualizar actividad
-      if (!loading) {
-        // Nota: esto asume que 'events' ya contiene los datos actuales filtrados por el threshold
-        // Para mayor precisión, podríamos disparar una actualización local si tuviéramos acceso a todos los eventos actuales
-      }
-    });
+        deletionsRef.current = deletions;
+      });
+    };
 
     const updateActivityLocally = (allEvents: Event[], currentDeletions: RecentActivityItem[], thresholdYear: number) => {
       const currentActivity: RecentActivityItem[] = allEvents
@@ -193,9 +214,11 @@ export function useEvents() {
       setLoading(false);
     };
 
+    setupEventListeners();
+
     return () => {
-      unsubscribeEvents();
-      unsubscribeDeletions();
+      if (unsubscribeEvents) unsubscribeEvents();
+      if (unsubscribeDeletions) unsubscribeDeletions();
     };
   }, []);
 
