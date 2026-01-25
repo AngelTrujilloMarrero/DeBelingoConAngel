@@ -6,6 +6,9 @@ import { onValue, orchestrasRef } from '../utils/firebase';
 import { scrapeProfileImage } from '../utils/socialScraper';
 import OrquestaAnalysis from '../components/OrquestaAnalysis';
 import historicalStatsRaw from '../data/historicalStats.json';
+import orchestraArchiveRaw from '../data/orchestraArchive.json';
+
+const orchestraArchive = (orchestraArchiveRaw as any).orchestras || [];
 
 const historicalData = historicalStatsRaw as {
     years: Record<string, {
@@ -99,30 +102,38 @@ const FormacionesPage: React.FC<FormacionesPageProps> = ({ events }) => {
             });
         });
 
-        // 2. Transform DB data from ID-based to Name-based
-        const dbOrchestrasMap: Record<string, any> = {};
+        // 2. Combine with Archived Orchestras (Fallback)
+        // 3. Transform DB data from ID-based to Name-based (Priority)
+        const consolidatedOrchestrasMap: Record<string, any> = {};
+
+        // Start with archive
+        orchestraArchive.forEach((orch: any) => {
+            consolidatedOrchestrasMap[orch.name] = orch;
+        });
+
+        // Overlay with Firebase data (Priority)
         if (dbOrchestras) {
             Object.values(dbOrchestras).forEach((info: any) => {
                 if (info && info.name) {
-                    dbOrchestrasMap[info.name] = info;
+                    consolidatedOrchestrasMap[info.name] = info;
                 }
             });
         }
 
         return Object.entries(stats)
             .map(([name, stat]) => {
-                const dbInfo = dbOrchestrasMap[name] || {};
+                const dbEntry = consolidatedOrchestrasMap[name] || {};
 
                 const consolidated = {
                     name,
                     ...stat,
-                    ...orchestraDetails[name], // File (fallback)
-                    ...dbInfo,                 // DB (priority)
-                    hasDbInfo: !!dbInfo.name,  // Flag to indicate if we have DB info
+                    ...orchestraDetails[name], // Hardcoded fallback (if any)
+                    ...dbEntry,                // Combined Archive + Live
+                    hasDbInfo: !!dbEntry.name,  // Flag to indicate if we have extra info
                 };
 
                 // Normalize fields specifically
-                if (dbInfo.other) consolidated.Otros = dbInfo.other;
+                if (dbEntry.other) consolidated.Otros = dbEntry.other;
 
                 return consolidated;
             })

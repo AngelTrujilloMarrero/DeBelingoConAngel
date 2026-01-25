@@ -2,7 +2,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Calendar, Clock, MapPin, Music2, Download, Navigation, Plus, Edit, Trash2, Info, ExternalLink, ChevronDown, Facebook, Instagram, Globe, Phone, Bus } from 'lucide-react';
 import { onValue, orchestrasRef } from '../utils/firebase';
 import { orchestraDetails } from '../data/orchestras';
+import orchestraArchiveRaw from '../data/orchestraArchive.json';
 import { Event, RecentActivityItem } from '../types';
+
+const orchestraArchive = (orchestraArchiveRaw as any).orchestras || [];
+const archiveMap: Record<string, any> = {};
+orchestraArchive.forEach((o: any) => archiveMap[o.name] = o);
 import { groupEventsByDay, sortEventsByDateTime, formatDayName, getLastUpdateDate } from '../utils/helpers';
 import WeatherIcon from './WeatherIcon';
 import TITSALogo from './TITSALogo';
@@ -25,8 +30,17 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
 
   useEffect(() => {
     const unsubscribe = onValue(orchestrasRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) setDbOrchestras(data);
+      const data = snapshot.val() || {};
+
+      // Merge Archive (Base) + Firebase (Overrides)
+      const merged = { ...archiveMap };
+      Object.values(data).forEach((info: any) => {
+        if (info && info.name) {
+          merged[info.name] = info;
+        }
+      });
+
+      setDbOrchestras(merged);
     });
     return () => unsubscribe();
   }, []);
@@ -47,7 +61,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
 
   const getOrchestraInfo = useMemo(() => (name: string) => {
     const cleanName = name.trim();
-    const dbInfo = Object.values(dbOrchestras).find((o: any) => o.name === cleanName) || {};
+    const dbInfo = dbOrchestras[cleanName] || {};
     const fileInfo = orchestraDetails[cleanName] || {};
     return { ...fileInfo, ...dbInfo };
   }, [dbOrchestras]);

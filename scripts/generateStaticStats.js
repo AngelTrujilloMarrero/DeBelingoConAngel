@@ -6,7 +6,9 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const DB_URL = "https://debelingoconangel-default-rtdb.europe-west1.firebasedatabase.app/events.json";
+const ORCH_DB_URL = "https://debelingoconangel-default-rtdb.europe-west1.firebasedatabase.app/orchestras.json";
 const OUTPUT_FILE = path.join(__dirname, '../src/data/historicalStats.json');
+const ORCH_OUTPUT_FILE = path.join(__dirname, '../src/data/orchestraArchive.json');
 
 async function generate() {
     const currentYear = new Date().getFullYear();
@@ -91,8 +93,33 @@ async function generate() {
         console.log(`Años procesados: ${Object.keys(historicalStats.years).join(', ')}`);
         console.log(`Total eventos históricos: ${historicalStats.events.length}`);
 
+        console.log(`Total eventos históricos: ${historicalStats.events.length}`);
+
+        // --- NUEVO: MIGRACIÓN DE ORQUESTAS ---
+        console.log("🎻 Generando archivo de orquestas archivadas...");
+        const orchResponse = await fetch(ORCH_DB_URL);
+        const orchestrasData = await orchResponse.json();
+
+        if (orchestrasData) {
+            const orchestras = [];
+            Object.entries(orchestrasData).forEach(([id, orch]) => {
+                const hasData = orch.phone || orch.facebook || orch.instagram || orch.other || orch.type;
+                if (hasData) {
+                    orchestras.push({ ...orch, id });
+                }
+            });
+
+            fs.writeFileSync(ORCH_OUTPUT_FILE, JSON.stringify({
+                orchestras,
+                lastUpdated: new Date().toISOString(),
+                total: orchestras.length,
+                generatedBy: "Build Script"
+            }, null, 2));
+            console.log(`✅ ¡Éxito! Archivo de orquestas generado: ${orchestras.length} orquestas.`);
+        }
+
     } catch (error) {
-        console.error("❌ Error generando estadísticas:", error);
+        console.error("❌ Error generando estadísticas/orquestas:", error);
     }
 }
 
