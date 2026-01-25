@@ -77,13 +77,13 @@ export function useEvents() {
 
     const setupEventListeners = async () => {
       setLoading(true);
-      
+
       const currentYear = new Date().getFullYear();
       const previousYear = currentYear - 1;
-      
+
       // 1. Cargar eventos del año anterior desde archivos estáticos
       const archivedEvents = await loadEventsFromArchive(previousYear);
-      
+
       // 2. Escuchar cambios en eventos de Firebase (año actual)
       unsubscribeEvents = onValue(eventsRef, (snapshot) => {
         const data = snapshot.val();
@@ -95,8 +95,11 @@ export function useEvents() {
             const event: Event = { id: key, ...value };
             const eventYear = new Date(event.day).getFullYear();
 
-            // Solo cargar eventos del año actual desde Firebase
-            if (eventYear >= currentYear) {
+            // Cargar eventos del año actual Y eventos de Diciembre del año anterior
+            // Esto asegura que en el cambio de año (ej: 1 Enero), los eventos del 31 Dic sigan visibles
+            // aunque el archivo estático del año anterior aún no se haya generado/desplegado.
+            const eventMonth = new Date(event.day).getMonth();
+            if (eventYear >= currentYear || (eventYear === previousYear && eventMonth === 11)) {
               allEvents.push(event);
               if (!event.cancelado) {
                 loadedEvents.push(event);
@@ -105,11 +108,20 @@ export function useEvents() {
           });
         }
 
-        // Combinar eventos históricos del archivo + eventos antiguos del historicalStats + eventos actuales
-        setEvents([...historicalData.events, ...archivedEvents, ...loadedEvents]);
+        // Combinar eventos y eliminar duplicados por ID
+        // Es posible que un evento exista tanto en el archivo (si ya se generó) como en Firebase
+        const combinedEvents = [...historicalData.events, ...archivedEvents, ...loadedEvents];
+        const uniqueEventsMap = new Map();
+        combinedEvents.forEach(event => {
+          if (event && event.id) {
+            uniqueEventsMap.set(event.id, event);
+          }
+        });
+
+        setEvents(Array.from(uniqueEventsMap.values()));
 
         // Actualizar actividad reciente basada en los datos actuales
-        updateActivityLocally(allEvents, deletionsRef.current, currentYear);
+        updateActivityLocally(allEvents, deletionsRef.current, previousYear);
       });
 
       // 3. Escuchar eliminaciones de Firebase
