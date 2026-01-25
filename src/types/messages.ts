@@ -1,5 +1,4 @@
 export interface ImageInfo {
-  url: string;
   name: string;
   size: number;
   type: string;

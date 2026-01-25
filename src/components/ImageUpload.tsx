@@ -59,7 +59,6 @@ export function ImageUpload({
     setPreview({
       url: '',
       info: {
-        url: '',
         name: file.name,
         size: file.size,
         type: file.type
@@ -87,7 +86,7 @@ export function ImageUpload({
     } catch (err) {
       if (err instanceof ImgurError) {
         setError(err.message);
-        
+
         // Special handling for local storage fallback
         if (err.message.includes('local temporary storage')) {
           setError('✅ Imagen guardada localmente (temporal). Cuando Imgur esté disponible, se subirán automáticamente.');
@@ -95,7 +94,7 @@ export function ImageUpload({
       } else {
         setError('Error al subir la imagen');
       }
-      
+
       if (preview) {
         URL.revokeObjectURL(preview.preview);
         setPreview(null);
@@ -109,12 +108,12 @@ export function ImageUpload({
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
     setDragActive(false);
-    
+
     if (disabled || isUploading) return;
 
     const files = Array.from(e.dataTransfer.files);
     const imageFile = files.find(file => file.type.startsWith('image/'));
-    
+
     if (imageFile) {
       handleFile(imageFile);
     }
@@ -208,7 +207,7 @@ export function ImageUpload({
           disabled={disabled || isUploading}
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
         />
-        
+
         <div className="space-y-2">
           <div className="text-2xl">📷</div>
           <div className="text-sm font-medium">

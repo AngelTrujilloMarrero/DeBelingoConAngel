@@ -6,11 +6,14 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/jpg'];
 // Intentar usar Imgur primero, con fallback a almacenamiento local temporal
 const IMGUR_CLIENT_IDS = [
   '7a19e6c8c7056d7',
-  'f0ea1437e4b31e8', 
+  'f0ea1437e4b31e8',
   '43652b743b5a7a0',
   '15e30ce94329ec4',
   '2879199e5e55f13'
 ];
+
+// REEMPLAZA ESTO CON TU API KEY DE IMGBB: https://api.imgbb.com/
+const IMGBB_API_KEY = 'be78b6d894fff24d363cd2abd6cddac0';
 
 // Almacenamiento local temporal para cuando Imgur falle
 let localImageStorage = new Map<string, { url: string; timestamp: number }>();
@@ -74,7 +77,7 @@ function validateFile(file: File): void {
     size: file.size,
     sizeMB: (file.size / 1024 / 1024).toFixed(2)
   });
-  
+
   if (!ALLOWED_TYPES.includes(file.type)) {
     throw new ImgurError('Solo se permiten archivos JPG y PNG');
   }
@@ -82,7 +85,7 @@ function validateFile(file: File): void {
   if (file.size > MAX_FILE_SIZE) {
     throw new ImgurError('El archivo no puede superar los 5MB');
   }
-  
+
   console.log('File validation passed');
 }
 
@@ -141,19 +144,19 @@ export async function uploadToImgur(
     // Try multiple Client IDs and methods for upload
     let response: ImgurUploadResponse;
     let lastError: any = null;
-    
+
     const clientIds = IMGUR_CLIENT_IDS;
-    
+
     for (let i = 0; i < clientIds.length; i++) {
       const clientId = clientIds[i];
       console.log(`Trying Client ID ${i + 1}/${clientIds.length}`);
-      
+
       try {
         // Method 1: Try with direct file upload
         try {
           const formData = new FormData();
           formData.append('image', file);
-          
+
           const fetchResponse = await fetch('https://api.imgur.com/3/image', {
             method: 'POST',
             headers: {
@@ -170,12 +173,12 @@ export async function uploadToImgur(
           } else {
             const errorText = await fetchResponse.text();
             let errorMessage = 'Upload failed';
-            
+
             try {
               const errorData = JSON.parse(errorText);
               errorMessage = errorData.data?.error || errorMessage;
               console.error('Imgur API Error:', errorData);
-              
+
               // If rate limited, try next Client ID
               if (fetchResponse.status === 429) {
                 console.log('Rate limited, trying next Client ID...');
@@ -184,9 +187,9 @@ export async function uploadToImgur(
             } catch {
               errorMessage = `Upload failed with status ${fetchResponse.status}`;
             }
-            
+
             lastError = new ImgurError(errorMessage, fetchResponse.status);
-            
+
             // Try base64 method with same client ID
             try {
               console.log('Trying base64 method with Client ID:', clientId);
@@ -194,7 +197,7 @@ export async function uploadToImgur(
               const formData64 = new FormData();
               formData64.append('image', base64);
               formData64.append('type', 'base64');
-              
+
               const base64Response = await fetch('https://api.imgur.com/3/image', {
                 method: 'POST',
                 headers: {
@@ -226,62 +229,29 @@ export async function uploadToImgur(
         lastError = error;
       }
     }
-    
+
     if (lastError && response === undefined) {
-      // Fallback: Almacenamiento local temporal
-      console.warn('All Imgur Client IDs failed, using local temporary storage');
-      
-      // Create a data URL for temporary storage
-      const dataUrl = await new Promise<string>((resolve) => {
-        const reader = new FileReader();
-        reader.onload = () => {
-          const result = reader.result as string;
-          resolve(result);
+      console.log('Imgur falló, intentando fallback con ImgBB...');
+      try {
+        const imgbbUrl = await uploadToImgBB(file);
+        const dimensions = await getImageDimensions(file);
+
+        const imageInfo: ImageInfo = {
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          width: dimensions.width,
+          height: dimensions.height
         };
-        reader.readAsDataURL(file);
-      });
-      
-      // Store in local map with timestamp
-      const imageId = `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-      localImageStorage.set(imageId, {
-        url: dataUrl,
-        timestamp: Date.now()
-      });
-      
-      // Clean up old entries (older than 24 hours)
-      const now = Date.now();
-      for (const [key, value] of localImageStorage.entries()) {
-        if (now - value.timestamp > 24 * 60 * 60 * 1000) {
-          localImageStorage.delete(key);
-        }
-      }
-      
-      // Get image dimensions
-      const dimensions = await getImageDimensions(file);
-      
-      const imageInfo: ImageInfo = {
-        url: dataUrl,
-        name: file.name,
-        size: file.size,
-        type: file.type,
-        width: dimensions.width,
-        height: dimensions.height
-      };
 
-      if (onProgress) {
-        onProgress({
-          loaded: file.size,
-          total: file.size,
-          percentage: 100
-        });
+        return {
+          url: imgbbUrl,
+          info: imageInfo
+        };
+      } catch (imgbbError) {
+        console.error('Error en fallback ImgBB:', imgbbError);
+        throw new ImgurError('No se pudo subir la imagen (Imgur e ImgBB fallaron).');
       }
-
-      console.warn('Using local temporary storage - images will be stored as data URLs');
-      
-      return {
-        url: dataUrl,
-        info: imageInfo
-      };
     }
 
     if (onProgress) {
@@ -302,10 +272,9 @@ export async function uploadToImgur(
     }
 
     const imageInfo: ImageInfo = {
-      url: response.data.link,
-      name: response.data.name,
-      size: response.data.size,
-      type: response.data.type,
+      name: file.name,
+      size: file.size,
+      type: file.type,
       width: response.data.width,
       height: response.data.height
     };
@@ -323,10 +292,27 @@ export async function uploadToImgur(
   }
 }
 
+export async function uploadToImgBB(file: File): Promise<string> {
+  const formData = new FormData();
+  formData.append('image', file);
+
+  const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+    method: 'POST',
+    body: formData
+  });
+
+  const result = await response.json();
+  if (result.success) {
+    return result.data.url;
+  } else {
+    throw new Error(result.error?.message || 'Fallo al subir a ImgBB');
+  }
+}
+
 export function validateImageUrl(url: string): boolean {
   try {
     const urlObj = new URL(url);
-    return urlObj.hostname.includes('imgur.com');
+    return urlObj.hostname.includes('imgur.com') || urlObj.hostname.includes('ibb.co');
   } catch {
     return false;
   }
