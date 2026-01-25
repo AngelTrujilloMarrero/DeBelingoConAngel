@@ -34,10 +34,24 @@ async function generate() {
         const response = await fetch(DB_URL);
         const eventsData = await response.json();
 
-        const historicalStats = {
+        let historicalStats = {
             years: {},
             events: [] // Todos los eventos históricos para análisis detallado
         };
+
+        // CARGAR DATOS PREVIOS SI EXISTEN PARA NO PERDERLOS (ya que en FB se borran tras migrar)
+        if (fs.existsSync(OUTPUT_FILE)) {
+            try {
+                const existing = JSON.parse(fs.readFileSync(OUTPUT_FILE, 'utf8'));
+                historicalStats = {
+                    years: existing.years || {},
+                    events: existing.events || []
+                };
+                console.log(`📂 Cargados ${historicalStats.events.length} eventos históricos del archivo local.`);
+            } catch (e) {
+                console.warn("⚠️ No se pudo cargar el archivo historicalStats previo.");
+            }
+        }
 
         function getMonthName(dateStr) {
             const date = new Date(dateStr);
@@ -54,8 +68,12 @@ async function generate() {
             const eventDate = new Date(dayStr);
             const year = eventDate.getFullYear();
 
-            // Solo procesar años anteriores al actual
+            // Solo procesar años anteriores al actual que NO estén ya en el archive
+            // O procesarlos todos si queremos actualizar (overlap manual)
             if (year >= currentYear) return;
+
+            // Evitar duplicados (por ID)
+            if (historicalStats.events.find(e => e.id === id)) return;
 
             historicalStats.events.push({ id, ...event });
 
@@ -100,22 +118,36 @@ async function generate() {
         const orchResponse = await fetch(ORCH_DB_URL);
         const orchestrasData = await orchResponse.json();
 
+        let archivedOrchestras = [];
+        if (fs.existsSync(ORCH_OUTPUT_FILE)) {
+            try {
+                const existingOrch = JSON.parse(fs.readFileSync(ORCH_OUTPUT_FILE, 'utf8'));
+                archivedOrchestras = existingOrch.orchestras || [];
+            } catch (e) { }
+        }
+
         if (orchestrasData) {
-            const orchestras = [];
+            const orchestraMap = new Map();
+            // 1. Empezar con lo que ya tenemos archivado
+            archivedOrchestras.forEach(o => orchestraMap.set(o.name, o));
+
+            // 2. Sobrescribir con lo que venga de Firebase (ediciones recientes)
             Object.entries(orchestrasData).forEach(([id, orch]) => {
                 const hasData = orch.phone || orch.facebook || orch.instagram || orch.other || orch.type;
                 if (hasData) {
-                    orchestras.push({ ...orch, id });
+                    orchestraMap.set(orch.name, { ...orch, id });
                 }
             });
 
+            const finalOrchestras = Array.from(orchestraMap.values());
+
             fs.writeFileSync(ORCH_OUTPUT_FILE, JSON.stringify({
-                orchestras,
+                orchestras: finalOrchestras,
                 lastUpdated: new Date().toISOString(),
-                total: orchestras.length,
-                generatedBy: "Build Script"
+                total: finalOrchestras.length,
+                generatedBy: "Build Script (Merged)"
             }, null, 2));
-            console.log(`✅ ¡Éxito! Archivo de orquestas generado: ${orchestras.length} orquestas.`);
+            console.log(`✅ ¡Éxito! Archivo de orquestas actualizado: ${finalOrchestras.length} orquestas.`);
         }
 
     } catch (error) {
