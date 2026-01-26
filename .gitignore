@@ -65,6 +65,9 @@ node_modules/
 # dotenv environment variables file
 .env
 
+# Cleanup manifest
+cleanup-events.json
+
 # dataconnect generated files
 .dataconnect
 

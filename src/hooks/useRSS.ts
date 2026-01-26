@@ -58,7 +58,7 @@ const fetchFromHashnodeAPI = async (): Promise<BlogPost[]> => {
       query GetUserArticles($host: String!) {
         publication(host: $host) {
           id
-          posts(first: 10) {
+          posts(first: 50) {
             edges {
               node {
                 id

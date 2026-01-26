@@ -33,6 +33,17 @@ jobs:
       - name: Generate Static Stats
         run: pnpm run generate-stats -- --force
 
+      - name: Cleanup Old Events from Firebase
+        if: success()
+        run: |
+          if [ -f cleanup-events.json ]; then
+            echo "🗑️  Cleanup manifest found. Deleting old events from Firebase..."
+            npx firebase-tools database:update /events cleanup-events.json --token "${{ secrets.FIREBASE_TOKEN }}" --project debelingoconangel --confirm
+            rm cleanup-events.json
+          else
+            echo "ℹ️  No events to clean up."
+          fi
+
       - name: Commit and push changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:

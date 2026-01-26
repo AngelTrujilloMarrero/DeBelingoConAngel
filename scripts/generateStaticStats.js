@@ -10,6 +10,7 @@ const ORCH_DB_URL = "https://debelingoconangel-default-rtdb.europe-west1.firebas
 const OUTPUT_FILE = path.join(__dirname, '../src/data/historicalStats.json');
 const ORCH_OUTPUT_FILE = path.join(__dirname, '../src/data/orchestraArchive.json');
 const EVENTS_ARCHIVE_DIR = path.join(__dirname, '../public/events-archive');
+const CLEANUP_MANIFEST = path.join(__dirname, '../cleanup-events.json');
 
 async function generate() {
     const currentYear = new Date().getFullYear();
@@ -20,6 +21,11 @@ async function generate() {
     if (!fs.existsSync(EVENTS_ARCHIVE_DIR)) {
         fs.mkdirSync(EVENTS_ARCHIVE_DIR, { recursive: true });
         console.log(`📁 Creado directorio ${EVENTS_ARCHIVE_DIR}`);
+    }
+
+    // Limpiar manifiesto previo si existe
+    if (fs.existsSync(CLEANUP_MANIFEST)) {
+        fs.unlinkSync(CLEANUP_MANIFEST);
     }
 
     // Comprobar si ya tenemos los datos del año pasado
@@ -40,6 +46,11 @@ async function generate() {
     try {
         const response = await fetch(DB_URL);
         const eventsData = await response.json();
+
+        if (!eventsData) {
+            console.log("ℹ️ No hay eventos en la base de datos para procesar.");
+            return;
+        }
 
         let historicalStats = {
             years: {},
@@ -66,23 +77,33 @@ async function generate() {
             return months[date.getMonth()];
         }
 
-        Object.entries(eventsData).forEach(([id, event]) => {
-            if (event.cancelado) return;
+        const eventsToDelete = {};
+        let pastYearEventsCount = 0;
+        const existingEventIds = new Set(historicalStats.events.map(e => e.id));
 
+        Object.entries(eventsData).forEach(([id, event]) => {
             const dayStr = event.day;
             if (!dayStr) return;
 
             const eventDate = new Date(dayStr);
             const year = eventDate.getFullYear();
 
-            // Solo procesar años anteriores al actual que NO estén ya en el archive
-            // O procesarlos todos si queremos actualizar (overlap manual)
+            // Solo procesar años anteriores al actual
             if (year >= currentYear) return;
 
-            // Evitar duplicados (por ID)
-            if (historicalStats.events.find(e => e.id === id)) return;
+            pastYearEventsCount++;
+
+            // Añadir al manifiesto de eliminación
+            eventsToDelete[id] = null;
+
+            // No procesar estadísticas para eventos cancelados, pero sí los borramos de la DB activa
+            if (event.cancelado) return;
+
+            // Evitar duplicados en el archive (por ID)
+            if (existingEventIds.has(id)) return;
 
             historicalStats.events.push({ id, ...event });
+            existingEventIds.add(id);
 
             const yearStr = year.toString();
             if (!historicalStats.years[yearStr]) {
@@ -112,6 +133,34 @@ async function generate() {
                 stats.monthlyOrquestaCount[month][orq] = (stats.monthlyOrquestaCount[month][orq] || 0) + 1;
             });
         });
+
+        // --- VERIFICACIÓN DE SEGURIDAD ---
+        console.log(`🔍 Verificando: ${pastYearEventsCount} eventos detectados de años anteriores.`);
+        
+        // Verificar que todos los eventos a borrar existen en el archive (excepto los cancelados que decidimos no archivar en stats pero sí borrar)
+        const archiveIds = new Set(historicalStats.events.map(e => e.id));
+        let verifiedCount = 0;
+        let cancelledCount = 0;
+
+        Object.keys(eventsToDelete).forEach(id => {
+            if (archiveIds.has(id)) {
+                verifiedCount++;
+            } else if (eventsData[id].cancelado) {
+                cancelledCount++;
+            }
+        });
+
+        if (verifiedCount + cancelledCount === pastYearEventsCount) {
+            console.log(`✅ Verificación exitosa: ${verifiedCount} eventos archivados y ${cancelledCount} cancelados listos para limpieza.`);
+            if (pastYearEventsCount > 0) {
+                fs.writeFileSync(CLEANUP_MANIFEST, JSON.stringify(eventsToDelete, null, 2));
+                console.log(`📝 Manifiesto de limpieza generado: ${CLEANUP_MANIFEST}`);
+            }
+        } else {
+            console.error("❌ ERROR DE VERIFICACIÓN: No todos los eventos antiguos están respaldados en el archive.");
+            console.error(`Detectados: ${pastYearEventsCount}, Archivados: ${verifiedCount}, Cancelados: ${cancelledCount}`);
+            // No generamos el manifiesto si falla la verificación
+        }
 
         fs.writeFileSync(OUTPUT_FILE, JSON.stringify(historicalStats, null, 2));
         console.log(`✅ ¡Éxito! Archivo generado en ${OUTPUT_FILE}`);
