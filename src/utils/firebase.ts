@@ -2,14 +2,14 @@ import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, onValue, set, get, runTransaction } from 'firebase/database';
 
 const firebaseConfig = {
-  apiKey: "AIzaSyCg1OiMDsmfoAGpSVYRnvWdl4tSPnLVoUo",
-  authDomain: "debelingoconangel.firebaseapp.com",
-  databaseURL: "https://debelingoconangel-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "debelingoconangel",
-  storageBucket: "debelingoconangel.appspot.com",
-  messagingSenderId: "690632293636",
-  appId: "1:690632293636:web:5ccf13559fccf3d53a2451",
-  measurementId: "G-T8BV0MLJQJ"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
 const app = initializeApp(firebaseConfig);
