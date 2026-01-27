@@ -83,6 +83,7 @@ export function useEvents() {
 
       // 1. Cargar eventos del año anterior desde archivos estáticos
       const archivedEvents = await loadEventsFromArchive(previousYear);
+      const hasArchivedEvents = archivedEvents.length > 0;
 
       // 2. Escuchar cambios en eventos de Firebase (año actual)
       unsubscribeEvents = onValue(eventsRef, (snapshot) => {
@@ -95,11 +96,16 @@ export function useEvents() {
             const event: Event = { id: key, ...value };
             const eventYear = new Date(event.day).getFullYear();
 
-            // Cargar eventos del año actual Y eventos de Diciembre del año anterior
-            // Esto asegura que en el cambio de año (ej: 1 Enero), los eventos del 31 Dic sigan visibles
-            // aunque el archivo estático del año anterior aún no se haya generado/desplegado.
+            // Lógica de carga híbrida:
+            // 1. Siempre cargamos el año actual (o superior)
+            // 2. Si NO hay archivo histórico cargado, cargamos todo el año anterior de Firebase (evita el "apagón" del 1 de enero)
+            // 3. Si HAY archivo histórico, solo cargamos diciembre del año anterior de Firebase (margen de seguridad para solapamiento)
             const eventMonth = new Date(event.day).getMonth();
-            if (eventYear >= currentYear || (eventYear === previousYear && eventMonth === 11)) {
+            const isCurrentOrFuture = eventYear >= currentYear;
+            const isPrevYearAndNoArchive = !hasArchivedEvents && eventYear === previousYear;
+            const isPrevYearDecember = eventYear === previousYear && eventMonth === 11;
+
+            if (isCurrentOrFuture || isPrevYearAndNoArchive || isPrevYearDecember) {
               allEvents.push(event);
               if (!event.cancelado) {
                 loadedEvents.push(event);
