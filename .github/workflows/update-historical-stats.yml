@@ -2,8 +2,9 @@ name: Auto Update Stats & Deploy
 
 on:
   schedule:
-    # Runs at 00:00 on January 1st every year
-    - cron: '0 0 1 1 *'
+    # Runs at 03:00 on January 1st every year
+    # Waits for Admin migration (01:00 UTC) to finish reading data before deletion
+    - cron: '0 3 1 1 *'
   workflow_dispatch: # Allows manual trigger
 
 jobs:
