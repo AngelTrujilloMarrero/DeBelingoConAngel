@@ -431,14 +431,13 @@ const EventosPage: React.FC<EventosPageProps> = ({ events, recentActivity }) => 
         const tempContainer = document.createElement('div');
         tempContainer.style.cssText = `
         width: 1200px;
-        height: 1200px;
+        min-height: 1200px;
         position: relative;
         padding: 20px;
         text-align: center;
         margin: 0 auto;
         border-radius: 10px;
         box-sizing: border-box;
-        overflow: hidden;
         display: flex;
         flex-direction: column;
         justify-content: center;
@@ -518,7 +517,6 @@ const EventosPage: React.FC<EventosPageProps> = ({ events, recentActivity }) => 
             padding: 20px;
             border-radius: 10px;
             max-width: 100%;
-            overflow: hidden;
             display: flex;
             flex-direction: column;
             justify-content: center;
@@ -527,6 +525,8 @@ const EventosPage: React.FC<EventosPageProps> = ({ events, recentActivity }) => 
             width: 98%;
             margin-left: 1%;
             margin-right: 1%;
+            margin-bottom: 20px;
+            margin-top: 20px;
         `;
 
             const generationDate = document.createElement('p');
@@ -540,7 +540,6 @@ const EventosPage: React.FC<EventosPageProps> = ({ events, recentActivity }) => 
             contentDiv.appendChild(generationDate);
 
             const festivalHeader = document.createElement('div');
-            const randomRotation = (Math.random() * 2 - 1).toFixed(2);
             const randomHue = Math.floor(Math.random() * 360);
             const randomBgColor = `hsla(${randomHue}, 70%, 50%, 0.8)`;
 
@@ -558,7 +557,6 @@ const EventosPage: React.FC<EventosPageProps> = ({ events, recentActivity }) => 
                 background: ${randomBgColor};
                 padding: 20px 40px;
                 border-radius: 40px;
-                transform: rotate(${randomRotation}deg);
                 box-shadow: 12px 12px 25px rgba(0,0,0,0.5), inset 0 0 60px rgba(255,255,255,0.3);
                 width: auto;
                 max-width: 95%;
@@ -693,6 +691,7 @@ const EventosPage: React.FC<EventosPageProps> = ({ events, recentActivity }) => 
             color: #FF0000;
             margin-top: 15px;
             font-family: Arial, sans-serif;
+            margin-bottom: 20px;
         `;
             infoText.innerHTML = '<strong>Más info en: https://debelingoconangel.web.app </strong>';
 
@@ -702,68 +701,66 @@ const EventosPage: React.FC<EventosPageProps> = ({ events, recentActivity }) => 
             document.body.appendChild(tempContainer);
 
             setTimeout(() => {
-                const containerHeight = 1200;
-                const containerPadding = 40;
-                const minRequiredHeight = containerHeight * 0.7 - containerPadding;
-                const maxAllowedHeight = containerHeight * 0.96 - containerPadding;
-
+                const minHeight = 1200;
+                
+                // Allow container to grow if content is larger
+                tempContainer.style.height = 'auto';
+                
                 let fontSizeMultiplier = 1;
-                const contentHeight = contentDiv.scrollHeight;
-
-                if (contentHeight < minRequiredHeight) {
-                    const neededMultiplier = minRequiredHeight / contentHeight;
-                    fontSizeMultiplier = Math.min(neededMultiplier, 2);
+                // Force a check of dimensions after removing height constraint
+                const contentHeight = contentDiv.scrollHeight + 100; // Buffer for headers/footers
+                
+                // Scale fonts if content is small to fill the space
+                if (contentHeight < minHeight) {
+                    fontSizeMultiplier = Math.min(minHeight / contentHeight, 2);
                 }
-
-                if (contentHeight * fontSizeMultiplier > maxAllowedHeight) {
-                    fontSizeMultiplier = maxAllowedHeight / contentHeight;
+                // If content is very large, slightly reduce font but allow growth
+                else if (contentHeight > minHeight * 1.5) {
+                    fontSizeMultiplier = 0.8;
                 }
 
                 fontSizeMultiplier = Math.max(fontSizeMultiplier, 0.7);
-                fontSizeMultiplier = Math.min(fontSizeMultiplier, 2);
 
-                // 1. Ajuste general de escala basado en el volumen de contenido
+                // 1. Ajuste general de escala
                 Array.from(contentDiv.querySelectorAll('h3')).forEach(h3 => {
                     const baseSize = totalEvents >= COLUMN_THRESHOLD ? 1.8 : 2.2;
                     (h3 as HTMLElement).style.fontSize = `${baseSize * fontSizeMultiplier}em`;
                 });
 
-                // Solo aplicar a los párrafos que son eventos (dentro de eventsContainer)
                 Array.from(eventsContainer.querySelectorAll('p')).forEach(p => {
                     const baseSize = totalEvents >= COLUMN_THRESHOLD ? 1.3 : 1.6;
                     (p as HTMLElement).style.fontSize = `${baseSize * fontSizeMultiplier}em`;
                     (p as HTMLElement).style.lineHeight = "1.4";
                 });
 
-                // 2. Ajuste del titular: escalar según el contenido y reducir si desborda el ancho
+                // 2. Ajuste del titular
                 Array.from(festivalHeader.children).forEach((line) => {
                     const el = line as HTMLElement;
                     let currentFontSize = parseFloat(el.style.fontSize);
-
-                    // Aplicamos el multiplicador para que crezca si hay poco contenido
                     currentFontSize *= fontSizeMultiplier;
                     el.style.fontSize = `${currentFontSize}em`;
 
                     const containerMaxWidth = 1100;
-                    // Reducir tamaño de fuente solo si quepa en una línea (evitar desborde horizontal)
                     while (el.scrollWidth > containerMaxWidth && currentFontSize > 0.5) {
                         currentFontSize -= 0.1;
                         el.style.fontSize = `${currentFontSize}em`;
                     }
                 });
 
-                // 3. Centrado vertical y espaciado proporcional
-                contentDiv.style.minHeight = `${minRequiredHeight}px`;
-                contentDiv.style.display = 'flex';
-                contentDiv.style.flexDirection = 'column';
-                contentDiv.style.justifyContent = 'center';
+                // 3. Final layout adjustment
+                contentDiv.style.minHeight = `${minHeight * 0.7}px`;
                 contentDiv.style.gap = `${20 * fontSizeMultiplier}px`;
+
+                // Calculate final height for canvas
+                const finalHeight = Math.max(minHeight, tempContainer.scrollHeight);
 
                 html2canvas(tempContainer, {
                     width: 1200,
-                    height: 1200,
+                    height: finalHeight,
+                    windowHeight: finalHeight,
                     backgroundColor: null,
-                    useCORS: true
+                    useCORS: true,
+                    scale: 1 // Ensure consistent scale
                 }).then(canvas => {
                     const dataURL = canvas.toDataURL('image/png');
                     if (isEmbeddedBrowser()) {
@@ -780,7 +777,7 @@ const EventosPage: React.FC<EventosPageProps> = ({ events, recentActivity }) => 
                     alert("Hubo un error al generar la imagen. Por favor, inténtalo de nuevo.");
                     document.body.removeChild(tempContainer);
                 });
-            }, 100);
+            }, 500); // Increased timeout to ensure layout stability
         };
 
         const tryNextImage = (index: number) => {
@@ -809,6 +806,46 @@ const EventosPage: React.FC<EventosPageProps> = ({ events, recentActivity }) => 
     const showFestivalSelection = useCallback(() => {
         setFestivalSelectionVisible(!festivalSelectionVisible);
     }, [festivalSelectionVisible]);
+
+    const handleShare = async () => {
+        if (!generatedImage) return;
+
+        try {
+            const blob = await (await fetch(generatedImage)).blob();
+            const file = new File([blob], "eventos_debelingo.png", { type: "image/png" });
+
+            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+                await navigator.share({
+                    files: [file],
+                    title: 'Verbenas DeBelingo',
+                    text: '¡Mira estas verbenas!'
+                });
+            } else {
+                alert("Tu navegador no soporta compartir imágenes directamente. Prueba el botón de 'Copiar Imagen' o mantén pulsada la imagen.");
+            }
+        } catch (error) {
+            console.error("Error sharing:", error);
+            if ((error as Error).name !== 'AbortError') {
+                 alert("No se pudo compartir la imagen.");
+            }
+        }
+    };
+
+    const handleCopy = async () => {
+        if (!generatedImage) return;
+        try {
+            const blob = await (await fetch(generatedImage)).blob();
+            await navigator.clipboard.write([
+                new ClipboardItem({
+                    [blob.type]: blob
+                })
+            ]);
+            alert("¡Imagen copiada! Ahora puedes pegarla en WhatsApp, Instagram, etc.");
+        } catch (err) {
+            console.error("Error copying to clipboard:", err);
+            alert("No se pudo copiar la imagen automáticamente.");
+        }
+    };
 
     return (
         <>
@@ -907,25 +944,44 @@ const EventosPage: React.FC<EventosPageProps> = ({ events, recentActivity }) => 
             {/* Generated Image Modal */}
             {
                 generatedImage && (
-                    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[120] p-4">
+                    <div className="fixed inset-0 bg-black/90 flex items-center justify-center z-[120] p-4">
                         <div className="bg-white rounded-2xl p-4 w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
                             <h3 className="text-xl font-bold mb-4 text-gray-800 text-center">
                                 Imagen Generada
                             </h3>
                             <div className="text-center mb-4 text-sm text-gray-600 bg-yellow-50 p-2 rounded border border-yellow-200">
                                 {isEmbeddedBrowser() ? 
-                                    "Mantén pulsada la imagen para guardarla en tu dispositivo." : 
-                                    "Si la descarga no comenzó automáticamente, puedes guardar la imagen desde aquí."}
+                                    "Opciones: Copiar la imagen, Compartirla o mantener pulsada para guardar." : 
+                                    "Puedes guardar la imagen o compartirla."}
                             </div>
                             
                             <div className="flex-1 overflow-auto mb-4 flex justify-center bg-gray-100 rounded p-2">
-                                <img src={generatedImage} alt="Eventos Exportados" className="max-w-full h-auto object-contain" />
+                                <img 
+                                    src={generatedImage} 
+                                    alt="Eventos Exportados" 
+                                    className="max-w-full h-auto object-contain pointer-events-auto"
+                                    style={{ touchAction: 'manipulation' }}
+                                />
                             </div>
 
-                            <div className="flex gap-3 justify-center">
+                            <div className="flex flex-wrap gap-3 justify-center">
+                                <button
+                                    onClick={handleCopy}
+                                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                                    Copiar
+                                </button>
+                                <button
+                                    onClick={handleShare}
+                                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                                    Compartir
+                                </button>
                                 <button
                                     onClick={() => setGeneratedImage(null)}
-                                    className="bg-gray-800 hover:bg-gray-900 text-white px-6 py-2 rounded-lg font-medium transition-all duration-300"
+                                    className="bg-gray-800 hover:bg-gray-900 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300"
                                 >
                                     Cerrar
                                 </button>
