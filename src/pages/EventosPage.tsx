@@ -2,6 +2,7 @@ import React, { useState, useCallback } from 'react';
 import EventsList from '../components/EventsList';
 import { Event as AppEvent, RecentActivityItem } from '../types';
 import { runTransaction, exportUsageRef } from '../utils/firebase';
+import { isEmbeddedBrowser } from '../utils/helpers';
 import html2canvas from 'html2canvas';
 
 import {
@@ -20,6 +21,7 @@ interface EventosPageProps {
 const EventosPage: React.FC<EventosPageProps> = ({ events, recentActivity }) => {
     const [festivalSelectionVisible, setFestivalSelectionVisible] = useState(false);
     const [selectedFestival, setSelectedFestival] = useState('');
+    const [generatedImage, setGeneratedImage] = useState<string | null>(null);
 
     const checkRateLimit = (limit: number): boolean => {
         const key = 'user_export_history';
@@ -335,10 +337,14 @@ const EventosPage: React.FC<EventosPageProps> = ({ events, recentActivity }) => 
 
         try {
             const dataURL = canvas.toDataURL('image/png');
-            const downloadLink = document.createElement('a');
-            downloadLink.href = dataURL;
-            downloadLink.download = 'eventos.png';
-            downloadLink.click();
+            if (isEmbeddedBrowser()) {
+                setGeneratedImage(dataURL);
+            } else {
+                const downloadLink = document.createElement('a');
+                downloadLink.href = dataURL;
+                downloadLink.download = 'eventos.png';
+                downloadLink.click();
+            }
         } catch (e) {
             console.error("Error generando data URL:", e);
             alert("Error al generar la imagen. Puede deberse a restricciones de seguridad del navegador.");
@@ -759,10 +765,15 @@ const EventosPage: React.FC<EventosPageProps> = ({ events, recentActivity }) => 
                     backgroundColor: null,
                     useCORS: true
                 }).then(canvas => {
-                    const link = document.createElement('a');
-                    link.download = `${lugar || municipio}_${municipio}_2025.png`;
-                    link.href = canvas.toDataURL('image/png');
-                    link.click();
+                    const dataURL = canvas.toDataURL('image/png');
+                    if (isEmbeddedBrowser()) {
+                        setGeneratedImage(dataURL);
+                    } else {
+                        const link = document.createElement('a');
+                        link.download = `${lugar || municipio}_${municipio}_2025.png`;
+                        link.href = dataURL;
+                        link.click();
+                    }
                     document.body.removeChild(tempContainer);
                 }).catch(err => {
                     console.error("Error generating image with html2canvas:", err);
@@ -888,6 +899,37 @@ const EventosPage: React.FC<EventosPageProps> = ({ events, recentActivity }) => 
                                     </button>
                                 </>
                             )}
+                        </div>
+                    </div>
+                )
+            }
+
+            {/* Generated Image Modal */}
+            {
+                generatedImage && (
+                    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-[120] p-4">
+                        <div className="bg-white rounded-2xl p-4 w-full max-w-lg shadow-2xl animate-in zoom-in-95 duration-200 flex flex-col max-h-[90vh]">
+                            <h3 className="text-xl font-bold mb-4 text-gray-800 text-center">
+                                Imagen Generada
+                            </h3>
+                            <div className="text-center mb-4 text-sm text-gray-600 bg-yellow-50 p-2 rounded border border-yellow-200">
+                                {isEmbeddedBrowser() ? 
+                                    "Mantén pulsada la imagen para guardarla en tu dispositivo." : 
+                                    "Si la descarga no comenzó automáticamente, puedes guardar la imagen desde aquí."}
+                            </div>
+                            
+                            <div className="flex-1 overflow-auto mb-4 flex justify-center bg-gray-100 rounded p-2">
+                                <img src={generatedImage} alt="Eventos Exportados" className="max-w-full h-auto object-contain" />
+                            </div>
+
+                            <div className="flex gap-3 justify-center">
+                                <button
+                                    onClick={() => setGeneratedImage(null)}
+                                    className="bg-gray-800 hover:bg-gray-900 text-white px-6 py-2 rounded-lg font-medium transition-all duration-300"
+                                >
+                                    Cerrar
+                                </button>
+                            </div>
                         </div>
                     </div>
                 )
