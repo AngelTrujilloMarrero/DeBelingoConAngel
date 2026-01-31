@@ -8,7 +8,7 @@ import { Event, RecentActivityItem } from '../types';
 const orchestraArchive = (orchestraArchiveRaw as any).orchestras || [];
 const archiveMap: Record<string, any> = {};
 orchestraArchive.forEach((o: any) => archiveMap[o.name] = o);
-import { groupEventsByDay, sortEventsByDateTime, formatDayName, getLastUpdateDate } from '../utils/helpers';
+import { groupEventsByDay, sortEventsByDateTime, formatDayName, getLastUpdateDate, isEmbeddedBrowser } from '../utils/helpers';
 import WeatherIcon from './WeatherIcon';
 import TITSALogo from './TITSALogo';
 import { useAemetAlerts } from '../hooks/useAemetAlerts';
@@ -67,6 +67,10 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
   }, [dbOrchestras]);
 
   const handleExportClick = () => {
+    if (isEmbeddedBrowser()) {
+      alert('Para descargar imágenes, por favor abre esta página en tu navegador normal (Chrome, Safari, Firefox, etc.). Los navegadores embebidos (Instagram, Facebook, etc.) no permiten descargas.');
+      return;
+    }
     if (showDatePickers && startDate && endDate) {
       onExportWeek(startDate, endDate);
     } else {
@@ -367,7 +371,13 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
             </button>
 
             <button
-              onClick={onExportFestival}
+              onClick={() => {
+                if (isEmbeddedBrowser()) {
+                  alert('Para descargar imágenes, por favor abre esta página en tu navegador normal (Chrome, Safari, Firefox, etc.). Los navegadores embebidos (Instagram, Facebook, etc.) no permiten descargas.');
+                  return;
+                }
+                onExportFestival();
+              }}
               className="flex items-center justify-center gap-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white px-6 py-3 rounded-lg font-semibold transition-all duration-300 hover:shadow-lg hover:shadow-purple-500/25 hover:-translate-y-1"
             >
               <Download className="w-5 h-5" />
