@@ -76,3 +76,5 @@ cleanup-events.json
 
 # Build output directory
 dist/
+.vercel
+.env*.local
