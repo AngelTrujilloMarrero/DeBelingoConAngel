@@ -4,19 +4,147 @@ const crypto = require('crypto');
 const fetch = require('node-fetch');
 const xml2js = require('xml2js');
 const admin = require('firebase-admin');
+const FormData = require('form-data');
 
 admin.initializeApp();
 
 const app = express();
-app.use(express.json());
+app.use(express.json({ limit: '10mb' }));
 
 let postsCache = [];
+
+// ========================================================================
+// 🔐 SECURE IMAGE UPLOAD ENDPOINTS
+// ========================================================================
+
+/**
+ * Upload image to ImgBB
+ * POST /api/upload/imgbb
+ * Body: { image: base64string }
+ */
+app.post('/api/upload/imgbb', async (req, res) => {
+  try {
+    const { image } = req.body;
+
+    if (!image) {
+      return res.status(400).json({ error: 'Image data is required' });
+    }
+
+    const IMGBB_API_KEY = functions.config().imgbb?.apikey;
+
+    if (!IMGBB_API_KEY) {
+      console.error('ImgBB API key not configured');
+      return res.status(500).json({ error: 'ImgBB service not configured' });
+    }
+
+    const formData = new FormData();
+    formData.append('image', image);
+
+    const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+      method: 'POST',
+      body: formData
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      res.json({
+        success: true,
+        url: result.data.url,
+        data: result.data
+      });
+    } else {
+      throw new Error(result.error?.message || 'Upload failed');
+    }
+  } catch (error) {
+    console.error('ImgBB upload error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to upload to ImgBB'
+    });
+  }
+});
+
+/**
+ * Upload image to Imgur
+ * POST /api/upload/imgur
+ * Body: { image: base64string or File }
+ */
+app.post('/api/upload/imgur', async (req, res) => {
+  try {
+    const { image } = req.body;
+
+    if (!image) {
+      return res.status(400).json({ error: 'Image data is required' });
+    }
+
+    const IMGUR_CLIENT_IDS = functions.config().imgur?.clientids;
+
+    if (!IMGUR_CLIENT_IDS) {
+      console.error('Imgur client IDs not configured');
+      return res.status(500).json({ error: 'Imgur service not configured' });
+    }
+
+    const clientIds = IMGUR_CLIENT_IDS.split(',').map(id => id.trim());
+
+    let lastError = null;
+
+    // Try multiple client IDs
+    for (let i = 0; i < clientIds.length; i++) {
+      const clientId = clientIds[i];
+
+      try {
+        const formData = new FormData();
+        formData.append('image', image);
+        formData.append('type', 'base64');
+
+        const response = await fetch('https://api.imgur.com/3/image', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Client-ID ${clientId}`
+          },
+          body: formData
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          return res.json({
+            success: true,
+            url: result.data.link,
+            data: result.data
+          });
+        } else if (response.status === 429) {
+          // Rate limited, try next client ID
+          console.log(`Client ID ${i + 1} rate limited, trying next...`);
+          continue;
+        } else {
+          lastError = new Error(`Upload failed with status ${response.status}`);
+        }
+      } catch (error) {
+        console.error(`Client ID ${i + 1} failed:`, error);
+        lastError = error;
+      }
+    }
+
+    throw lastError || new Error('All Imgur client IDs failed');
+  } catch (error) {
+    console.error('Imgur upload error:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message || 'Failed to upload to Imgur'
+    });
+  }
+});
+
+// ========================================================================
+// 📝 BLOG/RSS ENDPOINTS (EXISTING)
+// ========================================================================
 
 // Validar webhook de Hashnode
 function validateHashnodeWebhook(req, secret) {
   const signature = req.headers['x-hashnode-signature'];
   if (!signature) return false;
-  
+
   const hmac = crypto.createHmac('sha256', secret);
   const digest = hmac.update(JSON.stringify(req.body)).digest('hex');
   return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(digest));
@@ -25,22 +153,22 @@ function validateHashnodeWebhook(req, secret) {
 // Endpoint del webhook
 app.post('/api/webhook/hashnode', (req, res) => {
   const WEBHOOK_SECRET = functions.config().hashnode?.secret;
-  
+
   if (WEBHOOK_SECRET && !validateHashnodeWebhook(req, WEBHOOK_SECRET)) {
     return res.status(401).json({ error: 'Invalid signature' });
   }
 
   const { event, data } = req.body;
-  
+
   if (event === 'post.created' || event === 'post.updated') {
     const existingIndex = postsCache.findIndex(p => p.id === data.post.id);
-    
+
     if (existingIndex >= 0) {
       postsCache[existingIndex] = data.post;
     } else {
       postsCache.push(data.post);
     }
-    
+
     console.log(`Post ${event}: ${data.post.title}`);
   } else if (event === 'post.deleted') {
     postsCache = postsCache.filter(p => p.id !== data.post.id);
@@ -98,7 +226,7 @@ app.get('/api/posts-from-rss', async (req, res) => {
     const xmlText = await response.text();
     const parser = new xml2js.Parser();
     const result = await parser.parseStringPromise(xmlText);
-    
+
     const items = result.rss?.channel?.[0]?.item || [];
     const posts = items.map(item => ({
       id: item.link?.[0] || '',
@@ -192,9 +320,9 @@ app.post('/api/sync-posts', async (req, res) => {
         `
       })
     });
-    
+
     const result = await graphqlResponse.json();
-    
+
     if (result.data?.publication?.posts?.edges) {
       const posts = result.data.publication.posts.edges.map(edge => edge.node);
       postsCache = posts;
@@ -207,7 +335,7 @@ app.post('/api/sync-posts', async (req, res) => {
     const xmlText = await rssResponse.text();
     const parser = new xml2js.Parser();
     const rssResult = await parser.parseStringPromise(xmlText);
-    
+
     const items = rssResult.rss?.channel?.[0]?.item || [];
     const rssPosts = items.map(item => ({
       id: item.link?.[0] || '',
@@ -237,6 +365,10 @@ app.post('/api/sync-posts', async (req, res) => {
 
 exports.api = functions.https.onRequest(app);
 
+// ========================================================================
+// 🧹 CLEANUP FUNCTIONS (EXISTING)
+// ========================================================================
+
 // Función para limpiar registros de auditoría antiguos (más de 400 días)
 exports.cleanupOldDeletions = functions.pubsub
   .schedule('0 2 * * *') // Todos los días a las 2 AM
@@ -246,10 +378,10 @@ exports.cleanupOldDeletions = functions.pubsub
       const db = admin.database();
       const deletionsRef = db.ref('eventDeletions');
       const snapshot = await deletionsRef.once('value');
-      
+
       const fourHundredDaysAgo = new Date();
       fourHundredDaysAgo.setDate(fourHundredDaysAgo.getDate() - 400);
-      
+
       const deletions = snapshot.val() || {};
       const keysToDelete = [];
 
@@ -261,13 +393,13 @@ exports.cleanupOldDeletions = functions.pubsub
       });
 
       if (keysToDelete.length > 0) {
-        const deletePromises = keysToDelete.map(key => 
+        const deletePromises = keysToDelete.map(key =>
           deletionsRef.child(key).remove()
         );
-        
+
         await Promise.all(deletePromises);
         console.log(`Eliminados ${keysToDelete.length} registros de auditoría antiguos`);
-        
+
         // Log de actividad de limpieza
         const cleanupLogRef = db.ref('cleanupLogs').push();
         await cleanupLogRef.set({
@@ -291,10 +423,10 @@ exports.manualCleanupDeletions = functions.https.onRequest(async (req, res) => {
     const db = admin.database();
     const deletionsRef = db.ref('eventDeletions');
     const snapshot = await deletionsRef.once('value');
-    
+
     const fourHundredDaysAgo = new Date();
     fourHundredDaysAgo.setDate(fourHundredDaysAgo.getDate() - 400);
-    
+
     const deletions = snapshot.val() || {};
     const keysToDelete = [];
 
@@ -306,10 +438,10 @@ exports.manualCleanupDeletions = functions.https.onRequest(async (req, res) => {
     });
 
     if (keysToDelete.length > 0) {
-      const deletePromises = keysToDelete.map(key => 
+      const deletePromises = keysToDelete.map(key =>
         deletionsRef.child(key).remove()
       );
-      
+
       await Promise.all(deletePromises);
     }
 

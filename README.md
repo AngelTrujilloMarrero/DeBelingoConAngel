@@ -146,34 +146,53 @@ Una plataforma digital que centraliza información sobre verbenas, conciertos y 
 5. **Acceder a la aplicación**
    Abre [http://localhost:5173](http://localhost:5173) en tu navegador.
 
-## 🚀 Deployment en Vercel
+## 🚀 Deployment - Arquitectura Separada
 
-El proyecto está configurado para desplegarse automáticamente en Vercel. Para configurar tu propio deployment:
+El proyecto usa dos plataformas trabajando juntas:
 
-### Configuración Rápida
+- **🟦 Firebase Hosting** → Frontend (Vite + React + Database)
+- **🟩 Vercel** → Backend (API Routes para proteger claves de API)
 
-1. **Importa el proyecto en Vercel**
-   - Ve a [vercel.com/dashboard](https://vercel.com/dashboard)
-   - Click en "Add New Project"
-   - Importa este repositorio
+### 🏗️ Arquitectura
 
-2. **Configura las variables de entorno**
-   - Ve a Settings → Environment Variables
-   - Agrega las 10 variables necesarias (ver `VERCEL_QUICK_GUIDE.md`)
-   - Marca todas como "Sensitive"
+```
+┌─────────────────────────────────────────────────┐
+│  Firebase Hosting                               │
+│  https://debelingoconangel.web.app              │
+│  • Frontend (Vite + React)                      │
+│  • Firebase Database                            │
+└──────────┬──────────────────────────────────────┘
+           │ fetch()
+           ▼
+┌─────────────────────────────────────────────────┐
+│  Vercel Backend                                 │
+│  https://de-belingo-con-angel.vercel.app        │
+│  • POST /api/upload-imgur                       │
+│  • POST /api/upload-imgbb                       │
+│  • Variables protegidas                         │
+└─────────────────────────────────────────────────┘
+```
 
-3. **Deploy automático**
-   - Cada `git push` desplegará automáticamente
-   - Vercel detecta cambios y actualiza tu aplicación
+### 📚 Guía de Deployment
 
-### 📚 Documentación de Deployment
+**Lee esto primero:** [DEPLOYMENT.md](./DEPLOYMENT.md) - Guía completa paso a paso
 
-- **[VERCEL_QUICK_GUIDE.md](./VERCEL_QUICK_GUIDE.md)** - Guía rápida de 5 minutos
-- **[VERCEL_SETUP.md](./VERCEL_SETUP.md)** - Guía completa paso a paso
-- **[VERCEL_CHECKLIST.md](./VERCEL_CHECKLIST.md)** - Checklist de verificación
+**Resumen rápido:**
+- [FIREBASE_VERCEL_SETUP.txt](./FIREBASE_VERCEL_SETUP.txt) - Resumen visual
+- [api/README.md](./api/README.md) - Documentación de API Routes
 
-### Variables de Entorno Requeridas
+### Configuración Rápida en Vercel
 
+1. **Importa el proyecto** en [vercel.com/dashboard](https://vercel.com/dashboard)
+2. **Configura 10 variables de entorno:**
+
+#### Backend (sin prefijo `VITE_`) - 2 variables
+```
+IMGBB_API_KEY
+IMGUR_CLIENT_IDS
+```
+
+#### Frontend (con prefijo `VITE_`) - 8 variables
 ```
 VITE_FIREBASE_API_KEY
 VITE_FIREBASE_AUTH_DOMAIN
@@ -183,8 +202,55 @@ VITE_FIREBASE_STORAGE_BUCKET
 VITE_FIREBASE_MESSAGING_SENDER_ID
 VITE_FIREBASE_APP_ID
 VITE_FIREBASE_MEASUREMENT_ID
-VITE_IMGBB_API_KEY
-VITE_IMGUR_CLIENT_IDS
+```
+
+3. **Deploy automático**
+   - Cada `git push` despliega automáticamente
+   - Vercel construye el frontend + API Routes
+   - Firebase hosting (opcional) para el frontend
+
+### 📚 Documentación de Deployment
+
+- **[VERCEL_BACKEND_SETUP.md](./VERCEL_BACKEND_SETUP.md)** - **⭐ NUEVA GUÍA** - Arquitectura con Vercel como backend
+- **[VERCEL_QUICK_GUIDE.md](./VERCEL_QUICK_GUIDE.md)** - Guía rápida de 5 minutos
+- **[VERCEL_SETUP.md](./VERCEL_SETUP.md)** - Guía completa paso a paso
+- **[api/README.md](./api/README.md)** - Documentación de las API Routes
+
+### 🔐 Seguridad Mejorada
+
+#### ❌ Antes (Claves en el Cliente):
+```javascript
+// ❌ API keys expuestas en el bundle
+const IMGBB_API_KEY = "be78b6d894fff24d363cd2abd6cddac0";
+const IMGUR_CLIENT_IDS = ["7a19e6c8c7056d7", ...];
+```
+
+#### ✅ Ahora (Claves en Vercel):
+```javascript
+// ✅ Cliente solo llama a la API
+const response = await fetch('/api/upload-imgur', {
+  method: 'POST',
+  body: JSON.stringify({ image: base64 })
+});
+
+// ✅ Vercel maneja las claves en el backend (protegidas)
+```
+
+### Variables de Entorno
+
+**Frontend** (cliente - con `VITE_`)
+```bash
+# Firebase config - seguras con Firebase Security Rules
+VITE_FIREBASE_API_KEY=...
+VITE_FIREBASE_AUTH_DOMAIN=...
+# ... resto de variables Firebase
+```
+
+**Backend** (Vercel - sin `VITE_`)
+```bash
+# Image upload services - protegidas en Vercel
+IMGBB_API_KEY=...
+IMGUR_CLIENT_IDS=...
 ```
 
 Ver `.env.example` para descripciones detalladas de cada variable.
