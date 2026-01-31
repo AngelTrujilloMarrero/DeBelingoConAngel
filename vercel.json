@@ -24,5 +24,17 @@
         }
       ]
     }
+  ],
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "https://debelingoconangel.web.app",
+      "permanent": true
+    },
+    {
+      "source": "/((?!api/).*)",
+      "destination": "https://debelingoconangel.web.app/:match*",
+      "permanent": true
+    }
   ]
 }
