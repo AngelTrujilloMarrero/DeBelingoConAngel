@@ -51,8 +51,8 @@ En Vercel Dashboard → Settings → Environment Variables:
 
 | Variable | Valor | Entornos |
 |----------|-------|----------|
-| `IMGBB_API_KEY` | `be78b6d894fff24d363cd2abd6cddac0` | Production, Preview, Development |
-| `IMGUR_CLIENT_IDS` | `7a19e6c8c7056d7,f0ea1437e4b31e8,43652b743b5a7a0,15e30ce94329ec4,2879199e5e55f13,546c25a59c58ad7,fc393963e63920c,ccfd9203a017260,902a281867c2957,86134371e54a93f` | Production, Preview, Development |
+| `IMGBB_API_KEY` | `tu_imgbb_api_key` | Production, Preview, Development |
+| `IMGUR_CLIENT_IDS` | `client1,client2,client3,...` | Production, Preview, Development |
 
 **✅ Para cada variable:**
 - Marca como "Sensitive"

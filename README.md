@@ -221,8 +221,8 @@ VITE_FIREBASE_MEASUREMENT_ID
 #### ❌ Antes (Claves en el Cliente):
 ```javascript
 // ❌ API keys expuestas en el bundle
-const IMGBB_API_KEY = "be78b6d894fff24d363cd2abd6cddac0";
-const IMGUR_CLIENT_IDS = ["7a19e6c8c7056d7", ...];
+const IMGBB_API_KEY = "tu_api_key_imgbb";
+const IMGUR_CLIENT_IDS = ["tu_client_id_imgur", ...];
 ```
 
 #### ✅ Ahora (Claves en Vercel):
