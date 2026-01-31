@@ -146,6 +146,50 @@ Una plataforma digital que centraliza información sobre verbenas, conciertos y 
 5. **Acceder a la aplicación**
    Abre [http://localhost:5173](http://localhost:5173) en tu navegador.
 
+## 🚀 Deployment en Vercel
+
+El proyecto está configurado para desplegarse automáticamente en Vercel. Para configurar tu propio deployment:
+
+### Configuración Rápida
+
+1. **Importa el proyecto en Vercel**
+   - Ve a [vercel.com/dashboard](https://vercel.com/dashboard)
+   - Click en "Add New Project"
+   - Importa este repositorio
+
+2. **Configura las variables de entorno**
+   - Ve a Settings → Environment Variables
+   - Agrega las 10 variables necesarias (ver `VERCEL_QUICK_GUIDE.md`)
+   - Marca todas como "Sensitive"
+
+3. **Deploy automático**
+   - Cada `git push` desplegará automáticamente
+   - Vercel detecta cambios y actualiza tu aplicación
+
+### 📚 Documentación de Deployment
+
+- **[VERCEL_QUICK_GUIDE.md](./VERCEL_QUICK_GUIDE.md)** - Guía rápida de 5 minutos
+- **[VERCEL_SETUP.md](./VERCEL_SETUP.md)** - Guía completa paso a paso
+- **[VERCEL_CHECKLIST.md](./VERCEL_CHECKLIST.md)** - Checklist de verificación
+
+### Variables de Entorno Requeridas
+
+```
+VITE_FIREBASE_API_KEY
+VITE_FIREBASE_AUTH_DOMAIN
+VITE_FIREBASE_DATABASE_URL
+VITE_FIREBASE_PROJECT_ID
+VITE_FIREBASE_STORAGE_BUCKET
+VITE_FIREBASE_MESSAGING_SENDER_ID
+VITE_FIREBASE_APP_ID
+VITE_FIREBASE_MEASUREMENT_ID
+VITE_IMGBB_API_KEY
+VITE_IMGUR_CLIENT_IDS
+```
+
+Ver `.env.example` para descripciones detalladas de cada variable.
+
+
 ## 🏗️ Arquitectura del Proyecto
 
 ```
