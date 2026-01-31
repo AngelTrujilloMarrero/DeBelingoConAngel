@@ -4,21 +4,23 @@ const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/jpg'];
 
 // Intentar usar Imgur primero, con fallback a almacenamiento local temporal
-const IMGUR_CLIENT_IDS = [
-  '7a19e6c8c7056d7',
-  'f0ea1437e4b31e8',
-  '43652b743b5a7a0',
-  '15e30ce94329ec4',
-  '2879199e5e55f13',
-  '546c25a59c58ad7',
-  'fc393963e63920c',
-  'ccfd9203a017260',
-  '902a281867c2957',
-  '86134371e54a93f'
-];
+const IMGUR_CLIENT_IDS = import.meta.env.VITE_IMGUR_CLIENT_IDS 
+  ? import.meta.env.VITE_IMGUR_CLIENT_IDS.split(',').map(id => id.trim())
+  : [
+      '7a19e6c8c7056d7',
+      'f0ea1437e4b31e8',
+      '43652b743b5a7a0',
+      '15e30ce94329ec4',
+      '2879199e5e55f13',
+      '546c25a59c58ad7',
+      'fc393963e63920c',
+      'ccfd9203a017260',
+      '902a281867c2957',
+      '86134371e54a93f'
+    ];
 
-// REEMPLAZA ESTO CON TU API KEY DE IMGBB: https://api.imgbb.com/
-const IMGBB_API_KEY = 'be78b6d894fff24d363cd2abd6cddac0';
+// API Key de ImgBB: https://api.imgbb.com/
+const IMGBB_API_KEY = import.meta.env.VITE_IMGBB_API_KEY || 'be78b6d894fff24d363cd2abd6cddac0';
 
 // Almacenamiento local temporal para cuando Imgur falle
 let localImageStorage = new Map<string, { url: string; timestamp: number }>();
