@@ -77,6 +77,8 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
     setAiMessage(null);
 
     try {
+      // Usar URL absoluta de Vercel para evitar errores de JSON (SyntaxError <)
+      const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL || 'https://de-belingo-con-angel.vercel.app';
       const prompt = `Actúa como Ángel de "De Belingo con Ángel". El usuario se encuentra en "${userLocation}".
       
       Información actual del Mapa de Verbenas:
@@ -84,15 +86,15 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
           ? mapEvents.slice(0, 10).map(e => `- ${e.day} (${e.hora}): ${e.orquesta} en ${e.lugar || e.municipio}`).join('\n')
           : "No hay verbenas próximas detectadas en el mapa ahora mismo."}
       
-      Dale una respuesta con mucha chispa canaria, menciona lo que "dice el mapa" y anímale a salir de belingo. Usa expresiones como ¡fuerte viaje!, puntal, magua, ñoss.`;
+      Dale una respuesta con mucha chispa canaria, menciona lo que "dice el mapa" y anímale a salir de belingo. Usa expresiones como ¡fuerte viaje!, puntal, magua, ñoss, de belingo.`;
 
-      const response = await fetch(`${import.meta.env.VITE_VERCEL_API_URL}/api/mistral`, {
+      const response = await fetch(`${API_BASE_URL}/api/mistral`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt })
       });
 
-      if (!response.ok) throw new Error('API Error');
+      if (!response.ok) throw new Error(`API Error: ${response.status}`);
 
       const data = await response.json();
       if (data.response) {
@@ -101,8 +103,8 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
         setAiMessage("¡Ay mi madre! Se me trabó el magua. ¡Prueba otra vez!");
       }
     } catch (err) {
-      console.error(err);
-      setAiMessage("¡Ñoos! No conecto con la centralita. ¡Vuelve a intentarlo!");
+      console.error("Error calling AI API:", err);
+      setAiMessage("¡Ñoos! No conecto con la centralita de Vercel. ¡Vuelve a intentarlo!");
     } finally {
       setIsAiLoading(false);
     }
@@ -277,66 +279,72 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
 
   return (
     <div className="space-y-4">
-      {/* Search Block */}
-      <div className="bg-gray-900/80 p-4 rounded-lg flex flex-col md:flex-row gap-4 items-center justify-between border border-white/10 backdrop-blur-sm shadow-md">
-        <label className="text-white font-bold flex items-center gap-2 text-lg">
-          <MapPin className="w-5 h-5 text-yellow-400" />
-          ¿Donde te encuentras?
-        </label>
-        <div className="flex w-full md:w-auto gap-2">
-          <input
-            type="text"
-            placeholder="Tu ubicación (ej: Santa Cruz)..."
-            value={userLocation}
-            onChange={(e) => setUserLocation(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && handleUserLocationSearch()}
-            className="w-full md:w-64 px-4 py-2 rounded-lg bg-gray-800 text-white border border-gray-600 focus:outline-none focus:border-blue-500 placeholder-gray-500"
-          />
-          <button
-            onClick={handleUserLocationSearch}
-            disabled={isSearching}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-bold transition-colors flex items-center gap-2 disabled:opacity-50"
-          >
-            {isSearching ? <AlertCircle className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
-            Buscar
-          </button>
-          <button
-            onClick={handleAiAnalysis}
-            disabled={isAiLoading || !userLocation.trim()}
-            className={`bg-[#FFD700] hover:bg-[#FFC700] text-black px-4 py-2 rounded-lg font-black transition-all transform active:scale-95 flex items-center gap-2 disabled:opacity-50 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1`}
-          >
-            {isAiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Brain className="w-4 h-4" />}
-            Consultar IA
-          </button>
-        </div>
-      </div>
-
-      {aiMessage && (
-        <div className="animate-fadeInUp bg-[#FFD700] border-4 border-black p-6 rounded-2xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden">
-          <div className="flex items-start gap-4">
-            <div className="bg-black p-3 rounded-xl flex-shrink-0">
-              <Sparkles className="w-8 h-8 text-[#FFD700] animate-pulse" />
-            </div>
-            <div className="flex-1">
-              <div className="flex items-center justify-between mb-2">
-                <h4 className="text-black font-black text-xl uppercase tracking-tighter flex items-center gap-2">
-                  <Wand2 className="w-5 h-5" />
-                  Ángel de Belingo (IA)
-                </h4>
-                <button
-                  onClick={() => setAiMessage(null)}
-                  className="bg-black text-white w-8 h-8 rounded-full flex items-center justify-center font-bold hover:bg-gray-800 transition-colors"
-                >
-                  ✕
-                </button>
-              </div>
-              <p className="text-black text-lg font-bold leading-tight italic">
-                "{aiMessage}"
-              </p>
-            </div>
+      {/* Search & AI Block */}
+      <div className="bg-gray-900 border-4 border-black p-6 rounded-2xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] space-y-4">
+        <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
+          <label className="text-white font-black flex items-center gap-2 text-xl uppercase tracking-tighter">
+            <MapPin className="w-6 h-6 text-yellow-400" />
+            ¿Donde te encuentras?
+          </label>
+          <div className="flex w-full md:w-auto gap-2">
+            <input
+              type="text"
+              placeholder="Tu municipio (ej: Arafo)..."
+              value={userLocation}
+              onChange={(e) => {
+                setUserLocation(e.target.value);
+                if (!e.target.value) setAiMessage(null);
+              }}
+              onKeyDown={(e) => e.key === 'Enter' && handleUserLocationSearch()}
+              className="w-full md:w-64 px-4 py-3 rounded-xl bg-gray-800 text-white border-2 border-yellow-400/50 focus:outline-none focus:border-yellow-400 font-bold placeholder-gray-500 transition-all"
+            />
+            <button
+              onClick={handleUserLocationSearch}
+              disabled={isSearching}
+              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-black transition-all transform active:scale-95 flex items-center gap-2 disabled:opacity-50 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+            >
+              {isSearching ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
+              BUSCAR
+            </button>
+            <button
+              onClick={handleAiAnalysis}
+              disabled={isAiLoading || !userLocation.trim()}
+              className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-3 rounded-xl font-black transition-all transform active:scale-95 flex items-center gap-2 disabled:opacity-50 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+            >
+              {isAiLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Brain className="w-5 h-5" />}
+              ÁNGEL IA
+            </button>
           </div>
         </div>
-      )}
+
+        {/* AI Response Integrated */}
+        {aiMessage && (
+          <div className="animate-fadeInUp bg-yellow-400 border-4 border-black p-5 rounded-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] relative group">
+            <div className="flex items-start gap-4">
+              <div className="bg-black p-3 rounded-lg flex-shrink-0 rotate-2 group-hover:rotate-0 transition-transform">
+                <Sparkles className="w-6 h-6 text-yellow-400 animate-pulse" />
+              </div>
+              <div className="flex-1">
+                <div className="flex items-center justify-between mb-2">
+                  <h4 className="text-black font-black text-lg uppercase tracking-tighter flex items-center gap-2">
+                    <Wand2 className="w-4 h-4" />
+                    CONSEJO DE ÁNGEL (IA)
+                  </h4>
+                  <button
+                    onClick={() => setAiMessage(null)}
+                    className="bg-black text-white w-6 h-6 rounded-full flex items-center justify-center font-bold hover:scale-110 transition-transform"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <p className="text-black text-lg font-black leading-tight italic">
+                  "{aiMessage}"
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
 
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-lg text-center font-bold shadow-lg">
         <div className="flex items-center justify-center gap-2">
