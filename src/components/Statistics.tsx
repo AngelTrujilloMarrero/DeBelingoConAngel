@@ -10,7 +10,7 @@ import {
 } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { Bar } from 'react-chartjs-2';
-import { BarChart3, Calendar, Trophy, TrendingUp, TrendingDown, ChevronDown, MousePointerClick, MapPin } from 'lucide-react';
+import { BarChart3, Calendar, Trophy, TrendingUp, TrendingDown, ChevronDown, MousePointerClick, MapPin, Sparkles, Wand2, Loader2, Brain } from 'lucide-react';
 import { Event, OrquestaCount, MonthlyOrquestaCount } from '../types';
 import { getRandomColor } from '../utils/helpers';
 import { zonasIsla, diasSemana } from '../utils/zones';
@@ -55,6 +55,66 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
   const [showTotal, setShowTotal] = useState(false);
   const [visibleItems, setVisibleItems] = useState(20);
   const [expandedCompMonth, setExpandedCompMonth] = useState<string | null>(null);
+
+  // Estados para la IA de Belingo
+  const [userTown, setUserTown] = useState('');
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiMessage, setAiMessage] = useState<string | null>(null);
+
+  const handleAiAnalysis = async () => {
+    if (!userTown.trim()) return;
+    setIsAiLoading(true);
+    setAiMessage(null);
+
+    try {
+      const now = new Date();
+      const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+
+      const localEvents = events.filter(e => {
+        if (e.cancelado) return false;
+        const eDate = new Date(e.day);
+        const town = userTown.toLowerCase();
+        return (e.municipio.toLowerCase().includes(town) || (e.lugar && e.lugar.toLowerCase().includes(town))) &&
+          eDate >= now && eDate <= nextWeek;
+      });
+
+      const townStatsCount = events.filter(e =>
+        new Date(e.day).getFullYear() === selectedYear &&
+        (e.municipio.toLowerCase().includes(userTown.toLowerCase()) || (e.lugar && e.lugar.toLowerCase().includes(userTown.toLowerCase())))
+      ).length;
+
+      const prompt = `Actúa como Ángel de "De Belingo con Ángel". El usuario te consulta sobre verbenas en "${userTown}" (Año ${selectedYear}).
+      
+      Información actual del Mapa de Verbenas (próximos 7 días):
+      ${localEvents.length > 0
+          ? localEvents.map(e => `- ${e.day}: ${e.orquesta} en ${e.lugar || e.municipio}`).join('\n')
+          : "No hay verbenas programadas esta semana justo ahí."}
+      
+      Estadística anual en esa zona: ${townStatsCount} verbenas en ${selectedYear}.
+      
+      Dale una respuesta con mucha chispa canaria, menciona lo que "dice el mapa" (los eventos de la lista) y anímale a salir de belingo. Si no hay nada, recomiéndale mirar el ranking general que tiene debajo.`;
+
+      const response = await fetch('/api/mistral', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt })
+      });
+
+      if (!response.ok) throw new Error('API Error');
+
+      const data = await response.json();
+      if (data.response) {
+        setAiMessage(data.response);
+      } else {
+        setAiMessage("¡Ay mi madre! Se me trabó el magua. ¡Prueba otra vez!");
+      }
+    } catch (err) {
+      console.error(err);
+      setAiMessage("¡Ñoos! Se nos fue la señal en el barranco. ¡Vuelve a intentarlo!");
+    } finally {
+      setIsAiLoading(false);
+    }
+  };
 
   useEffect(() => {
     setVisibleItems(20);
@@ -282,6 +342,102 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
               </button>
             ))}
           </div>
+        </div>
+      </div>
+
+      {/* Inteligencia Artificial Belingera */}
+      <div className="bg-gradient-to-br from-indigo-900/60 via-purple-900/40 to-blue-900/60 border border-indigo-500/30 rounded-2xl p-6 shadow-2xl backdrop-blur-md animate-fadeIn mb-8 relative overflow-hidden group">
+        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+          <Sparkles className="w-24 h-24 text-white" />
+        </div>
+
+        <div className="relative z-10">
+          <div className="flex items-center gap-3 mb-6">
+            <div className="p-3 bg-indigo-500/20 rounded-xl border border-indigo-400/30 shadow-inner">
+              <Brain className="w-8 h-8 text-indigo-300 animate-pulse" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-black text-white tracking-tight flex items-center gap-2">
+                Asistente Belingero <span className="text-xs bg-indigo-500 px-2 py-1 rounded-full uppercase tracking-tighter">BETA IA</span>
+              </h2>
+              <p className="text-indigo-200/70 text-sm font-medium">Pregúntale a Ángel sobre las verbenas en tu zona</p>
+            </div>
+          </div>
+
+          <div className="flex flex-col md:flex-row gap-4 mb-6">
+            <div className="relative flex-1">
+              <MapPin className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-indigo-400" />
+              <input
+                type="text"
+                value={userTown}
+                onChange={(e) => {
+                  setUserTown(e.target.value);
+                  if (!e.target.value) setAiMessage(null);
+                }}
+                onKeyDown={(e) => e.key === 'Enter' && handleAiAnalysis()}
+                placeholder="¿En qué municipio o pueblo estás? (ej: Arafo, Adeje...)"
+                className="w-full bg-black/40 border border-indigo-500/30 rounded-xl py-4 pl-12 pr-4 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-inner placeholder:text-gray-500 transition-all"
+              />
+            </div>
+            <button
+              onClick={handleAiAnalysis}
+              disabled={isAiLoading || !userTown.trim()}
+              className={`
+                px-8 py-4 rounded-xl font-bold flex items-center justify-center gap-2 transition-all duration-300 shadow-lg
+                ${isAiLoading || !userTown.trim()
+                  ? 'bg-gray-700 text-gray-400 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-indigo-600 to-blue-600 text-white hover:from-indigo-500 hover:to-blue-500 hover:scale-105 active:scale-95 shadow-indigo-500/25'
+                }
+              `}
+            >
+              {isAiLoading ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Analizando...
+                </>
+              ) : (
+                <>
+                  <Wand2 className="w-5 h-5" />
+                  Consultar a Ángel
+                </>
+              )}
+            </button>
+          </div>
+
+          {isAiLoading && (
+            <div className="flex items-center gap-3 p-4 bg-white/5 rounded-xl border border-white/10 animate-pulse mb-6">
+              <Loader2 className="w-5 h-5 text-indigo-400 animate-spin" />
+              <span className="text-gray-400 text-sm font-medium italic">Ángel está mirando el mapa de verbenas para darte un consejo...</span>
+            </div>
+          )}
+
+          {aiMessage && (
+            <div className="animate-fadeInUp bg-white/5 border border-white/10 rounded-2xl p-6 relative overflow-hidden backdrop-blur-sm">
+              <div className="absolute top-0 left-0 w-1.5 h-full bg-gradient-to-b from-blue-500 to-purple-500" />
+              <div className="flex items-start gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex-shrink-0 flex items-center justify-center shadow-lg border border-white/20">
+                  <Sparkles className="w-8 h-8 text-white animate-pulse" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-3">
+                    <h4 className="text-blue-300 font-bold text-sm uppercase tracking-widest flex items-center gap-2">
+                      <Wand2 className="w-4 h-4" />
+                      Ángel Intelligence
+                    </h4>
+                    <button
+                      onClick={() => setAiMessage(null)}
+                      className="p-1 hover:bg-white/10 rounded-full transition-colors text-gray-500 hover:text-white"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                  <div className="text-gray-100 leading-relaxed font-medium whitespace-pre-wrap pr-4 max-h-[400px] overflow-y-auto custom-scrollbar italic text-lg">
+                    "{aiMessage}"
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
