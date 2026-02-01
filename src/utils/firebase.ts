@@ -28,5 +28,6 @@ export const visitCountRef = ref(db, 'visitCount');
 export const exportUsageRef = ref(db, 'exportUsage');
 export const socialFollowersRef = ref(db, 'socialFollowers');
 export const orchestrasRef = ref(db, 'orchestras');
+export const mapUsageRef = ref(db, 'mapUsage');
 
-export { onValue, set, get, runTransaction };
+export { onValue, set, get, runTransaction, ref };

@@ -4,6 +4,7 @@ import L from 'leaflet';
 import { Map as MapIcon, Navigation, AlertCircle, MapPin, Calendar, Clock, Search, Sparkles, Wand2, Loader2, Brain } from 'lucide-react';
 import { Event } from '../types';
 import { geocodeAddress, municipioMapping, normalizarMunicipio } from '../utils/geocoding';
+import { checkLocalRateLimit, checkGlobalRateLimit } from '../utils/rateLimit';
 import 'leaflet/dist/leaflet.css';
 
 interface MapComponentProps {
@@ -41,6 +42,20 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
 
   const handleUserLocationSearch = async () => {
     if (!userLocation.trim()) return;
+
+    // Límite local: 1 consulta por segundo
+    if (!checkLocalRateLimit('map_query_local', 1, 1000)) {
+      alert("Por favor, espera un segundo entre consultas.");
+      return;
+    }
+
+    // Límite global: 39 consultas al día (86400000 ms)
+    const isGlobalAllowed = await checkGlobalRateLimit('mapUsage', 39, 24 * 60 * 60 * 1000);
+    if (!isGlobalAllowed) {
+      alert("Se ha alcanzado el límite global de consultas del mapa por hoy (máximo 39). Inténtalo de nuevo mañana.");
+      return;
+    }
+
     setIsSearching(true);
     try {
       // Add Tenerife to context to prioritize local results
@@ -73,6 +88,20 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
 
   const handleAiAnalysis = async () => {
     if (!userLocation.trim()) return;
+
+    // Límite local: 1 consulta por segundo
+    if (!checkLocalRateLimit('map_query_local', 1, 1000)) {
+      alert("Por favor, espera un segundo entre consultas.");
+      return;
+    }
+
+    // Límite global: 39 consultas al día (86400000 ms)
+    const isGlobalAllowed = await checkGlobalRateLimit('mapUsage', 39, 24 * 60 * 60 * 1000);
+    if (!isGlobalAllowed) {
+      alert("Se ha alcanzado el límite global de consultas de Ángel IA por hoy (máximo 39). Inténtalo de nuevo mañana.");
+      return;
+    }
+
     setIsAiLoading(true);
     setAiMessage(null);
 
@@ -337,7 +366,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
                     ✕
                   </button>
                 </div>
-                <p className="text-black text-lg font-black leading-tight italic">
+                <p className="text-black text-lg font-black leading-tight italic line-clamp-[20] overflow-y-auto max-h-[500px] pr-2 scrollbar-thin scrollbar-thumb-black/20">
                   "{aiMessage}"
                 </p>
               </div>
