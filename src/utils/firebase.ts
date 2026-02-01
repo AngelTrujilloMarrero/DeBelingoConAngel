@@ -12,6 +12,14 @@ const firebaseConfig = {
   measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
+// Debug check for missing configuration
+if (!firebaseConfig.databaseURL) {
+  console.error(
+    "🔥 FIREBASE ERROR: VITE_FIREBASE_DATABASE_URL is not defined in your environment variables.\n" +
+    "Please create a .env file in the project root based on .env.example and restart the server."
+  );
+}
+
 const app = initializeApp(firebaseConfig);
 export const db = getDatabase(app);
 export const eventsRef = ref(db, 'events');

@@ -1,0 +1,23 @@
+{
+  "rules": {
+    ".read": true,
+    "visitCount": {
+      ".write": "newData.isNumber()"
+    },
+    "exportUsage": {
+      ".write": true
+    },
+    "events": {
+      ".write": "auth != null"
+    },
+    "eventDeletions": {
+      ".write": "auth != null"
+    },
+    "socialFollowers": {
+      ".write": "auth != null"
+    },
+    "orchestras": {
+      ".write": "auth != null"
+    }
+  }
+}

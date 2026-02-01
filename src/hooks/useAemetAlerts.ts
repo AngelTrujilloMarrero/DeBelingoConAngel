@@ -54,11 +54,22 @@ export const useAemetAlerts = () => {
     useEffect(() => {
         const fetchAlerts = async () => {
             try {
-                // Usamos el feed general de Tenerife
-                const rssUrl = 'https://www.aemet.es/documentos_d/eltiempo/prediccion/avisos/rss/CAP_AFAP6596_RSS.xml';
-                const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(rssUrl)}`;
+                // Determinar URL base (igual que en secureImageUpload.ts)
+                const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL || 
+                    (import.meta.env.PROD ? 'https://de-belingo-con-angel.vercel.app' : '');
+                
+                // Usamos nuestro propio proxy en Vercel para evitar problemas de CORS
+                const proxyUrl = `${API_BASE_URL}/api/aemet-proxy`;
 
                 const response = await fetch(proxyUrl);
+                
+                if (!response.ok) {
+                    console.warn(`AEMET Proxy unavailable (${response.status}). Alerts disabled.`);
+                    setAlerts([]);
+                    setLoading(false);
+                    return;
+                }
+
                 const xmlText = await response.text();
 
                 const parser = new DOMParser();
