@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 // CORRECCIÓN: Se renombra el icono 'Map' a 'MapIcon' para evitar conflictos con el objeto nativo Map de JS.
-import { Map as MapIcon, Navigation, AlertCircle, MapPin, Calendar, Clock, Search } from 'lucide-react';
+import { Map as MapIcon, Navigation, AlertCircle, MapPin, Calendar, Clock, Search, Sparkles, Wand2, Loader2, Brain } from 'lucide-react';
 import { Event } from '../types';
 import { geocodeAddress, municipioMapping, normalizarMunicipio } from '../utils/geocoding';
 import 'leaflet/dist/leaflet.css';
@@ -17,6 +17,10 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
   const [isSearching, setIsSearching] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
+
+  // Estados para la IA de Belingo
+  const [isAiLoading, setIsAiLoading] = useState(false);
+  const [aiMessage, setAiMessage] = useState<string | null>(null);
 
   // Filter events for map display
   // Modified logic: "con 3 horas máxima pasadas el evento"
@@ -64,6 +68,43 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
       console.error("Error finding user location:", error);
     } finally {
       setIsSearching(false);
+    }
+  };
+
+  const handleAiAnalysis = async () => {
+    if (!userLocation.trim()) return;
+    setIsAiLoading(true);
+    setAiMessage(null);
+
+    try {
+      const prompt = `Actúa como Ángel de "De Belingo con Ángel". El usuario se encuentra en "${userLocation}".
+      
+      Información actual del Mapa de Verbenas:
+      ${mapEvents.length > 0
+          ? mapEvents.slice(0, 10).map(e => `- ${e.day} (${e.hora}): ${e.orquesta} en ${e.lugar || e.municipio}`).join('\n')
+          : "No hay verbenas próximas detectadas en el mapa ahora mismo."}
+      
+      Dale una respuesta con mucha chispa canaria, menciona lo que "dice el mapa" y anímale a salir de belingo. Usa expresiones como ¡fuerte viaje!, puntal, magua, ñoss.`;
+
+      const response = await fetch(`${import.meta.env.VITE_VERCEL_API_URL}/api/mistral`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt })
+      });
+
+      if (!response.ok) throw new Error('API Error');
+
+      const data = await response.json();
+      if (data.response) {
+        setAiMessage(data.response);
+      } else {
+        setAiMessage("¡Ay mi madre! Se me trabó el magua. ¡Prueba otra vez!");
+      }
+    } catch (err) {
+      console.error(err);
+      setAiMessage("¡Ñoos! No conecto con la centralita. ¡Vuelve a intentarlo!");
+    } finally {
+      setIsAiLoading(false);
     }
   };
 
@@ -259,8 +300,43 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
             {isSearching ? <AlertCircle className="w-4 h-4 animate-spin" /> : <Search className="w-4 h-4" />}
             Buscar
           </button>
+          <button
+            onClick={handleAiAnalysis}
+            disabled={isAiLoading || !userLocation.trim()}
+            className={`bg-[#FFD700] hover:bg-[#FFC700] text-black px-4 py-2 rounded-lg font-black transition-all transform active:scale-95 flex items-center gap-2 disabled:opacity-50 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)] hover:shadow-none hover:translate-x-1 hover:translate-y-1`}
+          >
+            {isAiLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Brain className="w-4 h-4" />}
+            Consultar IA
+          </button>
         </div>
       </div>
+
+      {aiMessage && (
+        <div className="animate-fadeInUp bg-[#FFD700] border-4 border-black p-6 rounded-2xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] relative overflow-hidden">
+          <div className="flex items-start gap-4">
+            <div className="bg-black p-3 rounded-xl flex-shrink-0">
+              <Sparkles className="w-8 h-8 text-[#FFD700] animate-pulse" />
+            </div>
+            <div className="flex-1">
+              <div className="flex items-center justify-between mb-2">
+                <h4 className="text-black font-black text-xl uppercase tracking-tighter flex items-center gap-2">
+                  <Wand2 className="w-5 h-5" />
+                  Ángel de Belingo (IA)
+                </h4>
+                <button
+                  onClick={() => setAiMessage(null)}
+                  className="bg-black text-white w-8 h-8 rounded-full flex items-center justify-center font-bold hover:bg-gray-800 transition-colors"
+                >
+                  ✕
+                </button>
+              </div>
+              <p className="text-black text-lg font-bold leading-tight italic">
+                "{aiMessage}"
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-lg text-center font-bold shadow-lg">
         <div className="flex items-center justify-center gap-2">
