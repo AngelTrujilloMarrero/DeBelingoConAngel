@@ -315,7 +315,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
             <MapPin className="w-6 h-6 text-yellow-400" />
             ¿Donde te encuentras?
           </label>
-          <div className="flex w-full md:w-auto gap-2">
+          <div className="flex flex-col sm:flex-row w-full md:w-auto gap-2">
             <input
               type="text"
               placeholder="Tu municipio (ej: Arafo)..."
@@ -327,22 +327,24 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
               onKeyDown={(e) => e.key === 'Enter' && handleUserLocationSearch()}
               className="w-full md:w-64 px-4 py-3 rounded-xl bg-gray-800 text-white border-2 border-yellow-400/50 focus:outline-none focus:border-yellow-400 font-bold placeholder-gray-500 transition-all"
             />
-            <button
-              onClick={handleUserLocationSearch}
-              disabled={isSearching}
-              className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-black transition-all transform active:scale-95 flex items-center gap-2 disabled:opacity-50 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
-            >
-              {isSearching ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
-              BUSCAR
-            </button>
-            <button
-              onClick={handleAiAnalysis}
-              disabled={isAiLoading || !userLocation.trim()}
-              className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-3 rounded-xl font-black transition-all transform active:scale-95 flex items-center gap-2 disabled:opacity-50 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
-            >
-              {isAiLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Brain className="w-5 h-5" />}
-              ÁNGEL IA
-            </button>
+            <div className="flex gap-2 w-full sm:w-auto">
+              <button
+                onClick={handleUserLocationSearch}
+                disabled={isSearching}
+                className="flex-1 sm:flex-initial justify-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-black transition-all transform active:scale-95 flex items-center gap-2 disabled:opacity-50 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+              >
+                {isSearching ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
+                BUSCAR
+              </button>
+              <button
+                onClick={handleAiAnalysis}
+                disabled={isAiLoading || !userLocation.trim()}
+                className="flex-1 sm:flex-initial justify-center bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-3 rounded-xl font-black transition-all transform active:scale-95 flex items-center gap-2 disabled:opacity-50 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+              >
+                {isAiLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Brain className="w-5 h-5" />}
+                ÁNGEL IA
+              </button>
+            </div>
           </div>
         </div>
 
