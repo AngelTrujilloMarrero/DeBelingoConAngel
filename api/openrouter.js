@@ -38,7 +38,7 @@ export default async function handler(req, res) {
                 'X-Title': 'De Belingo con Angel',
             },
             body: JSON.stringify({
-                model: 'google/gemma-2-9b-it:free',
+                model: 'stepfun/step-3.5-flash:free',
                 messages: [
                     {
                         role: 'system',
