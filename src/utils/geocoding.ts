@@ -1,4 +1,5 @@
 import { Coordinates, MunicipioMapping } from '../types';
+import { getAppCheckToken } from './firebase';
 
 export const municipioMapping: MunicipioMapping = {
   "Adeje": "Adeje",
@@ -90,13 +91,21 @@ export async function geocodeAddress(address: string): Promise<Coordinates | nul
     return null;
   }
 
-  const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1`;
+  // Determinar URL base (igual que en useAemetAlerts.ts)
+  const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL ||
+    (import.meta.env.PROD ? 'https://de-belingo-con-angel.vercel.app' : '');
+
+  const proxyUrl = `${API_BASE_URL}/api/geocoding?q=${encodeURIComponent(address)}`;
 
   try {
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'VerbenasTenerife/1.0'
-      }
+    const appCheckToken = await getAppCheckToken();
+    const headers: Record<string, string> = {};
+    if (appCheckToken) {
+      headers['X-Firebase-AppCheck'] = appCheckToken;
+    }
+
+    const response = await fetch(proxyUrl, {
+      headers
     });
 
     if (!response.ok) {

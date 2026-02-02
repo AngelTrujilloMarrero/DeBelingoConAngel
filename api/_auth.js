@@ -21,7 +21,11 @@ export async function verifyAppCheck(req) {
     const appCheckClaims = await admin.appCheck().verifyToken(appCheckToken);
     return { claims: appCheckClaims, error: null };
   } catch (err) {
-    console.error('App Check verification failed:', err);
-    return { error: 'Invalid App Check token', status: 401 };
+    console.error('App Check verification failed. Error details:', err);
+    // Log if the error is related to project mismatch or key issues
+    if (err.code === 'app-check/invalid-argument') {
+      console.error('App Check error: Invalid argument. Check if FIREBASE_PROJECT_ID is correct.');
+    }
+    return { error: `Invalid App Check token: ${err.message}`, status: 401 };
   }
 }
