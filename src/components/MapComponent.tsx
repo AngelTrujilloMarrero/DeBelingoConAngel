@@ -143,8 +143,10 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
         setAiMessage("¡Ay mi madre! Se me trabó el magua. ¡Prueba otra vez!");
       }
     } catch (err) {
-      console.error("Error calling AI API:", err);
-      setAiMessage("¡Ñoos! No conecto con la centralita de Vercel. ¡Vuelve a intentarlo!");
+      console.error("Error calling AI API detailed:", err);
+      // @ts-ignore
+      const errorMessage = err?.message || JSON.stringify(err);
+      setAiMessage(`¡Ñoos! Fallo técnico: ${errorMessage}. ¡Avísale a Ángel!`);
     } finally {
       setIsAiLoading(false);
     }

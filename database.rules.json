@@ -7,6 +7,9 @@
     "exportUsage": {
       ".write": true
     },
+    "mapUsage": {
+      ".write": true
+    },
     "guestbook": {
       ".write": true
     },

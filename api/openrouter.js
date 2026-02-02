@@ -3,12 +3,26 @@ export const config = {
 };
 
 export default async function handler(req) {
+    // Lista blanca de orígenes permitidos
+    const allowedOrigins = [
+        'https://debelingoconangel.web.app',
+        'http://localhost:5173', // Vite default port
+        'http://localhost:3000', // Alternative local port
+        'http://localhost:4173'  // Vite preview port
+    ];
+
+    const origin = req.headers.get('origin');
+    const isAllowed = allowedOrigins.includes(origin) || !origin; // !origin allows server-to-server or tools like curl
+    
+    // Si el origen está permitido, lo usamos. Si no, usamos el de producción por defecto (bloqueando en la práctica al navegador).
+    const corsOrigin = isAllowed ? origin : 'https://debelingoconangel.web.app';
+
     // Manejo de CORS manual para Edge Runtime
     if (req.method === 'OPTIONS') {
         return new Response(null, {
             status: 200,
             headers: {
-                'Access-Control-Allow-Origin': 'https://debelingoconangel.web.app',
+                'Access-Control-Allow-Origin': corsOrigin,
                 'Access-Control-Allow-Methods': 'GET, OPTIONS, POST',
                 'Access-Control-Allow-Headers': 'Content-Type, Authorization',
             },
@@ -20,7 +34,7 @@ export default async function handler(req) {
             status: 405,
             headers: {
                 'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': 'https://debelingoconangel.web.app',
+                'Access-Control-Allow-Origin': corsOrigin,
             },
         });
     }
@@ -34,7 +48,7 @@ export default async function handler(req) {
                 status: 400,
                 headers: {
                     'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': 'https://debelingoconangel.web.app',
+                    'Access-Control-Allow-Origin': corsOrigin,
                 },
             });
         }
@@ -46,7 +60,7 @@ export default async function handler(req) {
                 status: 500,
                 headers: {
                     'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': 'https://debelingoconangel.web.app',
+                    'Access-Control-Allow-Origin': corsOrigin,
                 },
             });
         }
@@ -84,7 +98,7 @@ export default async function handler(req) {
                 status: response.status,
                 headers: {
                     'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': 'https://debelingoconangel.web.app',
+                    'Access-Control-Allow-Origin': corsOrigin,
                 },
             });
         }
