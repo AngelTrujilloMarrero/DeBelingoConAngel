@@ -117,11 +117,22 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
       
       Dale una respuesta con mucha chispa canaria, menciona lo que "dice el mapa" y anímale a salir de belingo. Usa expresiones como ¡fuerte viaje!, puntal, magua, ñoss, de belingo.`;
 
-      const response = await fetch(`${API_BASE_URL}/api/mistral`, {
+      // Intentar primero con Mistral
+      let response = await fetch(`${API_BASE_URL}/api/mistral`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ prompt })
       });
+
+      // Si Mistral falla (por cuotas, API key no configurada, etc.), intentar con OpenRouter
+      if (!response.ok) {
+        console.warn("Mistral falló, intentando con OpenRouter...");
+        response = await fetch(`${API_BASE_URL}/api/openrouter`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ prompt })
+        });
+      }
 
       if (!response.ok) throw new Error(`API Error: ${response.status}`);
 
