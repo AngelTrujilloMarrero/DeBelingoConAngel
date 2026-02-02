@@ -92,12 +92,12 @@ const ReplyForm: React.FC<ReplyFormProps> = ({ messageId, messageAuthor, onSubmi
           placeholder="Escribe tu respuesta..."
           className="w-full px-3 py-2 bg-gray-900/50 border border-gray-700 rounded-lg text-white placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           rows={3}
-          maxLength={150}
+          maxLength={300}
           disabled={sending}
         />
 
         <div className="flex items-center justify-between text-xs text-gray-400">
-          <span>{replyText.length}/150 caracteres</span>
+          <span>{replyText.length}/300 caracteres</span>
           <button
             type="button"
             onClick={() => setShowImageUpload(!showImageUpload)}

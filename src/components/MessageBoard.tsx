@@ -433,12 +433,12 @@ const MessageBoard: React.FC = () => {
                                                     <ImageIcon className="w-4 h-4" />
                                                     {imageUrl ? 'Imagen añadida' : 'Añadir imagen'}
                                                 </button>
-                                                <span className="text-[10px] font-mono text-gray-500 bg-black/30 px-2 py-0.5 rounded-full">{newMessage.length}/150</span>
+                                                <span className="text-[10px] font-mono text-gray-500 bg-black/30 px-2 py-0.5 rounded-full">{newMessage.length}/300</span>
                                             </div>
                                         </div>
                                         <textarea
                                             value={newMessage}
-                                            onChange={(e) => setNewMessage(e.target.value.substring(0, 150))}
+                                            onChange={(e) => setNewMessage(e.target.value.substring(0, 300))}
                                             disabled={dailyLimitReached || sending}
                                             placeholder={dailyLimitReached ? "Límite alcanzado, borra mensajes para publicar..." : "Cuéntanos algo..."}
                                             className="w-full bg-gray-900/60 border border-gray-600/50 rounded-2xl p-5 text-sm focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none resize-none min-h-[160px] text-white placeholder:text-gray-600 shadow-inner"
