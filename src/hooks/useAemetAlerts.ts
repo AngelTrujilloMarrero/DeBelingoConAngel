@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { getAppCheckToken } from '../utils/firebase';
 
 export type AlertLevel = 'yellow' | 'orange' | 'red' | null;
 
@@ -55,14 +56,23 @@ export const useAemetAlerts = () => {
         const fetchAlerts = async () => {
             try {
                 // Determinar URL base (igual que en secureImageUpload.ts)
-                const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL || 
+                const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL ||
                     (import.meta.env.PROD ? 'https://de-belingo-con-angel.vercel.app' : '');
-                
+
                 // Usamos nuestro propio proxy en Vercel para evitar problemas de CORS
                 const proxyUrl = `${API_BASE_URL}/api/aemet-proxy`;
 
-                const response = await fetch(proxyUrl);
-                
+                // Obtener token de App Check
+                const appCheckToken = await getAppCheckToken();
+                const headers: Record<string, string> = {};
+                if (appCheckToken) {
+                    headers['X-Firebase-AppCheck'] = appCheckToken;
+                }
+
+                const response = await fetch(proxyUrl, {
+                    headers
+                });
+
                 if (!response.ok) {
                     console.warn(`AEMET Proxy unavailable (${response.status}). Alerts disabled.`);
                     setAlerts([]);
