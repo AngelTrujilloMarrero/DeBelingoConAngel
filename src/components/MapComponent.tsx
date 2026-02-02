@@ -115,12 +115,23 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
           ? mapEvents.slice(0, 10).map(e => `- ${e.day} (${e.hora}): ${e.orquesta} en ${e.lugar || e.municipio}`).join('\n')
           : "No hay verbenas próximas detectadas en el mapa ahora mismo."}
       
-      Dale una respuesta con mucha chispa canaria, menciona lo que "dice el mapa" y anímale a salir de belingo. Usa expresiones como ¡fuerte viaje!, puntal, magua, ñoss, de belingo.`;
+      // Dale una respuesta con mucha chispa canaria, menciona lo que "dice el mapa" y anímale a salir de belingo. Usa expresiones como ¡fuerte viaje!, puntal, magua, ñoss, de belingo.`;
+
+      const { getAppCheckToken } = await import('../utils/firebase');
+      const appCheckToken = await getAppCheckToken();
+
+      const headers: Record<string, string> = { 
+        'Content-Type': 'application/json' 
+      };
+
+      if (appCheckToken) {
+        headers['X-Firebase-AppCheck'] = appCheckToken;
+      }
 
       // Intentar primero con OpenRouter (ahora prioritario)
       let response = await fetch(`${API_BASE_URL}/api/openrouter`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({ prompt })
       });
 
@@ -129,7 +140,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
         console.warn("OpenRouter falló, intentando con Mistral...");
         response = await fetch(`${API_BASE_URL}/api/mistral`, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers,
           body: JSON.stringify({ prompt })
         });
       }

@@ -1,5 +1,6 @@
 import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, onValue, set, get, runTransaction } from 'firebase/database';
+import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken } from 'firebase/app-check';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -21,6 +22,30 @@ if (!firebaseConfig.databaseURL) {
 }
 
 const app = initializeApp(firebaseConfig);
+
+// Initialize App Check
+let appCheck: any = null;
+if (typeof window !== 'undefined') {
+  appCheck = initializeAppCheck(app, {
+    provider: new ReCaptchaEnterpriseProvider(import.meta.env.VITE_RECAPTCHA_SITE_KEY || ''),
+    isTokenAutoRefreshEnabled: true
+  });
+}
+
+/**
+ * Gets the current App Check token
+ */
+export const getAppCheckToken = async () => {
+  if (!appCheck) return null;
+  try {
+    const result = await getToken(appCheck, false);
+    return result.token;
+  } catch (error) {
+    console.error("Error getting App Check token:", error);
+    return null;
+  }
+};
+
 export const db = getDatabase(app);
 export const eventsRef = ref(db, 'events');
 export const eventDeletionsRef = ref(db, 'eventDeletions');

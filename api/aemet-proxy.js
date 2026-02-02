@@ -5,15 +5,23 @@
  * Fetches RSS feed from AEMET to avoid CORS issues on frontend
  */
 
+import { verifyAppCheck } from './_auth.js';
+
 export default async function handler(req, res) {
     // Set CORS headers to allow requests from any origin (including Firebase Hosting)
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Origin', 'https://debelingoconangel.web.app');
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Firebase-AppCheck');
 
     // Handle preflight request
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
+    }
+
+    // Verify App Check Token
+    const { error: authError, status: authStatus } = await verifyAppCheck(req);
+    if (authError) {
+        return res.status(authStatus).json({ error: authError });
     }
 
     // Only allow GET requests

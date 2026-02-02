@@ -1,3 +1,5 @@
+import { verifyAppCheck } from './_auth.js';
+
 export default async function handler(req, res) {
     // Enable CORS
     res.setHeader('Access-Control-Allow-Credentials', true);
@@ -5,11 +7,17 @@ export default async function handler(req, res) {
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
     res.setHeader(
         'Access-Control-Allow-Headers',
-        'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization'
+        'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization, X-Firebase-AppCheck'
     );
 
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
+    }
+
+    // Verify App Check Token
+    const { error: authError, status: authStatus } = await verifyAppCheck(req);
+    if (authError) {
+        return res.status(authStatus).json({ error: authError });
     }
 
     if (req.method !== 'POST') {

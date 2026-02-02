@@ -4,6 +4,7 @@
  */
 
 import { ImageInfo } from '../types/messages';
+import { getAppCheckToken } from './firebase';
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/jpg'];
@@ -88,12 +89,18 @@ export async function uploadToImgBB(file: File): Promise<string> {
     try {
         validateFile(file);
         const base64 = await readFileAsBase64(file);
+        const appCheckToken = await getAppCheckToken();
+
+        const headers: Record<string, string> = {
+            'Content-Type': 'application/json',
+        };
+        if (appCheckToken) {
+            headers['X-Firebase-AppCheck'] = appCheckToken;
+        }
 
         const response = await fetch(`${API_BASE_URL}/api/upload-imgbb`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers,
             body: JSON.stringify({ image: base64 })
         });
 
@@ -139,13 +146,19 @@ export async function uploadToImgur(
         }
 
         const base64 = await readFileAsBase64(file);
+        const appCheckToken = await getAppCheckToken();
 
         // Call Vercel serverless function
+        const headers: Record<string, string> = {
+            'Content-Type': 'application/json',
+        };
+        if (appCheckToken) {
+            headers['X-Firebase-AppCheck'] = appCheckToken;
+        }
+
         const response = await fetch(`${API_BASE_URL}/api/upload-imgur`, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
+            headers,
             body: JSON.stringify({ image: base64 })
         });
 

@@ -1,8 +1,6 @@
-export const config = {
-    runtime: 'edge',
-};
+import { verifyAppCheck } from './_auth.js';
 
-export default async function handler(req) {
+export default async function handler(req, res) {
     // Lista blanca de orígenes permitidos
     const allowedOrigins = [
         'https://debelingoconangel.web.app',
@@ -11,58 +9,41 @@ export default async function handler(req) {
         'http://localhost:4173'  // Vite preview port
     ];
 
-    const origin = req.headers.get('origin');
-    const isAllowed = allowedOrigins.includes(origin) || !origin; // !origin allows server-to-server or tools like curl
+    const origin = req.headers.origin;
+    const isAllowed = allowedOrigins.includes(origin) || !origin; 
     
-    // Si el origen está permitido, lo usamos. Si no, usamos el de producción por defecto (bloqueando en la práctica al navegador).
     const corsOrigin = isAllowed ? origin : 'https://debelingoconangel.web.app';
 
-    // Manejo de CORS manual para Edge Runtime
+    // CORS headers
+    res.setHeader('Access-Control-Allow-Origin', corsOrigin);
+    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS, POST');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Firebase-AppCheck');
+
     if (req.method === 'OPTIONS') {
-        return new Response(null, {
-            status: 200,
-            headers: {
-                'Access-Control-Allow-Origin': corsOrigin,
-                'Access-Control-Allow-Methods': 'GET, OPTIONS, POST',
-                'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-            },
-        });
+        return res.status(200).end();
+    }
+
+    // Verify App Check Token
+    const { error: authError, status: authStatus } = await verifyAppCheck(req);
+    if (authError) {
+        return res.status(authStatus).json({ error: authError });
     }
 
     if (req.method !== 'POST') {
-        return new Response(JSON.stringify({ error: 'Method not allowed' }), {
-            status: 405,
-            headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': corsOrigin,
-            },
-        });
+        return res.status(405).json({ error: 'Method not allowed' });
     }
 
     try {
-        const body = await req.json();
-        const { prompt } = body;
+        const { prompt } = req.body;
 
         if (!prompt) {
-            return new Response(JSON.stringify({ error: 'Prompt is required' }), {
-                status: 400,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': corsOrigin,
-                },
-            });
+            return res.status(400).json({ error: 'Prompt is required' });
         }
 
         const apiKey = process.env.API_OPENROUTER;
 
         if (!apiKey) {
-            return new Response(JSON.stringify({ error: 'OpenRouter API key not configured' }), {
-                status: 500,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': corsOrigin,
-                },
-            });
+            return res.status(500).json({ error: 'OpenRouter API key not configured' });
         }
 
         const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -94,30 +75,12 @@ export default async function handler(req) {
 
         if (!response.ok) {
             console.error('OpenRouter API error:', data);
-            return new Response(JSON.stringify({ error: data.error?.message || 'Error calling OpenRouter API' }), {
-                status: response.status,
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Access-Control-Allow-Origin': corsOrigin,
-                },
-            });
+            return res.status(response.status).json({ error: data.error?.message || 'Error calling OpenRouter API' });
         }
 
-        return new Response(JSON.stringify({ response: data.choices[0].message.content }), {
-            status: 200,
-            headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': 'https://debelingoconangel.web.app',
-            },
-        });
+        return res.status(200).json({ response: data.choices[0].message.content });
     } catch (error) {
         console.error('Server error:', error);
-        return new Response(JSON.stringify({ error: 'Internal server error' }), {
-            status: 500,
-            headers: {
-                'Content-Type': 'application/json',
-                'Access-Control-Allow-Origin': 'https://debelingoconangel.web.app',
-            },
-        });
+        return res.status(500).json({ error: 'Internal server error' });
     }
 }
