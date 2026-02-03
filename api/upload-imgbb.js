@@ -25,7 +25,7 @@ export default async function handler(req, res) {
     }
 
     res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Firebase-AppCheck');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Firebase-AppCheck, x-debelingo-secret');
 
     // Handle preflight request
     if (req.method === 'OPTIONS') {

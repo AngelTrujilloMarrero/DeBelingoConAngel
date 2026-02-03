@@ -20,7 +20,7 @@ export default async function handler(req, res) {
         res.setHeader('Access-Control-Allow-Origin', origin);
     }
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Firebase-AppCheck');
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization, X-Firebase-AppCheck, x-debelingo-secret');
 
     // Handle preflight request
     if (req.method === 'OPTIONS') {
