@@ -23,8 +23,9 @@ if (!firebaseConfig.databaseURL) {
 
 const app = initializeApp(firebaseConfig);
 
-// Initialize App Check
+// Initialize App Check (DISABLED to avoid reCAPTCHA 400 errors)
 let appCheck: any = null;
+/*
 if (typeof window !== 'undefined') {
   try {
     appCheck = initializeAppCheck(app, {
@@ -32,9 +33,10 @@ if (typeof window !== 'undefined') {
       isTokenAutoRefreshEnabled: true
     });
   } catch (err) {
-    // Silently continue if reCAPTCHA fails
+    // Silently continue
   }
 }
+*/
 
 /**
  * Gets unified security headers for API calls
