@@ -32,6 +32,10 @@ function App() {
   console.log('App rendering, pathname:', pathname);
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      {/* VISUAL DEBUG INDICATOR */}
+      <div style={{ background: '#ff0000', color: 'white', textAlign: 'center', fontSize: '10px', padding: '2px', zIndex: 9999 }}>
+        DEBUG v1.1 - ACTIVO - App Check Shield Enabled
+      </div>
       {/* Header - Siempre visible */}
       <Header />
 
