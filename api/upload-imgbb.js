@@ -7,6 +7,18 @@
 
 import { verifySecurity } from './_auth.js';
 import { applySecurityHeaders } from './_cors.js';
+import { checkRateLimit } from './_rateLimit.js';
+
+/**
+ * Validates image magic numbers (signatures) for common formats
+ */
+function isValidImageSignature(base64Data) {
+    if (!base64Data || typeof base64Data !== 'string') return false;
+    const cleanBase64 = base64Data.replace(/^data:image\/\w+;base64,/, '');
+    const header = cleanBase64.substring(0, 32);
+    const validSignatures = ['/9j/', 'iVBORw0KGgo', 'R0lGODhl', 'R0lGODdh', 'UklGR'];
+    return validSignatures.some(sig => header.startsWith(sig));
+}
 
 export default async function handler(req, res) {
     // Apply Security Headers & CORS
@@ -17,6 +29,7 @@ export default async function handler(req, res) {
     if (authError) {
         return res.status(authStatus).json({ error: authError });
     }
+
 
     // Rate Limit por IP: 10 imágenes por hora por usuario
     const userIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
@@ -36,6 +49,13 @@ export default async function handler(req, res) {
         if (!image) {
             return res.status(400).json({ error: 'Image data is required' });
         }
+
+        // Magic Number Verification
+        if (!isValidImageSignature(image)) {
+            console.warn('⚠️ Rejected upload: Invalid image signature');
+            return res.status(400).json({ error: 'Invalid image format. Only JPG, PNG, GIF and WEBP are allowed.' });
+        }
+
 
         // Get API key from environment variable (configured in Vercel)
         const IMGBB_API_KEY = process.env.IMGBB_API_KEY;
