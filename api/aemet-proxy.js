@@ -32,13 +32,12 @@ export default async function handler(req, res) {
         return res.status(200).end();
     }
 
-    /* 
-    // Turnstile es opcional aquí para no bloquear la carga del mapa
-    const { error: authError } = await verifySecurity(req);
+    // Verify Security (Turnstile or Internal Key)
+    const { error: authError, status: authStatus } = await verifySecurity(req);
     if (authError) {
-        console.warn('AEMET calling without Turnstile, relying on Rate Limit');
+        return res.status(authStatus).json({ error: authError });
     }
-    */
+
 
 
     // Rate Limit: 500 requests per hour globally
@@ -56,7 +55,7 @@ export default async function handler(req, res) {
         const response = await fetch('https://www.aemet.es/documentos_d/eltiempo/prediccion/avisos/rss/CAP_AFAP6596_RSS.xml');
 
         if (!response.ok) {
-            throw new Error(`AEMET fetch error: ${response.status}`);
+            throw new Error(`External API error: ${response.status}`);
         }
 
         const xmlText = await response.text();
@@ -65,7 +64,8 @@ export default async function handler(req, res) {
         res.setHeader('Content-Type', 'application/xml; charset=utf-8');
         res.status(200).send(xmlText);
     } catch (error) {
-        console.error('AEMET proxy error:', error);
-        res.status(500).json({ error: error.message || 'Failed to fetch AEMET data' });
+        console.error('AEMET proxy error:', error.message);
+        res.status(500).json({ error: 'Service temporarily unavailable' });
     }
 }
+

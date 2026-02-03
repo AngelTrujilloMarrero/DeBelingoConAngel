@@ -17,13 +17,21 @@ if (!admin.apps.length) {
 }
 
 /**
- * Verifies security credentials (Turnstile)
+ * Verifies security credentials
+ * Can use Cloudflare Turnstile (priority for expensive AI/Upload)
+ * Or an Internal Secret Key (for background queries like geocoding/aemet)
  */
 export async function verifySecurity(req) {
   const turnstileToken = req.headers['x-turnstile-token'];
+  const internalKey = req.headers['x-app-internal-key'];
+
+  // Check Internal Key first (used for non-billable background tasks)
+  if (internalKey && internalKey === process.env.APP_INTERNAL_SECRET) {
+    return { claims: { internal: true }, error: null };
+  }
 
   if (!turnstileToken) {
-    return { error: 'Unauthorized: Missing security token', status: 401 };
+    return { error: 'Unauthorized: No valid credentials provided', status: 401 };
   }
 
   // Validar por Cloudflare Turnstile
@@ -47,10 +55,11 @@ export async function verifySecurity(req) {
 
     const errorCodes = outcome['error-codes'] ? outcome['error-codes'].join(', ') : 'unknown';
     console.error('Turnstile verification failed:', errorCodes);
-    return { error: `Unauthorized: Turnstile verification failed (${errorCodes})`, status: 401 };
+    return { error: 'Unauthorized: Security check failed', status: 401 };
   } catch (err) {
-    console.error('Turnstile error:', err.message);
-    return { error: `Unauthorized: Turnstile internal error (${err.message})`, status: 401 };
+    console.error('Security verification error:', err.message);
+    return { error: 'Internal Security Error', status: 401 };
   }
 }
+
 

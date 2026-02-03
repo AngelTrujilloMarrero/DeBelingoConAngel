@@ -31,17 +31,24 @@ export const getSecurityHeaders = async (token?: string) => {
     'Content-Type': 'application/json'
   };
 
-  // 1. Usar el token pasado por parámetro si existe
+  // 1. Añadir clave interna si está disponible (para bypass de Turnstile en peticiones de fondo)
+  const internalKey = import.meta.env.VITE_APP_INTERNAL_SECRET;
+  if (internalKey) {
+    headers['X-App-Internal-Key'] = internalKey;
+  }
+
+  // 2. Usar el token pasado por parámetro si existe
   if (token) {
     headers['X-Turnstile-Token'] = token;
-  } 
-  // 2. Si no, intentar obtener el token del objeto global
+  }
+  // 3. Si no, intentar obtener el token del objeto global
   else if (typeof window !== 'undefined' && (window as any)._turnstileToken) {
     headers['X-Turnstile-Token'] = (window as any)._turnstileToken;
   }
 
   return headers;
 };
+
 
 export const db = getDatabase(app);
 export const eventsRef = ref(db, 'events');

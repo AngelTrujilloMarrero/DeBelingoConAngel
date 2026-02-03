@@ -29,12 +29,12 @@ export default async function handler(req, res) {
         return res.status(200).end();
     }
 
-    /*
-    const { error: authError } = await verifySecurity(req);
+    // Verify Security (Turnstile or Internal Key)
+    const { error: authError, status: authStatus } = await verifySecurity(req);
     if (authError) {
-        console.warn('Geocoding calling without Turnstile, relying on Rate Limit');
+        return res.status(authStatus).json({ error: authError });
     }
-    */
+
 
 
     // Rate Limit: 300 requests per hour globally
@@ -48,10 +48,17 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { q } = req.query;
+    let { q } = req.query;
 
-    if (!q) {
-        return res.status(400).json({ error: 'Query parameter "q" is required' });
+    if (!q || typeof q !== 'string') {
+        return res.status(400).json({ error: 'Invalid search query' });
+    }
+
+    // Sanitization: Limit length and allowed characters (alphanumeric, spaces, commas, hyphens)
+    q = q.substring(0, 100).replace(/[^\w\s,áéíóúÁÉÍÓÚñÑ-]/g, '');
+
+    if (q.length < 3) {
+        return res.status(400).json({ error: 'Search query too short' });
     }
 
     try {
@@ -65,13 +72,14 @@ export default async function handler(req, res) {
         });
 
         if (!response.ok) {
-            throw new Error(`Nominatim error: ${response.status}`);
+            throw new Error(`External API error: ${response.status}`);
         }
 
         const data = await response.json();
         res.status(200).json(data);
     } catch (error) {
-        console.error('Geocoding proxy error:', error);
-        res.status(500).json({ error: error.message || 'Failed to fetch geocoding data' });
+        console.error('Geocoding error:', error.message);
+        res.status(500).json({ error: 'Service temporarily unavailable' });
     }
 }
+
