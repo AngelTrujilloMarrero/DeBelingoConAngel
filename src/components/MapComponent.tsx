@@ -152,7 +152,10 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
 
       resetToken(); // Reset after use
 
-      if (!response.ok) throw new Error(`API Error: ${response.status}`);
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `API Error: ${response.status}`);
+      }
 
       const data = await response.json();
       if (data.response) {
@@ -164,8 +167,9 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
       console.error("Error calling AI API detailed:", err);
       // @ts-ignore
       const errorMessage = err?.message || JSON.stringify(err);
-      setAiMessage(`¡Ñoos! Fallo técnico: ${errorMessage}. ¡Avísale a Ángel!`);
+      setAiMessage(`¡Ñoos! Hay un lío con la seguridad: ${errorMessage}. ¡Avísale a Ángel!`);
     } finally {
+
       setIsAiLoading(false);
     }
   };

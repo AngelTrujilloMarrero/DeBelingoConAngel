@@ -22,30 +22,35 @@ if (!admin.apps.length) {
 export async function verifySecurity(req) {
   const turnstileToken = req.headers['x-turnstile-token'];
 
-  // Validar por Cloudflare Turnstile (MÉTODO ÚNICO Y PRIORITARIO)
-  if (turnstileToken) {
-    try {
-      const CLOUDFLARE_SECRET = process.env.TURNSTILE_SECRET_KEY || '1x0000000000000000000000000000000AA'; // Test key
-
-      const formData = new URLSearchParams();
-      formData.append('secret', CLOUDFLARE_SECRET);
-      formData.append('response', turnstileToken);
-      formData.append('remoteip', req.headers['x-forwarded-for'] || req.socket.remoteAddress);
-
-      const result = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
-        body: formData,
-        method: 'POST',
-      });
-
-      const outcome = await result.json();
-      if (outcome.success) {
-        return { claims: { turnstile: true }, error: null };
-      }
-      console.error('Turnstile verification failed:', outcome['error-codes']);
-    } catch (err) {
-      console.error('Turnstile error:', err.message);
-    }
+  if (!turnstileToken) {
+    return { error: 'Unauthorized: Missing security token', status: 401 };
   }
 
-  return { error: 'Unauthorized: Missing or invalid security credentials', status: 401 };
+  // Validar por Cloudflare Turnstile
+  try {
+    const CLOUDFLARE_SECRET = process.env.TURNSTILE_SECRET_KEY || '1x0000000000000000000000000000000AA';
+
+    const formData = new URLSearchParams();
+    formData.append('secret', CLOUDFLARE_SECRET);
+    formData.append('response', turnstileToken);
+    formData.append('remoteip', req.headers['x-forwarded-for'] || req.socket.remoteAddress);
+
+    const result = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      body: formData,
+      method: 'POST',
+    });
+
+    const outcome = await result.json();
+    if (outcome.success) {
+      return { claims: { turnstile: true }, error: null };
+    }
+
+    const errorCodes = outcome['error-codes'] ? outcome['error-codes'].join(', ') : 'unknown';
+    console.error('Turnstile verification failed:', errorCodes);
+    return { error: `Unauthorized: Turnstile verification failed (${errorCodes})`, status: 401 };
+  } catch (err) {
+    console.error('Turnstile error:', err.message);
+    return { error: `Unauthorized: Turnstile internal error (${err.message})`, status: 401 };
+  }
 }
+

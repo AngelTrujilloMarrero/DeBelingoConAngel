@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { getSecurityHeaders } from '../utils/firebase';
+import { useTurnstile } from '../components/TurnstileProvider';
 
 export type AlertLevel = 'yellow' | 'orange' | 'red' | null;
 
@@ -51,33 +52,46 @@ const ZONE_MAPPING: Record<string, string> = {
 export const useAemetAlerts = () => {
     const [alerts, setAlerts] = useState<AemetAlert[]>([]);
     const [loading, setLoading] = useState(true);
+    const { token } = useTurnstile();
 
     useEffect(() => {
+        let isMounted = true;
+
         const fetchAlerts = async () => {
+            // No intentar si no hay token aún
+            if (!token) {
+                setLoading(false);
+                return;
+            }
+
             try {
-                // Determinar URL base (igual que en secureImageUpload.ts)
+                // Obtener cabeceras de seguridad usando el token actual
+                const headers = await getSecurityHeaders(token);
+
+                setLoading(true);
+
+                // Determinar URL base
                 const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL ||
                     (import.meta.env.PROD ? 'https://de-belingo-con-angel.vercel.app' : '');
 
-                // Usamos nuestro propio proxy en Vercel para evitar problemas de CORS
                 const proxyUrl = `${API_BASE_URL}/api/aemet-proxy`;
-
-                // Obtener cabeceras de seguridad unificadas
-                const headers = await getSecurityHeaders();
 
                 const response = await fetch(proxyUrl, {
                     headers
                 });
 
                 if (!response.ok) {
-                    console.warn(`AEMET Proxy unavailable (${response.status}). Alerts disabled.`);
-                    setAlerts([]);
-                    setLoading(false);
+                    if (response.status !== 401) {
+                        console.warn(`AEMET Proxy unavailable (${response.status}).`);
+                    }
+                    if (isMounted) {
+                        setAlerts([]);
+                        setLoading(false);
+                    }
                     return;
                 }
 
                 const xmlText = await response.text();
-
                 const parser = new DOMParser();
                 const xmlDoc = parser.parseFromString(xmlText, "text/xml");
                 const items = xmlDoc.querySelectorAll("item");
@@ -107,13 +121,11 @@ export const useAemetAlerts = () => {
                     else if (title.toLowerCase().includes("cumbres")) zone = "Cumbres";
 
                     // Extraer fecha (AEMET RSS usa formato DD-MM-YYYY en descripción)
-                    // Formato en descripción: "de 00:00 18-01-2026 WET (UTC) a 23:59 18-01-2026 WET (UTC)"
                     const dateMatch = description.match(/(\d{2})-(\d{2})-(\d{4})/);
                     let alertDate = "";
                     if (dateMatch) {
                         alertDate = `${dateMatch[3]}-${dateMatch[2]}-${dateMatch[1]}`;
                     } else {
-                        // Si no hay fecha en descripción, buscar en pubDate
                         const pubDate = item.querySelector("pubDate")?.textContent;
                         if (pubDate) {
                             const d = new Date(pubDate);
@@ -131,16 +143,24 @@ export const useAemetAlerts = () => {
                     });
                 });
 
-                setAlerts(parsedAlerts);
+                if (isMounted) {
+                    setAlerts(parsedAlerts);
+                }
             } catch (error) {
                 console.error("Error fetching AEMET alerts:", error);
             } finally {
-                setLoading(false);
+                if (isMounted) {
+                    setLoading(false);
+                }
             }
         };
 
         fetchAlerts();
-    }, []);
+
+        return () => {
+            isMounted = false;
+        };
+    }, [token]); // Re-ejecutar cuando el token esté disponible
 
     const getAlertForEvent = (municipio: string, date: string) => {
         const eventZone = ZONE_MAPPING[municipio] || "";

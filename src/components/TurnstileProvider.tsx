@@ -55,19 +55,19 @@ export const TurnstileProvider: React.FC<TurnstileProviderProps> = ({ children }
     return (
         <TurnstileContext.Provider value={{ token, resetToken }}>
             {children}
-            <div className="hidden">
-                <Turnstile
-                    ref={turnstileRef}
-                    siteKey={SITE_KEY}
-                    onSuccess={handleSuccess}
-                    onExpire={handleExpire}
-                    onError={handleError}
-                    options={{
-                        theme: 'light',
-                        size: 'invisible',
-                    }}
-                />
-            </div>
+            {/* No ocultar con CSS, 'invisible' ya lo hace internamente y evita problemas de sandboxing */}
+            <Turnstile
+                ref={turnstileRef}
+                siteKey={SITE_KEY}
+                onSuccess={handleSuccess}
+                onExpire={handleExpire}
+                onError={handleError}
+                options={{
+                    theme: 'light',
+                    size: 'invisible',
+                }}
+            />
         </TurnstileContext.Provider>
     );
 };
+
