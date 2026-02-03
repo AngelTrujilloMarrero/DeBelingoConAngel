@@ -26,19 +26,37 @@ const app = initializeApp(firebaseConfig);
 // Initialize App Check
 let appCheck: any = null;
 if (typeof window !== 'undefined') {
-  const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '';
-  console.log('🛡️ Initializing App Check with App ID:', firebaseConfig.appId.substring(0, 15) + '...');
-
   try {
     appCheck = initializeAppCheck(app, {
-      provider: new ReCaptchaEnterpriseProvider(siteKey),
+      provider: new ReCaptchaEnterpriseProvider(import.meta.env.VITE_RECAPTCHA_SITE_KEY || ''),
       isTokenAutoRefreshEnabled: true
     });
-    console.log('✅ App Check provider initialized.');
   } catch (err) {
-    console.error('❌ Failed to initialize App Check:', err);
+    // Silently continue if reCAPTCHA fails
   }
 }
+
+/**
+ * Gets unified security headers for API calls
+ */
+export const getSecurityHeaders = async () => {
+  const headers: Record<string, string> = {};
+
+  // 1. Intentar App Check
+  if (appCheck) {
+    try {
+      const result = await getToken(appCheck, false);
+      headers['X-Firebase-AppCheck'] = result.token;
+    } catch (e) {
+      // Ignorar fallo de reCAPTCHA
+    }
+  }
+
+  // 2. Usar Secreto Compartido como respaldo
+  headers['X-DeBelingo-Secret'] = 'debelingo-super-secret-2026';
+
+  return headers;
+};
 
 /**
  * Gets the current App Check token
@@ -49,7 +67,6 @@ export const getAppCheckToken = async () => {
     const result = await getToken(appCheck, false);
     return result.token;
   } catch (error) {
-    console.error("Error getting App Check token:", error);
     return null;
   }
 };

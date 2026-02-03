@@ -4,6 +4,7 @@
  */
 
 import { verifyAppCheck } from './_auth.js';
+import { checkRateLimit } from './_rateLimit.js';
 
 export default async function handler(req, res) {
     // Set CORS headers
@@ -26,16 +27,16 @@ export default async function handler(req, res) {
         return res.status(200).end();
     }
 
-    // Verify App Check Token
-    // We allow it to fail with a warning if App Check is not perfectly configured yet,
-    // but we should still try to verify it for security.
+    // Verify App Check / Shared Secret
     const { error: authError, status: authStatus } = await verifyAppCheck(req);
-
-    // TEMPORARY: If it's a 401, we might want to log it but continue if we're debugging,
-    // but better to stick to security. Let's keep it strict for now.
     if (authError) {
-        console.warn('App Check verification failed for geocoding:', authError);
-        // return res.status(authStatus).json({ error: authError });
+        return res.status(authStatus).json({ error: authError });
+    }
+
+    // Rate Limit: 300 requests per hour globally
+    const { allowed, error: rateError } = await checkRateLimit('geocoding', 300, 60 * 60 * 1000);
+    if (!allowed) {
+        return res.status(429).json({ error: rateError });
     }
 
     // Only allow GET requests

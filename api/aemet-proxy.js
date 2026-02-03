@@ -6,6 +6,7 @@
  */
 
 import { verifyAppCheck } from './_auth.js';
+import { checkRateLimit } from './_rateLimit.js';
 
 export default async function handler(req, res) {
     const origin = req.headers.origin;
@@ -31,6 +32,12 @@ export default async function handler(req, res) {
     const { error: authError, status: authStatus } = await verifyAppCheck(req);
     if (authError) {
         return res.status(authStatus).json({ error: authError });
+    }
+
+    // Rate Limit: 500 requests per hour globally
+    const { allowed, error: rateError } = await checkRateLimit('aemet', 500, 60 * 60 * 1000);
+    if (!allowed) {
+        return res.status(429).json({ error: rateError });
     }
 
     // Only allow GET requests

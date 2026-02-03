@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { getAppCheckToken } from '../utils/firebase';
+import { getSecurityHeaders } from '../utils/firebase';
 
 export type AlertLevel = 'yellow' | 'orange' | 'red' | null;
 
@@ -62,12 +62,8 @@ export const useAemetAlerts = () => {
                 // Usamos nuestro propio proxy en Vercel para evitar problemas de CORS
                 const proxyUrl = `${API_BASE_URL}/api/aemet-proxy`;
 
-                // Obtener token de App Check
-                const appCheckToken = await getAppCheckToken();
-                const headers: Record<string, string> = {};
-                if (appCheckToken) {
-                    headers['X-Firebase-AppCheck'] = appCheckToken;
-                }
+                // Obtener cabeceras de seguridad unificadas
+                const headers = await getSecurityHeaders();
 
                 const response = await fetch(proxyUrl, {
                     headers

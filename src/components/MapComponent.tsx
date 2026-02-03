@@ -117,16 +117,8 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
       
       // Dale una respuesta con mucha chispa canaria, menciona lo que "dice el mapa" y anímale a salir de belingo. Usa expresiones como ¡fuerte viaje!, puntal, magua, ñoss, de belingo.`;
 
-      const { getAppCheckToken } = await import('../utils/firebase');
-      const appCheckToken = await getAppCheckToken();
-
-      const headers: Record<string, string> = { 
-        'Content-Type': 'application/json' 
-      };
-
-      if (appCheckToken) {
-        headers['X-Firebase-AppCheck'] = appCheckToken;
-      }
+      const { getSecurityHeaders } = await import('../utils/firebase');
+      const headers = await getSecurityHeaders();
 
       // Intentar primero con OpenRouter (ahora prioritario)
       let response = await fetch(`${API_BASE_URL}/api/openrouter`, {

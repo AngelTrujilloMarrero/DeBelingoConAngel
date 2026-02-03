@@ -1,4 +1,5 @@
 import { verifyAppCheck } from './_auth.js';
+import { checkRateLimit } from './_rateLimit.js';
 
 export default async function handler(req, res) {
     // Enable CORS
@@ -28,6 +29,12 @@ export default async function handler(req, res) {
     const { error: authError, status: authStatus } = await verifyAppCheck(req);
     if (authError) {
         return res.status(authStatus).json({ error: authError });
+    }
+
+    // Rate Limit: 100 requests per hour globally
+    const { allowed, error: rateError } = await checkRateLimit('angel-ia', 100, 60 * 60 * 1000);
+    if (!allowed) {
+        return res.status(429).json({ error: rateError });
     }
 
     if (req.method !== 'POST') {

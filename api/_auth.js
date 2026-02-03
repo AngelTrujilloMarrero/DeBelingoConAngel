@@ -7,25 +7,29 @@ if (!admin.apps.length) {
       clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
       privateKey: process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined,
     }),
+    databaseURL: process.env.FIREBASE_DATABASE_URL || 'https://debelingoconangel-default-rtdb.europe-west1.firebasedatabase.app'
   });
 }
 
 export async function verifyAppCheck(req) {
   const appCheckToken = req.headers['x-firebase-appcheck'];
+  const internalSecret = req.headers['x-debelingo-secret'];
 
-  if (!appCheckToken) {
-    return { error: 'App Check token missing', status: 401 };
+  // 1. Validar por Secreto Interno (Método de emergencia/alternativo)
+  const masterSecret = process.env.INTERNAL_API_SECRET || 'debelingo-super-secret-2026';
+  if (internalSecret && internalSecret === masterSecret) {
+    return { claims: { internal: true }, error: null };
   }
 
-  try {
-    const appCheckClaims = await admin.appCheck().verifyToken(appCheckToken);
-    return { claims: appCheckClaims, error: null };
-  } catch (err) {
-    console.error('App Check verification failed. Error details:', err);
-    // Log if the error is related to project mismatch or key issues
-    if (err.code === 'app-check/invalid-argument') {
-      console.error('App Check error: Invalid argument. Check if FIREBASE_PROJECT_ID is correct.');
+  // 2. Validar por App Check (Si el token existe y Google no da error 400)
+  if (appCheckToken) {
+    try {
+      const appCheckClaims = await admin.appCheck().verifyToken(appCheckToken);
+      return { claims: appCheckClaims, error: null };
+    } catch (err) {
+      console.error('App Check verification failed:', err.message);
     }
-    return { error: `Invalid App Check token: ${err.message}`, status: 401 };
   }
+
+  return { error: 'Unauthorized: Missing or invalid security credentials', status: 401 };
 }

@@ -1,5 +1,5 @@
 import { Coordinates, MunicipioMapping } from '../types';
-import { getAppCheckToken } from './firebase';
+import { getSecurityHeaders } from './firebase';
 
 export const municipioMapping: MunicipioMapping = {
   "Adeje": "Adeje",
@@ -98,11 +98,7 @@ export async function geocodeAddress(address: string): Promise<Coordinates | nul
   const proxyUrl = `${API_BASE_URL}/api/geocoding?q=${encodeURIComponent(address)}`;
 
   try {
-    const appCheckToken = await getAppCheckToken();
-    const headers: Record<string, string> = {};
-    if (appCheckToken) {
-      headers['X-Firebase-AppCheck'] = appCheckToken;
-    }
+    const headers = await getSecurityHeaders();
 
     const response = await fetch(proxyUrl, {
       headers
