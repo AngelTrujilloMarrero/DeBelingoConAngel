@@ -12,13 +12,17 @@ export default async function handler(req, res) {
     const origin = req.headers.origin;
     const allowedOrigins = [
         'https://debelingoconangel.web.app',
+        'https://debe-lingo-con-angel.web.app',
         'https://de-belingo-con-angel.vercel.app',
         'http://localhost:5173',
         'http://localhost:3000'
     ];
 
-    if (allowedOrigins.includes(origin)) {
+    if (origin && allowedOrigins.includes(origin)) {
         res.setHeader('Access-Control-Allow-Origin', origin);
+    } else {
+        // Fallback al dominio principal si no hay origen o no coincide
+        res.setHeader('Access-Control-Allow-Origin', 'https://debelingoconangel.web.app');
     }
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization, X-Firebase-AppCheck, x-debelingo-secret');

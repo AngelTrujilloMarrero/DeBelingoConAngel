@@ -39,8 +39,8 @@ export async function checkRateLimit(key, limit, windowMs) {
 
         return { allowed: true, data: result.snapshot.val() };
     } catch (error) {
-        console.error(`Rate limit error for ${key}:`, error);
-        // Fail open to avoid blocking users if DB is down, but log error
+        console.error(`🔴 Rate limit error for ${key}:`, error.message);
+        // Fail open to avoid blocking users if DB is partially down
         return { allowed: true };
     }
 }
