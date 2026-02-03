@@ -15,7 +15,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://debelingoconangel-default-rtdb.europe-west1.firebasedatabase.app https://challenges.cloudflare.com https://openrouter.ai https://api.mistral.ai https://www.google-analytics.com; frame-src https://challenges.cloudflare.com;"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://challenges.cloudflare.com https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; img-src 'self' data: https:; font-src 'self' https://fonts.gstatic.com; connect-src 'self' https://*.vercel.app https://debelingoconangel-default-rtdb.europe-west1.firebasedatabase.app https://challenges.cloudflare.com https://openrouter.ai https://api.mistral.ai https://www.google-analytics.com; frame-src https://challenges.cloudflare.com;"
         },
         {
           "key": "X-Content-Type-Options",
