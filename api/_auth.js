@@ -1,6 +1,11 @@
 import admin from 'firebase-admin';
 
 if (!admin.apps.length) {
+  console.log('🔥 Initializing Firebase Admin for project:', process.env.FIREBASE_PROJECT_ID);
+  if (!process.env.FIREBASE_DATABASE_URL) {
+    console.warn('⚠️ FIREBASE_DATABASE_URL is missing, using fallback. This might cause timeouts.');
+  }
+
   admin.initializeApp({
     credential: admin.credential.cert({
       projectId: process.env.FIREBASE_PROJECT_ID,

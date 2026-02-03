@@ -11,36 +11,36 @@ export async function checkRateLimit(key, limit, windowMs) {
     const ref = db.ref(`rateLimits/${key}`);
     const now = Date.now();
 
+    // Create a timeout promise to prevent hanging
+    const timeoutPromise = new Promise((resolve) => {
+        setTimeout(() => {
+            console.warn(`⏳ Rate limit check for ${key} timed out. Failing open.`);
+            resolve({ allowed: true, timeout: true });
+        }, 2000);
+    });
+
     try {
-        const result = await ref.transaction((currentData) => {
-            if (!currentData || now > currentData.resetTime) {
-                // Initial or window expired
-                return {
-                    count: 1,
-                    resetTime: now + windowMs
-                };
+        const checkPromise = (async () => {
+            const result = await ref.transaction((currentData) => {
+                if (!currentData || now > currentData.resetTime) {
+                    return { count: 1, resetTime: now + windowMs };
+                }
+                if (currentData.count >= limit) {
+                    return; // Abort
+                }
+                return { ...currentData, count: currentData.count + 1 };
+            });
+
+            if (!result.committed) {
+                return { allowed: false, error: 'Has alcanzado el límite de peticiones. Inténtalo de nuevo más tarde.' };
             }
+            return { allowed: true };
+        })();
 
-            if (currentData.count >= limit) {
-                // Limit exceeded
-                return; // Abort transaction
-            }
-
-            // Increment count
-            return {
-                ...currentData,
-                count: currentData.count + 1
-            };
-        });
-
-        if (!result.committed) {
-            return { allowed: false, error: 'Rate limit exceeded. Please try again later.' };
-        }
-
-        return { allowed: true, data: result.snapshot.val() };
+        // Race between the actual check and the 2s timeout
+        return await Promise.race([checkPromise, timeoutPromise]);
     } catch (error) {
         console.error(`🔴 Rate limit error for ${key}:`, error.message);
-        // Fail open to avoid blocking users if DB is partially down
         return { allowed: true };
     }
 }
