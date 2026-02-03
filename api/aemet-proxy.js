@@ -8,24 +8,12 @@
 import { verifySecurity } from './_auth.js';
 import { checkRateLimit } from './_rateLimit.js';
 
-export default async function handler(req, res) {
-    const origin = req.headers.origin;
-    const allowedOrigins = [
-        'https://debelingoconangel.web.app',
-        'https://debe-lingo-con-angel.web.app',
-        'https://de-belingo-con-angel.vercel.app',
-        'http://localhost:5173',
-        'http://localhost:3000'
-    ];
+import { applySecurityHeaders } from './_cors.js';
 
-    if (origin && allowedOrigins.includes(origin)) {
-        res.setHeader('Access-Control-Allow-Origin', origin);
-    } else {
-        // Fallback al dominio principal si no hay origen o no coincide
-        res.setHeader('Access-Control-Allow-Origin', 'https://debelingoconangel.web.app');
-    }
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization, x-debelingo-secret, x-turnstile-token');
+export default async function handler(req, res) {
+    // Apply Security Headers & CORS
+    if (applySecurityHeaders(req, res)) return;
+
 
     // Handle preflight request
     if (req.method === 'OPTIONS') {

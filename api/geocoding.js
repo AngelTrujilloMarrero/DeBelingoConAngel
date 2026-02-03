@@ -5,37 +5,17 @@
 
 import { verifySecurity } from './_auth.js';
 import { checkRateLimit } from './_rateLimit.js';
+import { applySecurityHeaders } from './_cors.js';
 
 export default async function handler(req, res) {
-    // Set CORS headers
-    const origin = req.headers.origin;
-    const allowedOrigins = [
-        'https://debelingoconangel.web.app',
-        'https://de-belingo-con-angel.vercel.app',
-        'http://localhost:5173',
-        'http://localhost:3000'
-    ];
-
-    if (origin && allowedOrigins.includes(origin)) {
-        res.setHeader('Access-Control-Allow-Origin', origin);
-    } else {
-        res.setHeader('Access-Control-Allow-Origin', 'https://debelingoconangel.web.app');
-    }
-    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization, x-debelingo-secret, x-turnstile-token');
-
-    // Handle preflight request
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
-    }
+    // Apply Security Headers & CORS
+    if (applySecurityHeaders(req, res)) return;
 
     // Verify Security (Turnstile or Internal Key)
     const { error: authError, status: authStatus } = await verifySecurity(req);
     if (authError) {
         return res.status(authStatus).json({ error: authError });
     }
-
-
 
     // Rate Limit: 300 requests per hour globally
     const { allowed, error: rateError } = await checkRateLimit('geocoding', 300, 60 * 60 * 1000);
@@ -82,4 +62,3 @@ export default async function handler(req, res) {
         res.status(500).json({ error: 'Service temporarily unavailable' });
     }
 }
-
