@@ -17,11 +17,10 @@ if (!admin.apps.length) {
 }
 
 /**
- * Verifies security credentials (Turnstile, App Check, or Shared Secret)
+ * Verifies security credentials (Turnstile or Shared Secret)
  */
-export async function verifyAppCheck(req) {
+export async function verifySecurity(req) {
   const turnstileToken = req.headers['x-turnstile-token'];
-  const appCheckToken = req.headers['x-firebase-appcheck'];
   const internalSecret = req.headers['x-debelingo-secret'];
 
   // 1. Validar por Secreto Interno (Método de emergencia/alternativo)
@@ -52,16 +51,6 @@ export async function verifyAppCheck(req) {
       console.error('Turnstile verification failed:', outcome['error-codes']);
     } catch (err) {
       console.error('Turnstile error:', err.message);
-    }
-  }
-
-  // 3. Validar por App Check (Legacy/Backup)
-  if (appCheckToken) {
-    try {
-      const appCheckClaims = await admin.appCheck().verifyToken(appCheckToken);
-      return { claims: appCheckClaims, error: null };
-    } catch (err) {
-      console.error('App Check verification failed:', err.message);
     }
   }
 

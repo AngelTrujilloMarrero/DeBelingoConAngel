@@ -3,7 +3,7 @@
  * Endpoint: /api/geocoding
  */
 
-import { verifyAppCheck } from './_auth.js';
+import { verifySecurity } from './_auth.js';
 import { checkRateLimit } from './_rateLimit.js';
 
 export default async function handler(req, res) {
@@ -22,15 +22,15 @@ export default async function handler(req, res) {
         res.setHeader('Access-Control-Allow-Origin', 'https://debelingoconangel.web.app');
     }
     res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization, X-Firebase-AppCheck, x-debelingo-secret, x-turnstile-token');
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization, x-debelingo-secret, x-turnstile-token');
 
     // Handle preflight request
     if (req.method === 'OPTIONS') {
         return res.status(200).end();
     }
 
-    // Verify App Check / Shared Secret
-    const { error: authError, status: authStatus } = await verifyAppCheck(req);
+    // Verify Security Token
+    const { error: authError, status: authStatus } = await verifySecurity(req);
     if (authError) {
         return res.status(authStatus).json({ error: authError });
     }

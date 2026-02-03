@@ -1,6 +1,5 @@
 import { initializeApp } from 'firebase/app';
 import { getDatabase, ref, onValue, set, get, runTransaction } from 'firebase/database';
-import { initializeAppCheck, ReCaptchaEnterpriseProvider, getToken } from 'firebase/app-check';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -22,9 +21,6 @@ if (!firebaseConfig.databaseURL) {
 }
 
 const app = initializeApp(firebaseConfig);
-
-// Initialize App Check (REMOVED - Moving to Cloudflare Turnstile)
-let appCheck: any = null;
 
 /**
  * Gets unified security headers for API calls

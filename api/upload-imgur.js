@@ -5,15 +5,15 @@
  * Called from Firebase Hosting frontend
  */
 
-import { verifyAppCheck } from './_auth.js';
+import { verifySecurity } from './_auth.js';
 import { applySecurityHeaders } from './_cors.js';
 
 export default async function handler(req, res) {
     // Apply Security Headers & CORS
     if (applySecurityHeaders(req, res)) return;
 
-    // Verify App Check Token
-    const { error: authError, status: authStatus } = await verifyAppCheck(req);
+    // Verify Security Token
+    const { error: authError, status: authStatus } = await verifySecurity(req);
     if (authError) {
         return res.status(authStatus).json({ error: authError });
     }
