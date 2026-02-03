@@ -17,19 +17,12 @@ if (!admin.apps.length) {
 }
 
 /**
- * Verifies security credentials (Turnstile or Shared Secret)
+ * Verifies security credentials (Turnstile)
  */
 export async function verifySecurity(req) {
   const turnstileToken = req.headers['x-turnstile-token'];
-  const internalSecret = req.headers['x-debelingo-secret'];
 
-  // 1. Validar por Secreto Interno (Método de emergencia/alternativo)
-  const masterSecret = process.env.INTERNAL_API_SECRET || 'debelingo-super-secret-2026';
-  if (internalSecret && internalSecret === masterSecret) {
-    return { claims: { internal: true }, error: null };
-  }
-
-  // 2. Validar por Cloudflare Turnstile (NUEVO MÉTODO PRIORITARIO)
+  // Validar por Cloudflare Turnstile (MÉTODO ÚNICO Y PRIORITARIO)
   if (turnstileToken) {
     try {
       const CLOUDFLARE_SECRET = process.env.TURNSTILE_SECRET_KEY || '1x0000000000000000000000000000000AA'; // Test key

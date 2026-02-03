@@ -78,7 +78,7 @@ export const municipioCoordinates: Record<string, Coordinates> = {
   "Silos": { lat: 28.3662, lng: -16.8164 }
 };
 
-export async function geocodeAddress(address: string): Promise<Coordinates | null> {
+export async function geocodeAddress(address: string, token?: string): Promise<Coordinates | null> {
   // Primero intentamos buscar en nuestro mapa estático si es un municipio directo
   for (const [key, coords] of Object.entries(municipioCoordinates)) {
     if (address.toLowerCase().includes(key.toLowerCase())) {
@@ -98,7 +98,7 @@ export async function geocodeAddress(address: string): Promise<Coordinates | nul
   const proxyUrl = `${API_BASE_URL}/api/geocoding?q=${encodeURIComponent(address)}`;
 
   try {
-    const headers = await getSecurityHeaders();
+    const headers = await getSecurityHeaders(token);
 
     const response = await fetch(proxyUrl, {
       headers

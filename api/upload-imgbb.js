@@ -18,6 +18,13 @@ export default async function handler(req, res) {
         return res.status(authStatus).json({ error: authError });
     }
 
+    // Rate Limit por IP: 10 imágenes por hora por usuario
+    const userIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+    const { allowed: ipAllowed, error: ipError } = await checkRateLimit(`upload-imgbb:${userIP}`, 10, 60 * 60 * 1000);
+    if (!ipAllowed) {
+        return res.status(429).json({ error: 'Has subido demasiadas imágenes. Inténtalo más tarde.' });
+    }
+
     // Only allow POST requests
     if (req.method !== 'POST') {
         return res.status(405).json({ error: 'Method not allowed' });

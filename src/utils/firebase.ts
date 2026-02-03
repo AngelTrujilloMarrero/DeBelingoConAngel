@@ -24,19 +24,21 @@ const app = initializeApp(firebaseConfig);
 
 /**
  * Gets unified security headers for API calls
+ * @param token Optional Turnstile token to override the global one
  */
-export const getSecurityHeaders = async () => {
+export const getSecurityHeaders = async (token?: string) => {
   const headers: Record<string, string> = {
     'Content-Type': 'application/json'
   };
 
-  // 1. Intentar obtener el token de Turnstile del objeto global (seteado por TurnstileProvider)
-  if (typeof window !== 'undefined' && (window as any)._turnstileToken) {
+  // 1. Usar el token pasado por parámetro si existe
+  if (token) {
+    headers['X-Turnstile-Token'] = token;
+  } 
+  // 2. Si no, intentar obtener el token del objeto global
+  else if (typeof window !== 'undefined' && (window as any)._turnstileToken) {
     headers['X-Turnstile-Token'] = (window as any)._turnstileToken;
   }
-
-  // 2. Usar Secreto Compartido como respaldo definitivo
-  headers['X-DeBelingo-Secret'] = 'debelingo-super-secret-2026';
 
   return headers;
 };

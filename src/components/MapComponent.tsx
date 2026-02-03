@@ -5,6 +5,7 @@ import { Map as MapIcon, Navigation, AlertCircle, MapPin, Calendar, Clock, Searc
 import { Event } from '../types';
 import { geocodeAddress, municipioMapping, normalizarMunicipio } from '../utils/geocoding';
 import { checkLocalRateLimit, checkGlobalRateLimit } from '../utils/rateLimit';
+import { useTurnstile } from './TurnstileProvider';
 import 'leaflet/dist/leaflet.css';
 
 interface MapComponentProps {
@@ -12,6 +13,7 @@ interface MapComponentProps {
 }
 
 const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
+  const { token, resetToken } = useTurnstile();
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [userLocation, setUserLocation] = useState('');
@@ -43,6 +45,11 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
   const handleUserLocationSearch = async () => {
     if (!userLocation.trim()) return;
 
+    if (!token) {
+      alert("Por favor, espera a que se valide el captcha de seguridad.");
+      return;
+    }
+
     // Límite local: 1 consulta por segundo
     if (!checkLocalRateLimit('map_query_local', 1, 1000)) {
       alert("Por favor, espera un segundo entre consultas.");
@@ -60,7 +67,8 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
     try {
       // Add Tenerife to context to prioritize local results
       const searchAddress = `${userLocation}, Tenerife, España`;
-      const coords = await geocodeAddress(searchAddress);
+      const coords = await geocodeAddress(searchAddress, token);
+      resetToken(); // Reset after use for security
 
       if (coords && mapInstanceRef.current) {
         mapInstanceRef.current.setView([coords.lat, coords.lng], 13);
@@ -88,6 +96,11 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
 
   const handleAiAnalysis = async () => {
     if (!userLocation.trim()) return;
+
+    if (!token) {
+      alert("Por favor, espera a que se valide el captcha de seguridad.");
+      return;
+    }
 
     // Límite local: 1 consulta por segundo
     if (!checkLocalRateLimit('map_query_local', 1, 1000)) {
@@ -118,7 +131,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
       // Dale una respuesta con mucha chispa canaria, menciona lo que "dice el mapa" y anímale a salir de belingo. Usa expresiones como ¡fuerte viaje!, puntal, magua, ñoss, de belingo.`;
 
       const { getSecurityHeaders } = await import('../utils/firebase');
-      const headers = await getSecurityHeaders();
+      const headers = await getSecurityHeaders(token);
 
       // Intentar primero con OpenRouter (ahora prioritario)
       let response = await fetch(`${API_BASE_URL}/api/openrouter`, {
@@ -136,6 +149,8 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
           body: JSON.stringify({ prompt })
         });
       }
+
+      resetToken(); // Reset after use
 
       if (!response.ok) throw new Error(`API Error: ${response.status}`);
 

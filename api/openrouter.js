@@ -13,9 +13,16 @@ export default async function handler(req, res) {
     }
 
     // Rate Limit: 100 requests per hour globally
-    const { allowed, error: rateError } = await checkRateLimit('angel-ia', 100, 60 * 60 * 1000);
-    if (!allowed) {
-        return res.status(429).json({ error: rateError });
+    const { allowed: globalAllowed, error: globalError } = await checkRateLimit('angel-ia-global', 100, 60 * 60 * 1000);
+    if (!globalAllowed) {
+        return res.status(429).json({ error: globalError });
+    }
+
+    // Rate Limit por IP: 20 peticiones por hora por usuario
+    const userIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+    const { allowed: ipAllowed, error: ipError } = await checkRateLimit(`openrouter:${userIP}`, 20, 60 * 60 * 1000);
+    if (!ipAllowed) {
+        return res.status(429).json({ error: 'Has excedido el límite de mensajes por hora para Ángel IA. ¡Tómate un descanso, puntal!' });
     }
 
     if (req.method !== 'POST') {

@@ -2,13 +2,15 @@ import admin from 'firebase-admin';
 
 /**
  * Server-side Rate Limiting using Firebase Realtime Database
- * @param {string} key - The rate limit key (e.g., 'aemet', 'angel-ia')
+ * @param {string} key - The rate limit key (e.g., 'aemet', 'angel-ia:1.2.3.4')
  * @param {number} limit - Max requests allowed
  * @param {number} windowMs - Time window in milliseconds
  */
 export async function checkRateLimit(key, limit, windowMs) {
     const db = admin.database();
-    const ref = db.ref(`rateLimits/${key}`);
+    // Sanitize key for Firebase (no dots allowed in paths)
+    const safeKey = key.replace(/\./g, '_');
+    const ref = db.ref(`rateLimits/${safeKey}`);
     const now = Date.now();
 
     // Create a timeout promise to prevent hanging
