@@ -42,7 +42,9 @@ if (typeof window !== 'undefined') {
  * Gets unified security headers for API calls
  */
 export const getSecurityHeaders = async () => {
-  const headers: Record<string, string> = {};
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json'
+  };
 
   // 1. Intentar App Check
   if (appCheck) {
