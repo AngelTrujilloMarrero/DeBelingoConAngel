@@ -2,8 +2,18 @@ import { verifyAppCheck } from './_auth.js';
 
 export default async function handler(req, res) {
     // Enable CORS
+    const origin = req.headers.origin;
+    const allowedOrigins = [
+        'https://debelingoconangel.web.app',
+        'https://de-belingo-con-angel.vercel.app',
+        'http://localhost:5173',
+        'http://localhost:3000'
+    ];
+
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
     res.setHeader('Access-Control-Allow-Credentials', true);
-    res.setHeader('Access-Control-Allow-Origin', 'https://debelingoconangel.web.app');
     res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
     res.setHeader(
         'Access-Control-Allow-Headers',

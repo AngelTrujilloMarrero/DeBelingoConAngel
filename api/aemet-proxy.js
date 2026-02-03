@@ -8,9 +8,18 @@
 import { verifyAppCheck } from './_auth.js';
 
 export default async function handler(req, res) {
-    // Set CORS headers to allow requests from any origin (including Firebase Hosting)
-    res.setHeader('Access-Control-Allow-Origin', 'https://debelingoconangel.web.app');
-    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
+    const origin = req.headers.origin;
+    const allowedOrigins = [
+        'https://debelingoconangel.web.app',
+        'https://de-belingo-con-angel.vercel.app',
+        'http://localhost:5173',
+        'http://localhost:3000'
+    ];
+
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Firebase-AppCheck');
 
     // Handle preflight request

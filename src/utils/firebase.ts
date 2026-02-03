@@ -26,10 +26,18 @@ const app = initializeApp(firebaseConfig);
 // Initialize App Check
 let appCheck: any = null;
 if (typeof window !== 'undefined') {
-  appCheck = initializeAppCheck(app, {
-    provider: new ReCaptchaEnterpriseProvider(import.meta.env.VITE_RECAPTCHA_SITE_KEY || ''),
-    isTokenAutoRefreshEnabled: true
-  });
+  const siteKey = import.meta.env.VITE_RECAPTCHA_SITE_KEY || '';
+  console.log('🛡️ Initializing App Check with App ID:', firebaseConfig.appId.substring(0, 15) + '...');
+
+  try {
+    appCheck = initializeAppCheck(app, {
+      provider: new ReCaptchaEnterpriseProvider(siteKey),
+      isTokenAutoRefreshEnabled: true
+    });
+    console.log('✅ App Check provider initialized.');
+  } catch (err) {
+    console.error('❌ Failed to initialize App Check:', err);
+  }
 }
 
 /**

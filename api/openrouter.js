@@ -4,20 +4,22 @@ export default async function handler(req, res) {
     // Lista blanca de orígenes permitidos
     const allowedOrigins = [
         'https://debelingoconangel.web.app',
-        'http://localhost:5173', // Vite default port
-        'http://localhost:3000', // Alternative local port
-        'http://localhost:4173'  // Vite preview port
+        'https://de-belingo-con-angel.vercel.app',
+        'http://localhost:5173',
+        'http://localhost:3000',
+        'http://localhost:4173'
     ];
 
     const origin = req.headers.origin;
-    const isAllowed = allowedOrigins.includes(origin) || !origin; 
-    
-    const corsOrigin = isAllowed ? origin : 'https://debelingoconangel.web.app';
-
-    // CORS headers
-    res.setHeader('Access-Control-Allow-Origin', corsOrigin);
-    res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS, POST');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Firebase-AppCheck');
+    if (allowedOrigins.includes(origin)) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+    res.setHeader(
+        'Access-Control-Allow-Headers',
+        'X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization, X-Firebase-AppCheck'
+    );
 
     if (req.method === 'OPTIONS') {
         return res.status(200).end();

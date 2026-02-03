@@ -11,6 +11,7 @@ export default async function handler(req, res) {
     // Set CORS headers to allow requests from allowed origins
     const allowedOrigins = [
         'https://debelingoconangel.web.app',
+        'https://de-belingo-con-angel.vercel.app',
         'http://localhost:5173',
         'http://localhost:3000',
         'http://localhost:4173'
