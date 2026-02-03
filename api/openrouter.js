@@ -1,30 +1,10 @@
 import { verifyAppCheck } from './_auth.js';
 import { checkRateLimit } from './_rateLimit.js';
+import { applySecurityHeaders } from './_cors.js';
 
 export default async function handler(req, res) {
-    // Lista blanca de orígenes permitidos
-    const allowedOrigins = [
-        'https://debelingoconangel.web.app',
-        'https://de-belingo-con-angel.vercel.app',
-        'http://localhost:5173',
-        'http://localhost:3000',
-        'http://localhost:4173'
-    ];
-
-    const origin = req.headers.origin;
-    if (allowedOrigins.includes(origin)) {
-        res.setHeader('Access-Control-Allow-Origin', origin);
-    }
-    res.setHeader('Access-Control-Allow-Credentials', true);
-    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-    res.setHeader(
-        'Access-Control-Allow-Headers',
-        'X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization, X-Firebase-AppCheck, x-debelingo-secret'
-    );
-
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
-    }
+    // Apply Security Headers & CORS
+    if (applySecurityHeaders(req, res)) return;
 
     // Verify App Check Token
     const { error: authError, status: authStatus } = await verifyAppCheck(req);
@@ -45,8 +25,13 @@ export default async function handler(req, res) {
     try {
         const { prompt } = req.body;
 
-        if (!prompt) {
-            return res.status(400).json({ error: 'Prompt is required' });
+        // Strict Input Validation
+        if (!prompt || typeof prompt !== 'string') {
+            return res.status(400).json({ error: 'Prompt must be a non-empty string' });
+        }
+
+        if (prompt.length > 1000) {
+            return res.status(400).json({ error: 'Prompt is too long (max 1000 characters)' });
         }
 
         const apiKey = process.env.API_OPENROUTER;

@@ -6,31 +6,11 @@
  */
 
 import { verifyAppCheck } from './_auth.js';
+import { applySecurityHeaders } from './_cors.js';
 
 export default async function handler(req, res) {
-    // Set CORS headers to allow requests from allowed origins
-    const allowedOrigins = [
-        'https://debelingoconangel.web.app',
-        'https://de-belingo-con-angel.vercel.app',
-        'http://localhost:5173',
-        'http://localhost:3000',
-        'http://localhost:4173'
-    ];
-    const origin = req.headers.origin;
-
-    if (allowedOrigins.includes(origin)) {
-        res.setHeader('Access-Control-Allow-Origin', origin);
-    } else {
-        res.setHeader('Access-Control-Allow-Origin', 'https://debelingoconangel.web.app');
-    }
-
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, X-Firebase-AppCheck, x-debelingo-secret');
-
-    // Handle preflight request
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
-    }
+    // Apply Security Headers & CORS
+    if (applySecurityHeaders(req, res)) return;
 
     // Verify App Check Token
     const { error: authError, status: authStatus } = await verifyAppCheck(req);
