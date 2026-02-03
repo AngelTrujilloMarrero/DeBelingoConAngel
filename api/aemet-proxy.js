@@ -32,11 +32,14 @@ export default async function handler(req, res) {
         return res.status(200).end();
     }
 
-    // Verify Security Token
-    const { error: authError, status: authStatus } = await verifySecurity(req);
+    /* 
+    // Turnstile es opcional aquí para no bloquear la carga del mapa
+    const { error: authError } = await verifySecurity(req);
     if (authError) {
-        return res.status(authStatus).json({ error: authError });
+        console.warn('AEMET calling without Turnstile, relying on Rate Limit');
     }
+    */
+
 
     // Rate Limit: 500 requests per hour globally
     const { allowed, error: rateError } = await checkRateLimit('aemet', 500, 60 * 60 * 1000);

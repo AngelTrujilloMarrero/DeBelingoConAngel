@@ -58,17 +58,12 @@ export const useAemetAlerts = () => {
         let isMounted = true;
 
         const fetchAlerts = async () => {
-            // No intentar si no hay token aún
-            if (!token) {
-                setLoading(false);
-                return;
-            }
-
             try {
-                // Obtener cabeceras de seguridad usando el token actual
-                const headers = await getSecurityHeaders(token);
-
                 setLoading(true);
+
+                // Obtener cabeceras de seguridad básicas (sin token de Turnstile)
+                const headers = await getSecurityHeaders();
+
 
                 // Determinar URL base
                 const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL ||
@@ -160,7 +155,8 @@ export const useAemetAlerts = () => {
         return () => {
             isMounted = false;
         };
-    }, [token]); // Re-ejecutar cuando el token esté disponible
+    }, []); // Cargar solo una vez al inicio
+
 
     const getAlertForEvent = (municipio: string, date: string) => {
         const eventZone = ZONE_MAPPING[municipio] || "";

@@ -133,22 +133,13 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
       const { getSecurityHeaders } = await import('../utils/firebase');
       const headers = await getSecurityHeaders(token);
 
-      // Intentar primero con OpenRouter (ahora prioritario)
-      let response = await fetch(`${API_BASE_URL}/api/openrouter`, {
+      // Solo intentamos con OpenRouter. Si falla, el token se habrá consumido.
+      // El usuario puede reintentar manualmente, lo que generará un nuevo token.
+      const response = await fetch(`${API_BASE_URL}/api/openrouter`, {
         method: 'POST',
         headers,
         body: JSON.stringify({ prompt })
       });
-
-      // Si OpenRouter falla, intentar con Mistral como respaldo
-      if (!response.ok) {
-        console.warn("OpenRouter falló, intentando con Mistral...");
-        response = await fetch(`${API_BASE_URL}/api/mistral`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({ prompt })
-        });
-      }
 
       resetToken(); // Reset after use
 
@@ -167,8 +158,9 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
       console.error("Error calling AI API detailed:", err);
       // @ts-ignore
       const errorMessage = err?.message || JSON.stringify(err);
-      setAiMessage(`¡Ñoos! Hay un lío con la seguridad: ${errorMessage}. ¡Avísale a Ángel!`);
+      setAiMessage(`¡Ñoos! Hay un lío con la respuesta: ${errorMessage}. ¡Inténtalo de nuevo, puntal!`);
     } finally {
+
 
       setIsAiLoading(false);
     }
