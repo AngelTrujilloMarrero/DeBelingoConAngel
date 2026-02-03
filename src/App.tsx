@@ -7,6 +7,7 @@ import { EventosPage, MapaPage, EstadisticasPage, RedesPage, FormacionesPage, Bl
 import MessageBoard from './components/MessageBoard';
 import BlogPost from './components/BlogPost';
 import { useEffect } from 'react';
+import { TurnstileProvider } from './components/TurnstileProvider';
 
 function App() {
   const { events, recentActivity, loading } = useEvents();
@@ -31,47 +32,49 @@ function App() {
 
   console.log('App rendering, pathname:', pathname);
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      {/* Header - Siempre visible */}
-      <Header />
+    <TurnstileProvider>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        {/* Header - Siempre visible */}
+        <Header />
 
-      {/* Main Content - Cambia según la ruta */}
-      <div className={`${pathname === '/' || pathname.startsWith('/blog') ? 'w-full p-0' : 'container mx-auto px-4 py-8'}`}>
-        <Routes>
-          <Route path="/" element={<EventosPage events={events} recentActivity={recentActivity} />} />
-          <Route path="/mapa" element={<MapaPage events={events} />} />
-          <Route path="/estadisticas" element={<EstadisticasPage events={events} />} />
-          <Route path="/formaciones" element={<FormacionesPage events={events} />} />
-          <Route path="/redes" element={<RedesPage />} />
-          <Route path="/blog" element={<BlogPage />} />
-          <Route path="/blog/:slug" element={<BlogPost />} />
-        </Routes>
-      </div>
-
-      {/* Message Board - Only on main page */}
-      {pathname === '/' && <MessageBoard />}
-
-      {/* Footer - Siempre visible */}
-      <footer className={`${pathname === '/' ? '' : 'footer-rounded'} bg-gray-900 text-white py-12 relative overflow-hidden`}>
-        {/* Background Layers - Consistent with Header */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute inset-0 bg-[url('/fotos/eltablero.jpg')] bg-cover bg-center opacity-20" />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
+        {/* Main Content - Cambia según la ruta */}
+        <div className={`${pathname === '/' || pathname.startsWith('/blog') ? 'w-full p-0' : 'container mx-auto px-4 py-8'}`}>
+          <Routes>
+            <Route path="/" element={<EventosPage events={events} recentActivity={recentActivity} />} />
+            <Route path="/mapa" element={<MapaPage events={events} />} />
+            <Route path="/estadisticas" element={<EstadisticasPage events={events} />} />
+            <Route path="/formaciones" element={<FormacionesPage events={events} />} />
+            <Route path="/redes" element={<RedesPage />} />
+            <Route path="/blog" element={<BlogPage />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
+          </Routes>
         </div>
 
-        <div className="relative container mx-auto px-4 text-center z-10">
-          <p className="text-gray-300 font-medium">
-            © {new Date().getFullYear()} De Belingo Con Ángel - Verbenas en Tenerife
-          </p>
-          <p className="text-gray-400 text-sm mt-3 tracking-wide">
-            Desarrollado con 💙 para la comunidad de Tenerife
-          </p>
-          <div className="mt-8">
-            <VisitCounter />
+        {/* Message Board - Only on main page */}
+        {pathname === '/' && <MessageBoard />}
+
+        {/* Footer - Siempre visible */}
+        <footer className={`${pathname === '/' ? '' : 'footer-rounded'} bg-gray-900 text-white py-12 relative overflow-hidden`}>
+          {/* Background Layers - Consistent with Header */}
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute inset-0 bg-[url('/fotos/eltablero.jpg')] bg-cover bg-center opacity-20" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-black/20" />
           </div>
-        </div>
-      </footer>
-    </div>
+
+          <div className="relative container mx-auto px-4 text-center z-10">
+            <p className="text-gray-300 font-medium">
+              © {new Date().getFullYear()} De Belingo Con Ángel - Verbenas en Tenerife
+            </p>
+            <p className="text-gray-400 text-sm mt-3 tracking-wide">
+              Desarrollado con 💙 para la comunidad de Tenerife
+            </p>
+            <div className="mt-8">
+              <VisitCounter />
+            </div>
+          </div>
+        </footer>
+      </div>
+    </TurnstileProvider>
   );
 }
 

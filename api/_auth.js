@@ -16,7 +16,11 @@ if (!admin.apps.length) {
   });
 }
 
+/**
+ * Verifies security credentials (Turnstile, App Check, or Shared Secret)
+ */
 export async function verifyAppCheck(req) {
+  const turnstileToken = req.headers['x-turnstile-token'];
   const appCheckToken = req.headers['x-firebase-appcheck'];
   const internalSecret = req.headers['x-debelingo-secret'];
 
@@ -26,7 +30,32 @@ export async function verifyAppCheck(req) {
     return { claims: { internal: true }, error: null };
   }
 
-  // 2. Validar por App Check (Si el token existe y Google no da error 400)
+  // 2. Validar por Cloudflare Turnstile (NUEVO MÉTODO PRIORITARIO)
+  if (turnstileToken) {
+    try {
+      const CLOUDFLARE_SECRET = process.env.TURNSTILE_SECRET_KEY || '1x0000000000000000000000000000000AA'; // Test key
+
+      const formData = new URLSearchParams();
+      formData.append('secret', CLOUDFLARE_SECRET);
+      formData.append('response', turnstileToken);
+      formData.append('remoteip', req.headers['x-forwarded-for'] || req.socket.remoteAddress);
+
+      const result = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+        body: formData,
+        method: 'POST',
+      });
+
+      const outcome = await result.json();
+      if (outcome.success) {
+        return { claims: { turnstile: true }, error: null };
+      }
+      console.error('Turnstile verification failed:', outcome['error-codes']);
+    } catch (err) {
+      console.error('Turnstile error:', err.message);
+    }
+  }
+
+  // 3. Validar por App Check (Legacy/Backup)
   if (appCheckToken) {
     try {
       const appCheckClaims = await admin.appCheck().verifyToken(appCheckToken);

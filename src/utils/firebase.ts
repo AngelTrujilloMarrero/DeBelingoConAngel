@@ -23,20 +23,8 @@ if (!firebaseConfig.databaseURL) {
 
 const app = initializeApp(firebaseConfig);
 
-// Initialize App Check (DISABLED to avoid reCAPTCHA 400 errors)
+// Initialize App Check (REMOVED - Moving to Cloudflare Turnstile)
 let appCheck: any = null;
-/*
-if (typeof window !== 'undefined') {
-  try {
-    appCheck = initializeAppCheck(app, {
-      provider: new ReCaptchaEnterpriseProvider(import.meta.env.VITE_RECAPTCHA_SITE_KEY || ''),
-      isTokenAutoRefreshEnabled: true
-    });
-  } catch (err) {
-    // Silently continue
-  }
-}
-*/
 
 /**
  * Gets unified security headers for API calls
@@ -46,33 +34,15 @@ export const getSecurityHeaders = async () => {
     'Content-Type': 'application/json'
   };
 
-  // 1. Intentar App Check
-  if (appCheck) {
-    try {
-      const result = await getToken(appCheck, false);
-      headers['X-Firebase-AppCheck'] = result.token;
-    } catch (e) {
-      // Ignorar fallo de reCAPTCHA
-    }
+  // 1. Intentar obtener el token de Turnstile del objeto global (seteado por TurnstileProvider)
+  if (typeof window !== 'undefined' && (window as any)._turnstileToken) {
+    headers['X-Turnstile-Token'] = (window as any)._turnstileToken;
   }
 
-  // 2. Usar Secreto Compartido como respaldo
+  // 2. Usar Secreto Compartido como respaldo definitivo
   headers['X-DeBelingo-Secret'] = 'debelingo-super-secret-2026';
 
   return headers;
-};
-
-/**
- * Gets the current App Check token
- */
-export const getAppCheckToken = async () => {
-  if (!appCheck) return null;
-  try {
-    const result = await getToken(appCheck, false);
-    return result.token;
-  } catch (error) {
-    return null;
-  }
 };
 
 export const db = getDatabase(app);
