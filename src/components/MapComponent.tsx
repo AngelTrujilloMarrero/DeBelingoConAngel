@@ -230,9 +230,10 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
 
       // Load markers
       // Load markers
+      // Load markers
       const loadMarkers = async () => {
-        // Wait for Turnstile token before starting geocoding
-        if (!token) return;
+        // CORRECCIÓN: Geocoding ya no requiere token de Turnstile para evitar race conditions
+        // if (!token) return;
 
         setIsLoading(true);
 
@@ -261,7 +262,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
 
           try {
             // Pass token to geocodeAddress
-            const coordinates = await geocodeAddress(address, token);
+            const coordinates = await geocodeAddress(address);
 
             if (coordinates && mapInstanceRef.current) {
               eventsAtLocation.sort((a, b) => {
@@ -323,7 +324,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
 
         setIsLoading(false);
         // Burn the token after use in batch geocoding to prevent reuse errors
-        resetToken();
+        // resetToken(); // Ya no es necesario resetear porque no consumimos el token
       };
 
       if (mapEvents.length > 0) {

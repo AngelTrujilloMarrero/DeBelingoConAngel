@@ -58,7 +58,8 @@ export const useAemetAlerts = () => {
     useEffect(() => {
         // Esperar a que el token de Turnstile esté listo
         // Y evitar llamadas duplicadas si ya hemos obtenido los datos (o intentado)
-        if (!token || hasFetched) return;
+        // CORRECCIÓN: AEMET ya no requiere token. Solo chequeamos hasFetched.
+        if (hasFetched) return;
 
         let isMounted = true;
         setHasFetched(true); // Marcar como intentado para evitar bucles o reuso inmediato
@@ -68,7 +69,7 @@ export const useAemetAlerts = () => {
                 setLoading(true);
 
                 // Obtener cabeceras de seguridad con el token
-                const headers = await getSecurityHeaders(token);
+                const headers = await getSecurityHeaders();
 
                 // Determinar URL base
                 const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL ||
@@ -161,7 +162,7 @@ export const useAemetAlerts = () => {
                 if (isMounted) {
                     setLoading(false);
                     // IMPORTANTE: Quemar el token usado para que no se re-use y provoque errores 'timeout-or-duplicate'
-                    resetToken();
+                    // resetToken(); // Ya no necesario
                 }
             }
         };
@@ -171,7 +172,7 @@ export const useAemetAlerts = () => {
         return () => {
             isMounted = false;
         };
-    }, [token, hasFetched, resetToken]); // Recargar cuando el token esté disponible
+    }, [hasFetched]); // Recargar cuando el token esté disponible
 
 
     const getAlertForEvent = (municipio: string, date: string) => {

@@ -20,11 +20,12 @@ export default async function handler(req, res) {
         return res.status(200).end();
     }
 
-    // Verify Security (Turnstile or Internal Key)
-    const { error: authError, status: authStatus } = await verifySecurity(req);
-    if (authError) {
-        return res.status(authStatus).json({ error: authError });
-    }
+    // Verify Security removed for public AEMET Proxy to avoid race conditions with Turnstile
+    // Rate Limiting is sufficient for this public fetching endpoint
+    // const { error: authError, status: authStatus } = await verifySecurity(req);
+    // if (authError) {
+    //     return res.status(authStatus).json({ error: authError });
+    // }
 
 
 

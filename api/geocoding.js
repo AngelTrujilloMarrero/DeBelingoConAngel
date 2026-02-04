@@ -11,11 +11,12 @@ export default async function handler(req, res) {
     // Apply Security Headers & CORS
     if (applySecurityHeaders(req, res)) return;
 
-    // Verify Security (Turnstile or Internal Key)
-    const { error: authError, status: authStatus } = await verifySecurity(req);
-    if (authError) {
-        return res.status(authStatus).json({ error: authError });
-    }
+    // Verify Security removed for public Geocoding Proxy to avoid race conditions with Turnstile
+    // IP Rate Limiting is sufficient for this public endpoint
+    // const { error: authError, status: authStatus } = await verifySecurity(req);
+    // if (authError) {
+    //     return res.status(authStatus).json({ error: authError });
+    // }
 
     // Rate Limit: 300 requests per hour globally
     const { allowed, error: rateError } = await checkRateLimit('geocoding', 300, 60 * 60 * 1000);
