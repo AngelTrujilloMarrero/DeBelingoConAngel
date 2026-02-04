@@ -52,13 +52,16 @@ const ZONE_MAPPING: Record<string, string> = {
 export const useAemetAlerts = () => {
     const [alerts, setAlerts] = useState<AemetAlert[]>([]);
     const [loading, setLoading] = useState(true);
-    const { token } = useTurnstile();
+    const [hasFetched, setHasFetched] = useState(false);
+    const { token, resetToken } = useTurnstile();
 
     useEffect(() => {
         // Esperar a que el token de Turnstile esté listo
-        if (!token) return;
+        // Y evitar llamadas duplicadas si ya hemos obtenido los datos (o intentado)
+        if (!token || hasFetched) return;
 
         let isMounted = true;
+        setHasFetched(true); // Marcar como intentado para evitar bucles o reuso inmediato
 
         const fetchAlerts = async () => {
             try {
@@ -157,6 +160,8 @@ export const useAemetAlerts = () => {
             } finally {
                 if (isMounted) {
                     setLoading(false);
+                    // IMPORTANTE: Quemar el token usado para que no se re-use y provoque errores 'timeout-or-duplicate'
+                    resetToken();
                 }
             }
         };
@@ -166,7 +171,7 @@ export const useAemetAlerts = () => {
         return () => {
             isMounted = false;
         };
-    }, [token]); // Recargar cuando el token esté disponible
+    }, [token, hasFetched, resetToken]); // Recargar cuando el token esté disponible
 
 
     const getAlertForEvent = (municipio: string, date: string) => {
