@@ -81,7 +81,13 @@ export const useAemetAlerts = () => {
                     if (response.status !== 401) {
                         console.warn(`AEMET Proxy unavailable (${response.status}).`);
                     } else {
-                        console.error('AEMET Proxy Auth Failed (401). Token used:', token ? 'Yes' : 'No');
+                        // Intentar leer el mensaje de error detallado del JSON
+                        try {
+                            const errData = await response.json();
+                            console.error('AEMET Proxy Auth Failed (401).', errData.error || 'Unknown error');
+                        } catch (e) {
+                            console.error('AEMET Proxy Auth Failed (401). Token used:', token ? 'Yes' : 'No');
+                        }
                     }
 
                     if (isMounted) {

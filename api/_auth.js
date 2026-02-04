@@ -55,7 +55,7 @@ export async function verifySecurity(req) {
 
     const errorCodes = outcome['error-codes'] ? outcome['error-codes'].join(', ') : 'unknown';
     console.error('Turnstile verification failed:', errorCodes);
-    return { error: 'Unauthorized: Security check failed', status: 401 };
+    return { error: `Unauthorized: Security check failed (${errorCodes})`, status: 401 };
   } catch (err) {
     console.error('Security verification error:', err.message);
     return { error: 'Internal Security Error', status: 401 };
