@@ -228,6 +228,9 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
 
       // Load markers
       const loadMarkers = async () => {
+        // Wait for Turnstile token before starting geocoding
+        if (!token) return;
+
         setIsLoading(true);
 
         // CORRECCIÓN: Al renombrar el icono, 'new Map()' ahora se refiere correctamente al objeto nativo de JS.
@@ -254,8 +257,8 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
           }
 
           try {
-            // CORRECCIÓN: 'address' ya es de tipo 'string', por lo que no hay error de tipado.
-            const coordinates = await geocodeAddress(address);
+            // Pass token to geocodeAddress
+            const coordinates = await geocodeAddress(address, token);
 
             if (coordinates && mapInstanceRef.current) {
               eventsAtLocation.sort((a, b) => {
@@ -331,7 +334,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
         mapInstanceRef.current = null;
       }
     };
-  }, [events]);
+  }, [events, token]);
 
   return (
     <div className="space-y-4">

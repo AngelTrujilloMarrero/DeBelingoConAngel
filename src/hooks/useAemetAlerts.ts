@@ -55,15 +55,17 @@ export const useAemetAlerts = () => {
     const { token } = useTurnstile();
 
     useEffect(() => {
+        // Esperar a que el token de Turnstile esté listo
+        if (!token) return;
+
         let isMounted = true;
 
         const fetchAlerts = async () => {
             try {
                 setLoading(true);
 
-                // Obtener cabeceras de seguridad básicas (sin token de Turnstile)
-                const headers = await getSecurityHeaders();
-
+                // Obtener cabeceras de seguridad con el token
+                const headers = await getSecurityHeaders(token);
 
                 // Determinar URL base
                 const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL ||
@@ -78,7 +80,10 @@ export const useAemetAlerts = () => {
                 if (!response.ok) {
                     if (response.status !== 401) {
                         console.warn(`AEMET Proxy unavailable (${response.status}).`);
+                    } else {
+                        console.error('AEMET Proxy Auth Failed (401). Token used:', token ? 'Yes' : 'No');
                     }
+
                     if (isMounted) {
                         setAlerts([]);
                         setLoading(false);
@@ -155,7 +160,7 @@ export const useAemetAlerts = () => {
         return () => {
             isMounted = false;
         };
-    }, []); // Cargar solo una vez al inicio
+    }, [token]); // Recargar cuando el token esté disponible
 
 
     const getAlertForEvent = (municipio: string, date: string) => {
