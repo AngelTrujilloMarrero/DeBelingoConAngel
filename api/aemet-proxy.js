@@ -28,10 +28,17 @@ export default async function handler(req, res) {
 
 
 
-    // Rate Limit: 500 requests per hour globally
-    const { allowed, error: rateError } = await checkRateLimit('aemet', 500, 60 * 60 * 1000);
-    if (!allowed) {
-        return res.status(429).json({ error: rateError });
+    // 1. Rate Limit Global: 500 requests per hour
+    const { allowed: globalAllowed, error: globalError } = await checkRateLimit('aemet_global', 500, 60 * 60 * 1000);
+    if (!globalAllowed) {
+        return res.status(429).json({ error: globalError });
+    }
+
+    // 2. Rate Limit por IP: 30 requests per hour per user
+    const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+    const { allowed: userAllowed, error: userError } = await checkRateLimit(`aemet_user:${clientIp}`, 30, 60 * 60 * 1000);
+    if (!userAllowed) {
+        return res.status(429).json({ error: 'Has consultado el tiempo demasiadas veces. Espera una hora.' });
     }
 
     // Only allow GET requests
