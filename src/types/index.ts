@@ -9,6 +9,9 @@ export interface Event {
   cancelado?: boolean;
   FechaEditado?: string;
   FechaAgregado?: string;
+  reAgregado?: boolean;
+  originalEventId?: string;
+  cancelTimestamp?: string;
 }
 
 export interface OrquestaCount {
@@ -31,7 +34,7 @@ export interface Coordinates {
 }
 
 export interface RecentActivityItem {
-  type: 'add' | 'edit' | 'delete';
+  type: 'add' | 'edit' | 'delete' | 'reagregado';
   event: Event;
 }
 

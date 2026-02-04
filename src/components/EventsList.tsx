@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { Calendar, Clock, MapPin, Music2, Download, Navigation, Plus, Edit, Trash2, Info, ExternalLink, ChevronDown, Facebook, Instagram, Globe, Phone, Bus } from 'lucide-react';
+import { Calendar, Clock, MapPin, Music2, Download, Navigation, Plus, Edit, Trash2, Info, ExternalLink, ChevronDown, Facebook, Instagram, Globe, Phone, Bus, RotateCcw } from 'lucide-react';
 import { onValue, orchestrasRef } from '../utils/firebase';
 import { orchestraDetails } from '../data/orchestras';
 import orchestraArchiveRaw from '../data/orchestraArchive.json';
@@ -302,21 +302,25 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                   <div key={index} className="flex items-center gap-3 text-sm bg-gray-800/50 p-2 rounded border border-gray-700/50">
                     <div className={`p-1.5 rounded-full ${item.type === 'add' ? 'bg-green-500/20 text-green-400' :
                       item.type === 'edit' ? 'bg-blue-500/20 text-blue-400' :
-                        'bg-red-500/20 text-red-400'
+                        item.type === 'reagregado' ? 'bg-purple-500/20 text-purple-400' :
+                          'bg-red-500/20 text-red-400'
                       }`}>
                       {item.type === 'add' ? <Plus className="w-3 h-3" /> :
                         item.type === 'edit' ? <Edit className="w-3 h-3" /> :
-                          <Trash2 className="w-3 h-3" />}
+                          item.type === 'reagregado' ? <RotateCcw className="w-3 h-3" /> :
+                            <Trash2 className="w-3 h-3" />}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className={`font-medium ${item.type === 'add' ? 'text-green-300' :
                           item.type === 'edit' ? 'text-blue-300' :
-                            'text-red-300'
+                            item.type === 'reagregado' ? 'text-purple-300' :
+                              'text-red-300'
                           }`}>
                           {item.type === 'add' ? 'Nuevo:' :
                             item.type === 'edit' ? 'Modificado:' :
-                              'Eliminado:'}
+                              item.type === 'reagregado' ? 'Re-agregado:' :
+                                'Eliminado:'}
                         </span>
                         <span className="text-gray-300 truncate">
                           {item.event.lugar ? `${item.event.lugar}, ` : ''}{item.event.municipio}

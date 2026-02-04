@@ -20,8 +20,18 @@ const loadEventsFromArchive = async (year: number): Promise<Event[]> => {
   }
 };
 
+// Configuración flexible para similitud de eventos
+const SIMILARITY_CONFIG = {
+  TIME_WINDOW_HOURS: 12,      // Reducido de 24 a 12 horas
+  SIMILARITY_THRESHOLD: 4,    // Exigir 4 de 5 condiciones
+  TIME_TOLERANCE_MINUTES: 15  // Reducido de 30 a 15 minutos
+};
+
 // Función para verificar si dos eventos son similares
 const areSimilarEvents = (event1: Event, event2: Event): boolean => {
+  // Verificación por ID: si tienen mismo ID, es definitivamente el mismo evento
+  if (event1.id === event2.id) return true;
+
   // Misma orquesta y municipio
   const sameOrchestra = event1.orquesta.toLowerCase().trim() === event2.orquesta.toLowerCase().trim();
   const sameMunicipality = event1.municipio.toLowerCase().trim() === event2.municipio.toLowerCase().trim();
@@ -29,30 +39,30 @@ const areSimilarEvents = (event1: Event, event2: Event): boolean => {
   // Mismo tipo de evento
   const sameType = event1.tipo.toLowerCase().trim() === event2.tipo.toLowerCase().trim();
 
-  // Lugar similar (considerando variations como "Casco", "Centro", etc.)
+  // Lugar similar (considerando variaciones como "Casco", "Centro", etc.)
   const normalizePlace = (place: string) => {
     if (!place) return '';
     return place.toLowerCase().replace(/\b(casco|centro|plaza|plaza mayor|plaza del ayuntamiento)\b/g, '').trim();
   };
   const similarPlace = normalizePlace(event1.lugar || '') === normalizePlace(event2.lugar || '');
 
-  // Misma hora (con tolerancia de 30 minutos)
+  // Misma hora (con tolerancia configurable)
   const getTimeInMinutes = (timeStr: string) => {
     const [hours, minutes] = timeStr.split(':').map(Number);
     return hours * 60 + (minutes || 0);
   };
   const timeDiff = Math.abs(getTimeInMinutes(event1.hora) - getTimeInMinutes(event2.hora));
-  const sameHour = timeDiff <= 30; // 30 minutos de tolerancia
+  const sameHour = timeDiff <= SIMILARITY_CONFIG.TIME_TOLERANCE_MINUTES;
 
-  // Criterios: al menos 3 de 4 condiciones deben cumplirse
-  const conditions = [sameOrchestra, sameMunicipality, sameType, sameHour];
+  // Criterios: exigir SIMILARITY_THRESHOLD condiciones
+  const conditions = [sameOrchestra, sameMunicipality, sameType, sameHour, similarPlace];
   const trueConditions = conditions.filter(Boolean).length;
 
-  return trueConditions >= 3;
+  return trueConditions >= SIMILARITY_CONFIG.SIMILARITY_THRESHOLD;
 };
 
 // Función para verificar si dos timestamps están dentro de una ventana de tiempo (horas)
-const isWithinTimeWindow = (timestamp1: string, timestamp2: string, hours: number): boolean => {
+const isWithinTimeWindow = (timestamp1: string, timestamp2: string, hours: number = SIMILARITY_CONFIG.TIME_WINDOW_HOURS): boolean => {
   const date1 = new Date(timestamp1);
   const date2 = new Date(timestamp2);
   const diffInHours = Math.abs(date1.getTime() - date2.getTime()) / (1000 * 60 * 60);
@@ -172,9 +182,11 @@ export function useEvents() {
       const currentActivity: RecentActivityItem[] = allEvents
         .filter(e => e.FechaEditado || e.FechaAgregado)
         .map(event => {
-          let type: 'add' | 'edit' | 'delete' = 'edit';
+          let type: 'add' | 'edit' | 'delete' | 'reagregado' = 'edit';
           if (event.cancelado) {
             type = 'delete';
+          } else if (event.reAgregado) {
+            type = 'reagregado';
           } else if (event.FechaAgregado === event.FechaEditado) {
             type = 'add';
           }
@@ -189,16 +201,19 @@ export function useEvents() {
           if (activity.type === 'add') {
             const similarDeletionIndex = filteredDeletions.findIndex(deletion =>
               areSimilarEvents(activity.event, deletion.event) &&
-              isWithinTimeWindow(activity.event.FechaAgregado || '', deletion.event.FechaEditado || '', 24)
+              isWithinTimeWindow(activity.event.FechaAgregado || '', deletion.event.FechaEditado || '')
             );
 
             if (similarDeletionIndex !== -1) {
               const similarDeletion = filteredDeletions[similarDeletionIndex];
               result.push({
-                type: 'edit',
+                type: 'reagregado',  // Nuevo tipo para re-agregados
                 event: {
                   ...activity.event,
-                  FechaEditado: similarDeletion.event.FechaEditado
+                  FechaEditado: similarDeletion.event.FechaEditado,
+                  reAgregado: true,
+                  originalEventId: similarDeletion.event.id,
+                  cancelTimestamp: similarDeletion.event.FechaEditado
                 }
               });
               filteredDeletions.splice(similarDeletionIndex, 1);
