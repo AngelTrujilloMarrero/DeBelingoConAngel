@@ -141,7 +141,9 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
         body: JSON.stringify({ prompt })
       });
 
+      // ... unchanged
       resetToken(); // Reset after use
+      // ... unchanged
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
@@ -226,6 +228,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
         return '🎉';
       };
 
+      // Load markers
       // Load markers
       const loadMarkers = async () => {
         // Wait for Turnstile token before starting geocoding
@@ -319,6 +322,8 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
         }
 
         setIsLoading(false);
+        // Burn the token after use in batch geocoding to prevent reuse errors
+        resetToken();
       };
 
       if (mapEvents.length > 0) {
