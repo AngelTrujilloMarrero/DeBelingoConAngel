@@ -12,6 +12,7 @@ export interface Event {
   reAgregado?: boolean;
   originalEventId?: string;
   cancelTimestamp?: string;
+  programa?: string;
 }
 
 export interface OrquestaCount {

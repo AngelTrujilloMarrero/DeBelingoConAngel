@@ -231,11 +231,11 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                                               <Phone className="w-4 h-4" />
                                             </a>
                                           )}
-                                          {(info.website || info.Otros) && (
-                                            <a href={info.website || info.Otros} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 transition-colors">
-                                              <Globe className="w-4 h-4" />
-                                            </a>
-                                          )}
+                                           {(info.website || info.Otros) && (
+                                             <a href={info.website || info.Otros} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 transition-colors">
+                                               <Globe className="w-4 h-4" />
+                                             </a>
+                                           )}
                                         </div>
                                       </div>
                                     </div>
@@ -244,9 +244,25 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                               </div>
                               <div className="bg-yellow-500/10 border border-yellow-500/20 p-3 rounded text-yellow-200/80 text-xs italic flex items-start gap-2">
                                 <ExternalLink className="w-4 h-4 mt-0.5 flex-shrink-0" />
-                                <p>
-                                  Recomendamos visitar las redes sociales oficiales de las orquestas para confirmar horarios y posibles cambios de última hora.
-                                </p>
+                                <div>
+                                  <p>
+                                    Recomendamos visitar las redes sociales oficiales de las orquestas para confirmar horarios y posibles cambios de última hora.
+                                  </p>
+                                  {event.programa && (
+                                    <p className="mt-2">
+                                      También puedes consultar el{' '}
+                                      <a 
+                                        href={event.programa} 
+                                        target="_blank" 
+                                        rel="noopener noreferrer" 
+                                        className="underline text-yellow-100 hover:text-yellow-50 transition-colors"
+                                      >
+                                        programa oficial del evento
+                                      </a>{' '}
+                                      para obtener información detallada.
+                                    </p>
+                                  )}
+                                </div>
                               </div>
                             </div>
                           </div>
