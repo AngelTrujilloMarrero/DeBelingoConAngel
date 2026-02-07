@@ -4,12 +4,9 @@
     ".write": "auth != null && (auth.uid == 'nC4NMCMC7Gha7QH5en25xNQDtLp1' || auth.uid == 'JIdFCV7ppmXAltAajzBdTzI2qYE3')",
 
     "visitCount": {
-      "$date": {
-        ".read": true,
-        // Solo permite escribir si el dato es nuevo o si el valor resultante es <= 2000000
-        ".write": "true",
-        ".validate": "newData.isNumber() && newData.val() <= 2000000 && (!data.exists() || newData.val() == data.val() + 1)"
-      }
+      ".read": true,
+      ".write": "true",
+      ".validate": "newData.isNumber() && newData.val() <= 2000000 && (!data.exists() || newData.val() == data.val() + 1)"
     },
 
     "guestbook": {
