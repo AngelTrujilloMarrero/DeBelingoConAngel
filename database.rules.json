@@ -1,29 +1,30 @@
 {
   "rules": {
     ".read": true,
+    ".write": "auth != null && (auth.uid == 'nC4NMCMC7Gha7QH5en25xNQDtLp1' || auth.uid == 'JIdFCV7ppmXAltAajzBdTzI2qYE3')",
+
     "visitCount": {
-      ".write": "newData.isNumber()"
+      "$date": {
+        ".read": true,
+        // Solo permite escribir si el dato es nuevo o si el valor resultante es <= 1000
+        ".write": "true",
+        ".validate": "newData.isNumber() && newData.val() <= 1000 && (!data.exists() || newData.val() == data.val() + 1)"
+      }
     },
-    "exportUsage": {
-      ".write": true
-    },
-    "mapUsage": {
-      ".write": true
-    },
+
     "guestbook": {
-      ".write": true
-    },
-    "events": {
-      ".write": "auth != null"
-    },
-    "eventDeletions": {
-      ".write": "auth != null"
-    },
-    "socialFollowers": {
-      ".write": "auth != null"
-    },
-    "orchestras": {
-      ".write": "auth != null"
+      "messages": {
+        ".read": true,
+        ".indexOn": ["timestamp"],
+        "$messageId": {
+          ".write": "!data.exists()", 
+          ".validate": "newData.hasChildren(['text', 'timestamp']) && 
+                        newData.child('text').isString() && 
+                        newData.child('text').val().length < 300 &&
+                        newData.child('timestamp').val() <= now &&
+                        newData.child('timestamp').val() > (now - 60000)"
+        }
+      }
     }
   }
 }
