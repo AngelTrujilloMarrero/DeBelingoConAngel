@@ -6,9 +6,9 @@
     "visitCount": {
       "$date": {
         ".read": true,
-        // Solo permite escribir si el dato es nuevo o si el valor resultante es <= 1000
+        // Solo permite escribir si el dato es nuevo o si el valor resultante es <= 2000000
         ".write": "true",
-        ".validate": "newData.isNumber() && newData.val() <= 1000 && (!data.exists() || newData.val() == data.val() + 1)"
+        ".validate": "newData.isNumber() && newData.val() <= 2000000 && (!data.exists() || newData.val() == data.val() + 1)"
       }
     },
 
