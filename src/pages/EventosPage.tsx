@@ -755,6 +755,9 @@ const EventosPage: React.FC<EventosPageProps> = ({ events, recentActivity }) => 
 
                 // Calculate final height for canvas
                 const finalHeight = Math.max(minHeight, tempContainer.scrollHeight);
+                
+                // Log para debug de compresión adaptativa
+                console.log(`Export canvas: 1200x${finalHeight}px, quality adaptativa aplicada`);
 
                 html2canvas(tempContainer, {
                     width: 1200,
@@ -764,7 +767,19 @@ const EventosPage: React.FC<EventosPageProps> = ({ events, recentActivity }) => 
                     useCORS: true,
                     scale: 1 // Ensure consistent scale
                 }).then(canvas => {
-                    const dataURL = canvas.toDataURL('image/png');
+                    // Opción 4: Compresión Adaptativa
+                    // Calidad dinámica según altura del canvas
+                    let quality = 0.85; // Calidad base 85%
+                    
+                    if (finalHeight > 2000) {
+                        quality = 0.65;  // Canvas muy alto: calidad 65%
+                    } else if (finalHeight > 1500) {
+                        quality = 0.75;  // Canvas alto: calidad 75%
+                    } else if (finalHeight < 800) {
+                        quality = 0.90;  // Canvas pequeño: calidad 90%
+                    }
+                    
+                    const dataURL = canvas.toDataURL('image/jpeg', quality);
                     if (isEmbeddedBrowser()) {
                         setGeneratedImage(dataURL);
                     } else {
