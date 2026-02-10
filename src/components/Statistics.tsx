@@ -16,16 +16,17 @@ import { getRandomColor } from '../utils/helpers';
 import { zonasIsla, diasSemana } from '../utils/zones';
 import OrquestaAnalysis from './OrquestaAnalysis';
 import ComparativaDetailedAnalysis from './ComparativaDetailedAnalysis';
+import LoadingSpinner from './LoadingSpinner';
+import { getCachedHistoricalStats } from '../utils/dataLoaders';
 
-import historicalStatsRaw from '../data/historicalStats.json';
-const historicalData = historicalStatsRaw as {
+let historicalData: {
   years: Record<string, {
     orquestaCount: OrquestaCount;
     monthlyOrquestaCount: MonthlyOrquestaCount;
     monthlyEventCount: Record<string, number>;
   }>;
   events: Event[];
-};
+} | null = null;
 
 ChartJS.register(
   CategoryScale,
@@ -55,6 +56,7 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
   const [showTotal, setShowTotal] = useState(false);
   const [visibleItems, setVisibleItems] = useState(20);
   const [expandedCompMonth, setExpandedCompMonth] = useState<string | null>(null);
+  const [dataLoaded, setDataLoaded] = useState(false);
 
   useEffect(() => {
     setVisibleItems(20);
@@ -74,13 +76,35 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
   };
 
   const availableYears = useMemo(() => {
+    if (!dataLoaded) return [new Date().getFullYear()];
     const liveYears = events.map(event => new Date(event.day).getFullYear());
-    const staticYears = Object.keys(historicalData.years).map(Number);
+    const staticYears = historicalData ? Object.keys(historicalData.years).map(Number) : [];
     return [...new Set([...liveYears, ...staticYears])].sort((a, b) => b - a);
-  }, [events]);
+  }, [events, historicalData, dataLoaded]);
 
   useEffect(() => {
-    calculateStatistics();
+    const loadAndCalculate = async () => {
+      try {
+        if (!historicalData) {
+          const stats = await getCachedHistoricalStats();
+          historicalData = stats as {
+            years: Record<string, {
+              orquestaCount: OrquestaCount;
+              monthlyOrquestaCount: MonthlyOrquestaCount;
+              monthlyEventCount: Record<string, number>;
+            }>;
+            events: Event[];
+          };
+        }
+        setDataLoaded(true);
+        calculateStatistics();
+      } catch (error) {
+        console.error('Error loading statistics data:', error);
+        setDataLoaded(true); // Still show UI even if data fails to load
+      }
+    };
+
+    loadAndCalculate();
   }, [events, selectedYear]);
 
   const calculateStatistics = () => {
@@ -95,13 +119,13 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
     const yearStr = selectedYear.toString();
     const prevYearStr = (selectedYear - 1).toString();
 
-    if (historicalData.years[yearStr]) {
+    if (historicalData?.years[yearStr]) {
       currentOrquestaCount = historicalData.years[yearStr].orquestaCount;
       monthlyOrquestaCount = historicalData.years[yearStr].monthlyOrquestaCount;
       monthlyEvents = historicalData.years[yearStr].monthlyEventCount;
     }
 
-    if (historicalData.years[prevYearStr]) {
+    if (historicalData?.years[prevYearStr]) {
       prevMonthlyOrquestaCount = historicalData.years[prevYearStr].monthlyOrquestaCount;
       prevMonthlyEvents = historicalData.years[prevYearStr].monthlyEventCount;
     }
@@ -119,7 +143,7 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
       const orquestas = event.orquesta.split(',').map(orq => orq.trim()).filter(orq => orq !== 'DJ');
 
       // Only process live events for years NOT in historical stats OR if it's current year+
-      if (eventYear === selectedYear && !historicalData.years[yearStr]) {
+      if (eventYear === selectedYear && !historicalData?.years[yearStr]) {
         monthlyEvents[month] = (monthlyEvents[month] || 0) + 1;
         orquestas.forEach(orq => {
           currentOrquestaCount[orq] = (currentOrquestaCount[orq] || 0) + 1;
@@ -136,7 +160,7 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
         });
       }
 
-      if (eventYear === selectedYear - 1 && !historicalData.years[prevYearStr]) {
+      if (eventYear === selectedYear - 1 && !historicalData?.years[prevYearStr]) {
         prevMonthlyEvents[month] = (prevMonthlyEvents[month] || 0) + 1;
         orquestas.forEach(orq => {
           if (!prevMonthlyOrquestaCount[month]) {
@@ -262,6 +286,10 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
   const selectedOrquestaPosition = selectedOrquesta
     ? fullSortedOrquestasList.findIndex(o => o.name === selectedOrquesta)
     : -1;
+
+  if (!dataLoaded) {
+    return <LoadingSpinner size="lg" text="Cargando estadísticas históricas..." />;
+  }
 
   return (
     <div className="space-y-8">

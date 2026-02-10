@@ -2,12 +2,11 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Calendar, Clock, MapPin, Music2, Download, Navigation, Plus, Edit, Trash2, Info, ExternalLink, ChevronDown, Facebook, Instagram, Globe, Phone, Bus, RotateCcw } from 'lucide-react';
 import { onValue, orchestrasRef } from '../utils/firebase';
 import { orchestraDetails } from '../data/orchestras';
-import orchestraArchiveRaw from '../data/orchestraArchive.json';
+import { getCachedOrchestraArchive } from '../utils/dataLoaders';
 import { Event, RecentActivityItem } from '../types';
 
-const orchestraArchive = (orchestraArchiveRaw as any).orchestras || [];
-const archiveMap: Record<string, any> = {};
-orchestraArchive.forEach((o: any) => archiveMap[o.name] = o);
+let orchestraArchive: any[] = [];
+let archiveMap: Record<string, any> = {};
 import { groupEventsByDay, sortEventsByDateTime, formatDayName, getLastUpdateDate, isEmbeddedBrowser } from '../utils/helpers';
 import WeatherIcon from './WeatherIcon';
 import TITSALogo from './TITSALogo';
@@ -29,6 +28,17 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
   const { getAlertForEvent } = useAemetAlerts();
 
   useEffect(() => {
+    // Load orchestra archive lazily
+    const loadArchive = async () => {
+      if (!orchestraArchive.length) {
+        const archive = await getCachedOrchestraArchive();
+        orchestraArchive = (archive as any).orchestras || [];
+        orchestraArchive.forEach((o: any) => archiveMap[o.name] = o);
+      }
+    };
+
+    loadArchive();
+
     const unsubscribe = onValue(orchestrasRef, (snapshot) => {
       const data = snapshot.val() || {};
 

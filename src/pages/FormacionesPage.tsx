@@ -5,19 +5,18 @@ import { Instagram, Facebook, Globe, Mail, Phone, Search, Music, Users, External
 import { onValue, orchestrasRef } from '../utils/firebase';
 import { scrapeProfileImage } from '../utils/socialScraper';
 import OrquestaAnalysis from '../components/OrquestaAnalysis';
-import historicalStatsRaw from '../data/historicalStats.json';
-import orchestraArchiveRaw from '../data/orchestraArchive.json';
+import LoadingSpinner from '../components/LoadingSpinner';
+import { getCachedHistoricalStats, getCachedOrchestraArchive } from '../utils/dataLoaders';
 
-const orchestraArchive = (orchestraArchiveRaw as any).orchestras || [];
-
-const historicalData = historicalStatsRaw as {
+let orchestraArchive: any[] = [];
+let historicalData: {
     years: Record<string, {
         orquestaCount: Record<string, number>;
         monthlyOrquestaCount: Record<string, Record<string, number>>;
         monthlyEventCount: Record<string, number>;
     }>;
     events: Event[];
-};
+} | null = null;
 
 interface FormacionesPageProps {
     events: Event[];
@@ -28,8 +27,36 @@ const FormacionesPage: React.FC<FormacionesPageProps> = ({ events }) => {
     const [dbOrchestras, setDbOrchestras] = useState<Record<string, any>>({});
     const [scrapedImages, setScrapedImages] = useState<Record<string, string>>({});
     const [selectedOrquesta, setSelectedOrquesta] = useState<string | null>(null);
+    const [dataLoaded, setDataLoaded] = useState(false);
 
     useEffect(() => {
+        // Load data lazily
+        const loadData = async () => {
+            try {
+                if (!orchestraArchive.length) {
+                    const archive = await getCachedOrchestraArchive();
+                    orchestraArchive = (archive as any).orchestras || [];
+                }
+                if (!historicalData) {
+                    const stats = await getCachedHistoricalStats();
+                    historicalData = stats as {
+                        years: Record<string, {
+                            orquestaCount: Record<string, number>;
+                            monthlyOrquestaCount: Record<string, Record<string, number>>;
+                            monthlyEventCount: Record<string, number>;
+                        }>;
+                        events: Event[];
+                    };
+                }
+                setDataLoaded(true);
+            } catch (error) {
+                console.error('Error loading data:', error);
+                setDataLoaded(true); // Still show UI even if data fails to load
+            }
+        };
+
+        loadData();
+
         const unsubscribe = onValue(orchestrasRef, (snapshot) => {
             const data = snapshot.val();
             if (data) {
@@ -48,6 +75,10 @@ const FormacionesPage: React.FC<FormacionesPageProps> = ({ events }) => {
 
     // Extract unique orchestras and calculate stats
     const formaciones = useMemo(() => {
+        if (!dataLoaded || !historicalData) {
+            return [];
+        }
+
         const currentYear = new Date().getFullYear();
         const prevYear = currentYear - 1;
         const stats: Record<string, { currentCount: number; prevCount: number; lastEvent: string }> = {};
@@ -67,7 +98,7 @@ const FormacionesPage: React.FC<FormacionesPageProps> = ({ events }) => {
         });
 
         // Add lastEvent from historical events
-        historicalData.events.forEach(event => {
+        historicalData.events?.forEach(event => {
             const orquestas = event.orquesta.split(',').map(o => o.trim()).filter(o => o !== 'DJ' && o.length > 0);
             orquestas.forEach(orq => {
                 if (!stats[orq]) {
@@ -173,6 +204,10 @@ const FormacionesPage: React.FC<FormacionesPageProps> = ({ events }) => {
             .map(f => ({ name: f.name, count: f.prevCount }))
             .sort((a, b) => b.count - a.count);
     }, [formaciones]);
+
+    if (!dataLoaded) {
+        return <LoadingSpinner size="lg" text="Cargando datos de formaciones..." />;
+    }
 
     return (
         <div className="space-y-8 animate-fadeIn">

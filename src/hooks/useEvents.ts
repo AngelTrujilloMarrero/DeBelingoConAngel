@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { onValue } from '../utils/firebase';
 import { eventsRef, eventDeletionsRef } from '../utils/firebase';
 import { Event, RecentActivityItem } from '../types';
-import historicalStatsRaw from '../data/historicalStats.json';
+import { getCachedHistoricalStats } from '../utils/dataLoaders';
 
 // Función para cargar eventos históricos desde archivos estáticos por año
 const loadEventsFromArchive = async (year: number): Promise<Event[]> => {
@@ -69,10 +69,10 @@ const isWithinTimeWindow = (timestamp1: string, timestamp2: string, hours: numbe
   return diffInHours <= hours;
 };
 
-const historicalData = historicalStatsRaw as {
+let historicalData: {
   years: any;
   events: Event[];
-};
+} | null = null;
 
 export function useEvents() {
   const [events, setEvents] = useState<Event[]>([]);
@@ -87,6 +87,15 @@ export function useEvents() {
 
     const setupEventListeners = async () => {
       setLoading(true);
+
+      // Load historical data lazily
+      if (!historicalData) {
+        const stats = await getCachedHistoricalStats();
+        historicalData = stats as {
+          years: any;
+          events: Event[];
+        };
+      }
 
       const currentYear = new Date().getFullYear();
       const previousYear = currentYear - 1;
