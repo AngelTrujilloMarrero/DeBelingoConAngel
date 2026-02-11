@@ -404,7 +404,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
                     ✕
                   </button>
                 </div>
-                <p className="text-black text-lg font-black leading-tight italic line-clamp-[20] overflow-y-auto max-h-[500px] pr-2 scrollbar-thin scrollbar-thumb-black/20">
+                <p className="text-black text-lg font-black leading-snug italic whitespace-pre-wrap overflow-y-auto max-h-[500px] pr-2 scrollbar-thin scrollbar-thumb-black/20">
                   "{aiMessage}"
                 </p>
               </div>
