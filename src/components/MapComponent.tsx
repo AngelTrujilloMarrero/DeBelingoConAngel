@@ -151,8 +151,10 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
         body: JSON.stringify({ prompt })
       });
 
-      const finalData = await response.json();
-      resetToken(); // Reset after use
+      // Safe JSON parse (Vercel 504 returns HTML, not JSON)
+      const text = await response.text();
+      let finalData;
+      try { finalData = JSON.parse(text); } catch { finalData = { error: `Error del servidor (${response.status})` }; }
 
       if (response.ok && finalData.response) {
         setAiMessage(finalData.response);
@@ -161,10 +163,11 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
         throw new Error(errorMsg);
       }
     } catch (err: any) {
-      console.error("Error calling AI API detailed:", err);
+      console.error("Error calling AI API:", err);
       const errorMessage = err?.message || "Error desconocido";
       setAiMessage(`¡Ñoos! ${errorMessage}. ¡Inténtalo de nuevo, puntal!`);
     } finally {
+      resetToken(); // ALWAYS reset token, even on errors
       setIsAiLoading(false);
     }
   };

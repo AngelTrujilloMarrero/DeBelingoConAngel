@@ -4,7 +4,7 @@ import { applySecurityHeaders } from './_cors.js';
 
 async function callOpenRouter(prompt, apiKey) {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 4500); // 4.5s limit for the first attempt
+    const timeoutId = setTimeout(() => controller.abort(), 7000);
 
     try {
         const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -27,17 +27,18 @@ async function callOpenRouter(prompt, apiKey) {
             }),
         });
         clearTimeout(timeoutId);
-        if (!response.ok) return null;
+        if (!response.ok) throw new Error('OpenRouter not ok');
         const data = await response.json();
         return data.choices?.[0]?.message?.content || null;
     } catch (e) {
+        clearTimeout(timeoutId);
         return null;
     }
 }
 
 async function callMistral(prompt, apiKey) {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 4500); // 4.5s limit for the fallback
+    const timeoutId = setTimeout(() => controller.abort(), 7000);
 
     try {
         const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
@@ -58,10 +59,11 @@ async function callMistral(prompt, apiKey) {
             }),
         });
         clearTimeout(timeoutId);
-        if (!response.ok) return null;
+        if (!response.ok) throw new Error('Mistral not ok');
         const data = await response.json();
         return data.choices?.[0]?.message?.content || null;
     } catch (e) {
+        clearTimeout(timeoutId);
         return null;
     }
 }
@@ -74,33 +76,40 @@ export default async function handler(req, res) {
         const { prompt } = req.body;
         if (!prompt) return res.status(400).json({ error: 'Prompt missing' });
 
-        // 1. Verify Security (DO IT ONCE)
-        const { error: authError, status: authStatus } = await verifySecurity(req);
-        if (authError) return res.status(authStatus).json({ error: authError });
-
-        // 2. Global Rate Limit
+        // 1. Auth + Rate Limits in parallel (~1-2s max)
         const userIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
-        const [globalLimit, ipLimit] = await Promise.all([
+        const [authResult, globalLimit, ipLimit] = await Promise.all([
+            verifySecurity(req),
             checkRateLimit('angel-ia-global', 120, 60 * 60 * 1000),
             checkRateLimit(`angel-ia-ip:${userIP}`, 30, 60 * 60 * 1000)
         ]);
 
+        if (authResult.error) return res.status(authResult.status).json({ error: authResult.error });
         if (!globalLimit.allowed) return res.status(429).json({ error: globalLimit.error });
         if (!ipLimit.allowed) return res.status(429).json({ error: 'Límite de mensajes excedido, puntal.' });
 
-        // 3. Try OpenRouter First
-        let aiResponse = await callOpenRouter(prompt, process.env.API_OPENROUTER);
+        // 2. RACE both AIs simultaneously - first to respond wins
+        const openRouterKey = process.env.API_OPENROUTER;
+        const mistralKey = process.env.API_TOLETE;
 
-        // 4. Fallback to Mistral if failed
-        if (!aiResponse) {
-            console.warn("Falling back to Mistral...");
-            aiResponse = await callMistral(prompt, process.env.API_TOLETE);
+        const results = await Promise.allSettled([
+            callOpenRouter(prompt, openRouterKey),
+            callMistral(prompt, mistralKey)
+        ]);
+
+        // Pick the first successful, non-null result
+        let aiResponse = null;
+        for (const result of results) {
+            if (result.status === 'fulfilled' && result.value) {
+                aiResponse = result.value;
+                break;
+            }
         }
 
         if (aiResponse) {
             return res.status(200).json({ response: aiResponse });
         } else {
-            return res.status(503).json({ error: 'La IA ha tardado demasiado en responder. ¡Reintenta, puntal!' });
+            return res.status(503).json({ error: 'Ninguna IA respondió a tiempo. ¡Reintenta, puntal!' });
         }
 
     } catch (error) {
