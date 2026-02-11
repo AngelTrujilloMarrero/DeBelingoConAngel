@@ -4,7 +4,7 @@ import { applySecurityHeaders } from './_cors.js';
 
 async function callOpenRouter(prompt, apiKey) {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 6500); // 6.5s limit
+    const timeoutId = setTimeout(() => controller.abort(), 4500); // 4.5s limit for the first attempt
 
     try {
         const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
@@ -17,13 +17,13 @@ async function callOpenRouter(prompt, apiKey) {
                 'X-Title': 'De Belingo con Angel',
             },
             body: JSON.stringify({
-                model: 'openrouter/free', // Switched to generic free router to solve StepFun issues
+                model: 'openrouter/free',
                 messages: [
                     { role: 'system', content: 'Debes indicar siempre qué orquesta está en cada sitio basándote en el listado. Sé exacto, concreto y al grano. Al final de tu respuesta añade siempre "(S)".' },
                     { role: 'user', content: prompt }
                 ],
                 temperature: 0.7,
-                max_tokens: 500,
+                max_tokens: 350,
             }),
         });
         clearTimeout(timeoutId);
@@ -37,7 +37,7 @@ async function callOpenRouter(prompt, apiKey) {
 
 async function callMistral(prompt, apiKey) {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 6500);
+    const timeoutId = setTimeout(() => controller.abort(), 4500); // 4.5s limit for the fallback
 
     try {
         const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
@@ -54,7 +54,7 @@ async function callMistral(prompt, apiKey) {
                     { role: 'user', content: prompt }
                 ],
                 temperature: 0.7,
-                max_tokens: 500,
+                max_tokens: 350,
             }),
         });
         clearTimeout(timeoutId);
@@ -100,7 +100,7 @@ export default async function handler(req, res) {
         if (aiResponse) {
             return res.status(200).json({ response: aiResponse });
         } else {
-            return res.status(503).json({ error: 'Ninguna IA respondió a tiempo. ¡Reintenta, puntal!' });
+            return res.status(503).json({ error: 'La IA ha tardado demasiado en responder. ¡Reintenta, puntal!' });
         }
 
     } catch (error) {
