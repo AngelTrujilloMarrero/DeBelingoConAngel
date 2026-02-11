@@ -43,10 +43,16 @@ export async function verifySecurity(req) {
     formData.append('response', turnstileToken);
     formData.append('remoteip', req.headers['x-forwarded-for'] || req.socket.remoteAddress);
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
+
     const result = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
       body: formData,
       method: 'POST',
+      signal: controller.signal
     });
+
+    clearTimeout(timeoutId);
 
     const outcome = await result.json();
     if (outcome.success) {
@@ -57,6 +63,11 @@ export async function verifySecurity(req) {
     console.error('Turnstile verification failed:', errorCodes);
     return { error: `Unauthorized: Security check failed (${errorCodes})`, status: 401 };
   } catch (err) {
+    // Fail open on timeout to prevent blocking users due to slow Turnstile
+    if (err.name === 'AbortError') {
+      console.warn('⏳ Turnstile verification timed out. Failing open.');
+      return { claims: { turnstile_timeout: true }, error: null };
+    }
     console.error('Security verification error:', err.message);
     return { error: 'Internal Security Error', status: 401 };
   }

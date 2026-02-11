@@ -18,7 +18,7 @@ export async function checkRateLimit(key, limit, windowMs) {
         setTimeout(() => {
             console.warn(`⏳ Rate limit check for ${key} timed out. Failing open.`);
             resolve({ allowed: true, timeout: true });
-        }, 2000);
+        }, 1000);
     });
 
     try {
