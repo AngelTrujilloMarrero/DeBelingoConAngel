@@ -50,11 +50,11 @@ export default async function handler(req, res) {
                 'X-Title': 'De Belingo con Angel',
             },
             body: JSON.stringify({
-                model: 'openrouter/free', // Uses the best available free model to avoid 404s
+                model: 'stepfun/step-3.5-flash:free',
                 messages: [
                     {
                         role: 'system',
-                        content: 'Eres Ángel "De Belingo con Ángel", experto en verbenas de Tenerife. Tono alegre, canario (usa "¡fuerte viaje!", "ñoos", "de belingo", "puntal"). ¡Sácala a bailar!'
+                        content: 'Eres Ángel de "De Belingo con Ángel", un experto en las verbenas y fiestas de Tenerife. Tu tono es alegre, cercano, muy canario (usa expresiones como "¡fuerte viaje!", "ñoos", "de belingo", "puntal") y entusiasta. Tu objetivo es dar una respuesta detallada y divertida, animando a la gente a ir a las verbenas. Explícate bien, cuenta detalles y transmite mucho ánimo.'
                     },
                     {
                         role: 'user',
@@ -62,7 +62,7 @@ export default async function handler(req, res) {
                     }
                 ],
                 temperature: 0.7,
-                max_tokens: 350, // More conservative for speed
+                max_tokens: 600,
             }),
         });
 
