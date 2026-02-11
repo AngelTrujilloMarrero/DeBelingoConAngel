@@ -122,14 +122,14 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
     try {
       // Usar URL absoluta de Vercel para evitar errores de JSON (SyntaxError <)
       const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL || 'https://de-belingo-con-angel.vercel.app';
-      const prompt = `Actúa como Ángel de "De Belingo con Ángel". El usuario se encuentra en "${userLocation}".
+      const prompt = `Usuario en: "${userLocation}".
       
-      Mapa de Verbenas (top 5):
+      Verbenas próximas:
       ${mapEvents.length > 0
           ? mapEvents.slice(0, 5).map(e => `- ${e.day}: ${e.orquesta} (${e.municipio})`).join('\n')
           : "No hay verbenas próximas."}
       
-      Instrucciones: Respuesta con chispa canaria, menciona el mapa y anima a salir. Usa: ¡fuerte viaje!, puntal, magua, ñoss, de belingo.`;
+      Instrucción: Sé breve y directo. Indica cuál queda más cerca en tiempo y distancia.`;
 
       const { getSecurityHeaders } = await import('../utils/firebase');
       const headers = await getSecurityHeaders(token);
