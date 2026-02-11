@@ -36,8 +36,8 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'Prompt must be a non-empty string' });
     }
 
-    if (prompt.length > 1000) {
-        return res.status(400).json({ error: 'Prompt is too long (max 1000 characters)' });
+    if (prompt.length > 2000) {
+        return res.status(400).json({ error: 'Prompt is too long (max 2000 characters)' });
     }
 
     const apiKey = process.env.API_TOLETE;

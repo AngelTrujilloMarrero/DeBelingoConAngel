@@ -2,24 +2,36 @@
   "rules": {
     ".read": true,
     ".write": "auth != null && (auth.uid == 'nC4NMCMC7Gha7QH5en25xNQDtLp1' || auth.uid == 'JIdFCV7ppmXAltAajzBdTzI2qYE3')",
-
     "visitCount": {
       ".read": true,
       ".write": "true",
       ".validate": "newData.isNumber() && newData.val() <= 2000000 && (!data.exists() || newData.val() == data.val() + 1)"
     },
-
+    "mapUsage": {
+      ".read": true,
+      ".write": "true"
+    },
+    "exportUsage": {
+      ".read": true,
+      ".write": "true"
+    },
+    "socialFollowers": {
+      ".read": true,
+      ".write": "true"
+    },
+    "orchestras": {
+      ".read": true,
+      ".write": "auth != null && (auth.uid == 'nC4NMCMC7Gha7QH5en25xNQDtLp1' || auth.uid == 'JIdFCV7ppmXAltAajzBdTzI2qYE3')"
+    },
     "guestbook": {
       "messages": {
         ".read": true,
-        ".indexOn": ["timestamp"],
+        ".indexOn": [
+          "timestamp"
+        ],
         "$messageId": {
-          ".write": "!data.exists()", 
-          ".validate": "newData.hasChildren(['text', 'timestamp']) && 
-                        newData.child('text').isString() && 
-                        newData.child('text').val().length < 300 &&
-                        newData.child('timestamp').val() <= now &&
-                        newData.child('timestamp').val() > (now - 60000)"
+          ".write": "!data.exists()",
+          ".validate": "newData.hasChildren(['text', 'timestamp']) && newData.child('text').isString() && newData.child('text').val().length < 300 && newData.child('timestamp').val() <= now && newData.child('timestamp').val() > (now - 60000)"
         }
       }
     }
