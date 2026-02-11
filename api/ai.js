@@ -19,7 +19,7 @@ async function callOpenRouter(prompt, apiKey) {
             body: JSON.stringify({
                 model: 'stepfun/step-3.5-flash:free',
                 messages: [
-                    { role: 'system', content: 'Se exacto y concreto y al grano tipo: Te queda mas cerca en tiempo y distancia la verbena.' },
+                    { role: 'system', content: 'Debes indicar siempre qué orquesta está en cada sitio basándote en el listado. Sé exacto, concreto y al grano. Al final de tu respuesta añade siempre "(S)".' },
                     { role: 'user', content: prompt }
                 ],
                 temperature: 0.7,
@@ -50,7 +50,7 @@ async function callMistral(prompt, apiKey) {
             body: JSON.stringify({
                 model: 'mistral-medium-latest',
                 messages: [
-                    { role: 'system', content: 'Se exacto y concreto y al grano tipo: Te queda mas cerca en tiempo y distancia la verbena.' },
+                    { role: 'system', content: 'Debes indicar siempre qué orquesta está en cada sitio basándote en el listado. Sé exacto, concreto y al grano. Al final de tu respuesta añade siempre "(M)".' },
                     { role: 'user', content: prompt }
                 ],
                 temperature: 0.7,
