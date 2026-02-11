@@ -17,7 +17,7 @@ async function callOpenRouter(prompt, apiKey) {
                 'X-Title': 'De Belingo con Angel',
             },
             body: JSON.stringify({
-                model: 'stepfun/step-3.5-flash:free',
+                model: 'openrouter/free', // Switched to generic free router to solve StepFun issues
                 messages: [
                     { role: 'system', content: 'Debes indicar siempre qué orquesta está en cada sitio basándote en el listado. Sé exacto, concreto y al grano. Al final de tu respuesta añade siempre "(S)".' },
                     { role: 'user', content: prompt }
