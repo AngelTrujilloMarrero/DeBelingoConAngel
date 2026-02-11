@@ -120,13 +120,20 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
     setAiMessage(null);
 
     try {
-      // Usar URL absoluta de Vercel para evitar errores de JSON (SyntaxError <)
-      const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL || 'https://de-belingo-con-angel.vercel.app';
+      const now = new Date();
+      const cutOffTime = new Date(now.getTime() - 3 * 60 * 60 * 1000); // 3h margin
+
       const upcomingEvents = events
-        .filter(e => !e.cancelado)
+        .filter(e => {
+          if (e.cancelado) return false;
+          const eventDateTime = new Date(`${e.day}T${e.hora}`);
+          return eventDateTime >= cutOffTime;
+        })
         .sort((a, b) => new Date(`${a.day}T${a.hora}`).getTime() - new Date(`${b.day}T${b.hora}`).getTime())
         .slice(0, 8);
 
+      // Usar URL absoluta de Vercel para evitar errores de JSON (SyntaxError <)
+      const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL || 'https://de-belingo-con-angel.vercel.app';
       const prompt = `Usuario en: "${userLocation}".
       
       Listado de Verbenas:
