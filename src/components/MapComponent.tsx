@@ -145,51 +145,25 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
       const { getSecurityHeaders } = await import('../utils/firebase');
       const headers = await getSecurityHeaders(token);
 
-      // --- LOGICA DE FALLBACK AUTOMATICO ---
-      let response;
-      let finalData;
+      const response = await fetch(`${API_BASE_URL}/api/ai`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ prompt })
+      });
 
-      try {
-        // Intento 1: OpenRouter
-        response = await fetch(`${API_BASE_URL}/api/openrouter`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({ prompt })
-        });
-
-        if (response.ok) {
-          finalData = await response.json();
-        } else {
-          throw new Error("OpenRouter failed");
-        }
-      } catch (err) {
-        console.warn("OpenRouter falló, intentando Mistral como backup...");
-        // Intento 2: Mistral (Backup)
-        response = await fetch(`${API_BASE_URL}/api/mistral`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({ prompt })
-        });
-
-        if (response.ok) {
-          finalData = await response.json();
-        } else {
-          const errorData = await response.json().catch(() => ({}));
-          throw new Error(errorData.error || `Backup API Error: ${response.status}`);
-        }
-      }
-
+      const finalData = await response.json();
       resetToken(); // Reset after use
 
-      if (finalData && finalData.response) {
+      if (response.ok && finalData.response) {
         setAiMessage(finalData.response);
       } else {
-        setAiMessage("¡Ay mi madre! Se me trabó el magua. ¡Prueba otra vez!");
+        const errorMsg = finalData.error || "Se me trabó el magua";
+        throw new Error(errorMsg);
       }
     } catch (err: any) {
       console.error("Error calling AI API detailed:", err);
       const errorMessage = err?.message || "Error desconocido";
-      setAiMessage(`¡Ñoos! Hay un lío con la respuesta: ${errorMessage}. ¡Inténtalo de nuevo, puntal!`);
+      setAiMessage(`¡Ñoos! ${errorMessage}. ¡Inténtalo de nuevo, puntal!`);
     } finally {
       setIsAiLoading(false);
     }
