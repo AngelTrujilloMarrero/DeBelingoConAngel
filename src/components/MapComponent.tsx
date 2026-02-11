@@ -122,14 +122,19 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
     try {
       // Usar URL absoluta de Vercel para evitar errores de JSON (SyntaxError <)
       const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL || 'https://de-belingo-con-angel.vercel.app';
+      const upcomingEvents = events
+        .filter(e => !e.cancelado)
+        .sort((a, b) => new Date(`${a.day}T${a.hora}`).getTime() - new Date(`${b.day}T${b.hora}`).getTime())
+        .slice(0, 8);
+
       const prompt = `Usuario en: "${userLocation}".
       
-      Verbenas próximas:
-      ${mapEvents.length > 0
-          ? mapEvents.slice(0, 5).map(e => `- ${e.day}: ${e.orquesta} (${e.municipio})`).join('\n')
+      Listado de Verbenas:
+      ${upcomingEvents.length > 0
+          ? upcomingEvents.map(e => `- ${e.day} a las ${e.hora}: ${e.orquesta} en ${e.municipio} (${e.lugar})`).join('\n')
           : "No hay verbenas próximas."}
       
-      Instrucción: Sé breve y directo. Indica cuál queda más cerca en tiempo y distancia.`;
+      Instrucción: Basándote SOLO en este listado, indica al usuario cuáles son las más próximas en tiempo y cuáles le quedan más cerca de "${userLocation}". Sé breve, concreto y ve al grano.`;
 
       const { getSecurityHeaders } = await import('../utils/firebase');
       const headers = await getSecurityHeaders(token);
