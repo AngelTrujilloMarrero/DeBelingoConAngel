@@ -24,7 +24,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
   // Estados para la IA de Belingo
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiMessage, setAiMessage] = useState<string | null>(null);
-  const [aiProvider, setAiProvider] = useState<'openrouter' | 'mistral' | 'groq'>('openrouter');
+  const [aiProvider, setAiProvider] = useState<'openrouter' | 'mistral'>('openrouter');
 
   // Filter events for map display
   // Modified logic: "con 3 horas máxima pasadas el evento"
@@ -380,7 +380,6 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
                 >
                   <option value="openrouter">STEPFUN</option>
                   <option value="mistral">MISTRAL</option>
-                  <option value="groq">GROQ (FAST)</option>
                 </select>
                 <button
                   onClick={handleAiAnalysis}
