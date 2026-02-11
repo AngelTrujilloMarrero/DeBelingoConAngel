@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 // CORRECCIÓN: Se renombra el icono 'Map' a 'MapIcon' para evitar conflictos con el objeto nativo Map de JS.
-import { Map as MapIcon, Navigation, AlertCircle, MapPin, Calendar, Clock, Search, Sparkles, Wand2, Loader2, Brain } from 'lucide-react';
+import { Map as MapIcon, Navigation, AlertCircle, MapPin, Calendar, Clock, Search, Sparkles, Wand2, Loader2, Brain, Cpu } from 'lucide-react';
 import { Event } from '../types';
 import { geocodeAddress, municipioMapping, normalizarMunicipio } from '../utils/geocoding';
 import { checkLocalRateLimit, checkGlobalRateLimit } from '../utils/rateLimit';
@@ -24,6 +24,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
   // Estados para la IA de Belingo
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiMessage, setAiMessage] = useState<string | null>(null);
+  const [aiProvider, setAiProvider] = useState<'openrouter' | 'mistral' | 'groq'>('openrouter');
 
   // Filter events for map display
   // Modified logic: "con 3 horas máxima pasadas el evento"
@@ -133,9 +134,8 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
       const { getSecurityHeaders } = await import('../utils/firebase');
       const headers = await getSecurityHeaders(token);
 
-      // Solo intentamos con OpenRouter. Si falla, el token se habrá consumido.
-      // El usuario puede reintentar manualmente, lo que generará un nuevo token.
-      const response = await fetch(`${API_BASE_URL}/api/openrouter`, {
+      // Usar el proveedor seleccionado
+      const response = await fetch(`${API_BASE_URL}/api/${aiProvider}`, {
         method: 'POST',
         headers,
         body: JSON.stringify({ prompt })
@@ -372,14 +372,25 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
                 {isSearching ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
                 BUSCAR
               </button>
-              <button
-                onClick={handleAiAnalysis}
-                disabled={isAiLoading || !userLocation.trim()}
-                className="flex-1 sm:flex-initial justify-center bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-3 rounded-xl font-black transition-all transform active:scale-95 flex items-center gap-2 disabled:opacity-50 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
-              >
-                {isAiLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Brain className="w-5 h-5" />}
-                ÁNGEL IA
-              </button>
+              <div className="flex bg-gray-800 rounded-xl border-2 border-black overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
+                <select
+                  value={aiProvider}
+                  onChange={(e) => setAiProvider(e.target.value as any)}
+                  className="bg-gray-800 text-white px-3 py-3 font-bold focus:outline-none cursor-pointer border-r-2 border-black"
+                >
+                  <option value="openrouter">STEPFUN</option>
+                  <option value="mistral">MISTRAL</option>
+                  <option value="groq">GROQ (FAST)</option>
+                </select>
+                <button
+                  onClick={handleAiAnalysis}
+                  disabled={isAiLoading || !userLocation.trim()}
+                  className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-3 font-black transition-all transform active:scale-95 flex items-center gap-2 disabled:opacity-50"
+                >
+                  {isAiLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Brain className="w-5 h-5" />}
+                  ÁNGEL IA
+                </button>
+              </div>
             </div>
           </div>
         </div>
