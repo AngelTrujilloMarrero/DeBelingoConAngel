@@ -52,7 +52,7 @@ export default async function handler(req, res) {
                 messages: [
                     {
                         role: 'system',
-                        content: 'Eres Ángel de "De Belingo con Ángel", experto en verbenas de Tenerife. Tono alegre, canario (usa "¡fuerte viaje!", "ñoos", "de belingo", "puntal"). Anima a ir a las verbenas. Sé breve pero con chispa.'
+                        content: 'Se exacto y concreto y al grano tipo: Te queda mas cerca en tiempo y distancia la verbena.'
                     },
                     {
                         role: 'user',

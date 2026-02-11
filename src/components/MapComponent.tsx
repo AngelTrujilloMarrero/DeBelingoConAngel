@@ -24,7 +24,6 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
   // Estados para la IA de Belingo
   const [isAiLoading, setIsAiLoading] = useState(false);
   const [aiMessage, setAiMessage] = useState<string | null>(null);
-  const [aiProvider, setAiProvider] = useState<'openrouter' | 'mistral'>('openrouter');
 
   // Filter events for map display
   // Modified logic: "con 3 horas máxima pasadas el evento"
@@ -146,36 +145,52 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
       const { getSecurityHeaders } = await import('../utils/firebase');
       const headers = await getSecurityHeaders(token);
 
-      // Usar el proveedor seleccionado
-      const response = await fetch(`${API_BASE_URL}/api/${aiProvider}`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ prompt })
-      });
+      // --- LOGICA DE FALLBACK AUTOMATICO ---
+      let response;
+      let finalData;
 
-      // ... unchanged
-      resetToken(); // Reset after use
-      // ... unchanged
+      try {
+        // Intento 1: OpenRouter
+        response = await fetch(`${API_BASE_URL}/api/openrouter`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ prompt })
+        });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `API Error: ${response.status}`);
+        if (response.ok) {
+          finalData = await response.json();
+        } else {
+          throw new Error("OpenRouter failed");
+        }
+      } catch (err) {
+        console.warn("OpenRouter falló, intentando Mistral como backup...");
+        // Intento 2: Mistral (Backup)
+        response = await fetch(`${API_BASE_URL}/api/mistral`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ prompt })
+        });
+
+        if (response.ok) {
+          finalData = await response.json();
+        } else {
+          const errorData = await response.json().catch(() => ({}));
+          throw new Error(errorData.error || `Backup API Error: ${response.status}`);
+        }
       }
 
-      const data = await response.json();
-      if (data.response) {
-        setAiMessage(data.response);
+      resetToken(); // Reset after use
+
+      if (finalData && finalData.response) {
+        setAiMessage(finalData.response);
       } else {
         setAiMessage("¡Ay mi madre! Se me trabó el magua. ¡Prueba otra vez!");
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error("Error calling AI API detailed:", err);
-      // @ts-ignore
-      const errorMessage = err?.message || JSON.stringify(err);
+      const errorMessage = err?.message || "Error desconocido";
       setAiMessage(`¡Ñoos! Hay un lío con la respuesta: ${errorMessage}. ¡Inténtalo de nuevo, puntal!`);
     } finally {
-
-
       setIsAiLoading(false);
     }
   };
@@ -384,24 +399,14 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
                 {isSearching ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
                 BUSCAR
               </button>
-              <div className="flex bg-gray-800 rounded-xl border-2 border-black overflow-hidden shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]">
-                <select
-                  value={aiProvider}
-                  onChange={(e) => setAiProvider(e.target.value as any)}
-                  className="bg-gray-800 text-white px-3 py-3 font-bold focus:outline-none cursor-pointer border-r-2 border-black"
-                >
-                  <option value="openrouter">STEPFUN</option>
-                  <option value="mistral">MISTRAL</option>
-                </select>
-                <button
-                  onClick={handleAiAnalysis}
-                  disabled={isAiLoading || !userLocation.trim()}
-                  className="bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-3 font-black transition-all transform active:scale-95 flex items-center gap-2 disabled:opacity-50"
-                >
-                  {isAiLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Brain className="w-5 h-5" />}
-                  ÁNGEL IA
-                </button>
-              </div>
+              <button
+                onClick={handleAiAnalysis}
+                disabled={isAiLoading || !userLocation.trim()}
+                className="flex-1 sm:flex-initial justify-center bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-3 rounded-xl font-black transition-all transform active:scale-95 flex items-center gap-2 disabled:opacity-50 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+              >
+                {isAiLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Brain className="w-5 h-5" />}
+                ÁNGEL IA
+              </button>
             </div>
           </div>
         </div>
