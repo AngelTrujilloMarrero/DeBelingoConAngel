@@ -50,11 +50,11 @@ export default async function handler(req, res) {
                 'X-Title': 'De Belingo con Angel',
             },
             body: JSON.stringify({
-                model: 'google/gemini-2.0-flash-exp:free',
+                model: 'openrouter/free', // Uses the best available free model to avoid 404s
                 messages: [
                     {
                         role: 'system',
-                        content: 'Eres Ángel de "De Belingo con Ángel", experto en verbenas de Tenerife. Tono alegre, canario (usa "¡fuerte viaje!", "ñoos", "de belingo", "puntal"). Anima a ir a las verbenas. Sé breve pero con chispa.'
+                        content: 'Eres Ángel "De Belingo con Ángel", experto en verbenas de Tenerife. Tono alegre, canario (usa "¡fuerte viaje!", "ñoos", "de belingo", "puntal"). ¡Sácala a bailar!'
                     },
                     {
                         role: 'user',
@@ -62,7 +62,7 @@ export default async function handler(req, res) {
                     }
                 ],
                 temperature: 0.7,
-                max_tokens: 400,
+                max_tokens: 350, // More conservative for speed
             }),
         });
 
