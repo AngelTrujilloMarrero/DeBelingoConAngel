@@ -172,13 +172,15 @@ export const useAemetAlerts = () => {
     const getAlertForEvent = (municipio: string, date: string) => {
         if (!municipio || !date) return undefined;
 
-        // CORRECCIÓN CRÍTICA: Buscar si el municipio contiene la clave del mapeo
-        // Esto permite que "Santa Cruz de Tenerife" coincida con "Santa Cruz"
-        let eventZone = "";
-        const munLower = municipio.toLowerCase();
+        // Normalizar fecha: asegurar que es YYYY-MM-DD (por si viene con hora o espacios)
+        const eventDateNormalized = date.split('T')[0].trim();
 
+        // Normalizar nombre del municipio para la búsqueda
+        const munSearch = municipio.trim().toLowerCase();
+
+        let eventZone = "";
         for (const [key, zone] of Object.entries(ZONE_MAPPING)) {
-            if (munLower.includes(key.toLowerCase())) {
+            if (munSearch.includes(key.toLowerCase())) {
                 eventZone = zone;
                 break;
             }
@@ -186,12 +188,18 @@ export const useAemetAlerts = () => {
 
         if (!eventZone) return undefined;
 
-        return alerts.find(a =>
+        // Buscar alerta que coincida en zona y fecha normalizada
+        const foundAlert = alerts.find(a =>
             (a.zone === eventZone || a.zone === "Cumbres") &&
-            a.date === date
+            a.date === eventDateNormalized
         );
+
+        if (foundAlert) {
+            console.log(`[AEMET] Match found! Event in ${municipio} (${eventZone}) on ${eventDateNormalized} matches alert:`, foundAlert);
+        }
+
+        return foundAlert;
     };
 
     return { alerts, loading, getAlertForEvent };
 };
-
