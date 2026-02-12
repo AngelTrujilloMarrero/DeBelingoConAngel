@@ -53,22 +53,17 @@ export const useAemetAlerts = () => {
     const [alerts, setAlerts] = useState<AemetAlert[]>([]);
     const [loading, setLoading] = useState(true);
     const [hasFetched, setHasFetched] = useState(false);
-    const { token, resetToken } = useTurnstile();
+    const { token } = useTurnstile();
 
     useEffect(() => {
-        // Esperar a que el token de Turnstile esté listo
-        // Y evitar llamadas duplicadas si ya hemos obtenido los datos (o intentado)
-        // CORRECCIÓN: AEMET ya no requiere token. Solo chequeamos hasFetched.
         if (hasFetched) return;
 
         let isMounted = true;
-        setHasFetched(true); // Marcar como intentado para evitar bucles o reuso inmediato
+        setHasFetched(true);
 
         const fetchAlerts = async () => {
             try {
                 setLoading(true);
-
-                // Obtener cabeceras de seguridad con el token
                 const headers = await getSecurityHeaders();
 
                 // Determinar URL base
@@ -77,23 +72,11 @@ export const useAemetAlerts = () => {
 
                 const proxyUrl = `${API_BASE_URL}/api/aemet-proxy`;
 
-                const response = await fetch(proxyUrl, {
-                    headers
-                });
+                console.log(`[AEMET] Fetching alerts from: ${proxyUrl}`);
+                const response = await fetch(proxyUrl, { headers });
 
                 if (!response.ok) {
-                    if (response.status !== 401) {
-                        console.warn(`AEMET Proxy unavailable (${response.status}).`);
-                    } else {
-                        // Intentar leer el mensaje de error detallado del JSON
-                        try {
-                            const errData = await response.json();
-                            console.error('AEMET Proxy Auth Failed (401).', errData.error || 'Unknown error');
-                        } catch (e) {
-                            console.error('AEMET Proxy Auth Failed (401). Token used:', token ? 'Yes' : 'No');
-                        }
-                    }
-
+                    console.warn(`[AEMET] Proxy unavailable (${response.status})`);
                     if (isMounted) {
                         setAlerts([]);
                         setLoading(false);
@@ -130,8 +113,19 @@ export const useAemetAlerts = () => {
                     else if (title.toLowerCase().includes("este, sur y oeste")) zone = "Sur";
                     else if (title.toLowerCase().includes("cumbres")) zone = "Cumbres";
 
+                    // Extraer fenómeno (Formato: Aviso. Nivel X. Fenómeno. Zona)
+                    // Intentamos split por punto o por " por "
+                    let phenomenon = "Fenómeno adverso";
+                    const parts = title.split(".");
+                    if (parts.length >= 3) {
+                        phenomenon = parts[2].trim();
+                    } else if (title.includes(" por ")) {
+                        phenomenon = title.split(" por ")[1]?.split(" en ")[0] || phenomenon;
+                    }
+
                     // Extraer fecha (AEMET RSS usa formato DD-MM-YYYY en descripción)
-                    const dateMatch = description.match(/(\d{2})-(\d{2})-(\d{4})/);
+                    // Soportamos tanto guiones como barras
+                    const dateMatch = description.match(/(\d{2})[-/](\d{2})[-/](\d{4})/);
                     let alertDate = "";
                     if (dateMatch) {
                         alertDate = `${dateMatch[3]}-${dateMatch[2]}-${dateMatch[1]}`;
@@ -145,7 +139,7 @@ export const useAemetAlerts = () => {
 
                     parsedAlerts.push({
                         level,
-                        phenomenon: title.split(" por ")[1]?.split(" en ")[0] || "Fenómeno adverso",
+                        phenomenon,
                         zone,
                         description,
                         link,
@@ -153,16 +147,16 @@ export const useAemetAlerts = () => {
                     });
                 });
 
+                console.log(`[AEMET] Parsed ${parsedAlerts.length} active alerts.`, parsedAlerts);
+
                 if (isMounted) {
                     setAlerts(parsedAlerts);
                 }
             } catch (error) {
-                console.error("Error fetching AEMET alerts:", error);
+                console.error("[AEMET] Error fetching alerts:", error);
             } finally {
                 if (isMounted) {
                     setLoading(false);
-                    // IMPORTANTE: Quemar el token usado para que no se re-use y provoque errores 'timeout-or-duplicate'
-                    // resetToken(); // Ya no necesario
                 }
             }
         };
@@ -172,11 +166,26 @@ export const useAemetAlerts = () => {
         return () => {
             isMounted = false;
         };
-    }, [hasFetched]); // Recargar cuando el token esté disponible
+    }, [hasFetched]);
 
 
     const getAlertForEvent = (municipio: string, date: string) => {
-        const eventZone = ZONE_MAPPING[municipio] || "";
+        if (!municipio || !date) return undefined;
+
+        // CORRECCIÓN CRÍTICA: Buscar si el municipio contiene la clave del mapeo
+        // Esto permite que "Santa Cruz de Tenerife" coincida con "Santa Cruz"
+        let eventZone = "";
+        const munLower = municipio.toLowerCase();
+
+        for (const [key, zone] of Object.entries(ZONE_MAPPING)) {
+            if (munLower.includes(key.toLowerCase())) {
+                eventZone = zone;
+                break;
+            }
+        }
+
+        if (!eventZone) return undefined;
+
         return alerts.find(a =>
             (a.zone === eventZone || a.zone === "Cumbres") &&
             a.date === date
@@ -185,3 +194,4 @@ export const useAemetAlerts = () => {
 
     return { alerts, loading, getAlertForEvent };
 };
+
