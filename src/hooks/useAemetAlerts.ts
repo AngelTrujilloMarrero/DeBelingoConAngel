@@ -172,30 +172,41 @@ export const useAemetAlerts = () => {
     const getAlertForEvent = (municipio: string, date: string) => {
         if (!municipio || !date) return undefined;
 
-        // Normalizar fecha: asegurar que es YYYY-MM-DD (por si viene con hora o espacios)
         const eventDateNormalized = date.split('T')[0].trim();
-
-        // Normalizar nombre del municipio para la búsqueda
-        const munSearch = municipio.trim().toLowerCase();
+        const munSearch = municipio.trim().toLowerCase(); // Mantener trim() para robustez
 
         let eventZone = "";
+        // Buscar la clave del mapeo dentro del string (ej: 'Santa Cruz' dentro de 'Plaza de la Candelaria, Santa Cruz')
         for (const [key, zone] of Object.entries(ZONE_MAPPING)) {
-            if (munSearch.includes(key.toLowerCase())) {
+            const cleanKey = key.toLowerCase();
+            // Usamos una comparación más flexible
+            if (munSearch.includes(cleanKey)) {
                 eventZone = zone;
                 break;
             }
         }
 
-        if (!eventZone) return undefined;
+        if (!eventZone) {
+            // Log silencioso si no hay zona, para no saturar
+            return undefined;
+        }
 
-        // Buscar alerta que coincida en zona y fecha normalizada
+        // Buscar alerta
         const foundAlert = alerts.find(a =>
             (a.zone === eventZone || a.zone === "Cumbres") &&
             a.date === eventDateNormalized
         );
 
         if (foundAlert) {
-            console.log(`[AEMET] Match found! Event in ${municipio} (${eventZone}) on ${eventDateNormalized} matches alert:`, foundAlert);
+            console.log(`[AEMET] ✅ ¡ALERTA ENCONTRADA! Para ${municipio} el ${eventDateNormalized}. Nivel: ${foundAlert.level}`);
+        } else {
+            // Este log es clave: nos dirá si detectamos la zona pero no la fecha
+            const anyAlertInZone = alerts.some(a => a.zone === eventZone);
+            if (anyAlertInZone) {
+                console.log(`[AEMET] ⚠️ Zona detectada (${eventZone}) para ${municipio}, pero no hay alertas para la fecha ${eventDateNormalized}. Alertas disponibles para esta zona:`,
+                    alerts.filter(a => a.zone === eventZone).map(a => a.date)
+                );
+            }
         }
 
         return foundAlert;
