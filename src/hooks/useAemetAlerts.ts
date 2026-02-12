@@ -189,27 +189,12 @@ export const useAemetAlerts = () => {
 
         // 3. Buscar coincidencia exacta
         const found = alerts.find(a => {
-            // Normalizar zona de la alerta (por si acaso viene con espacios)
             const alertZone = a.zone.trim();
             const alertDate = a.date.trim();
-
             const zoneMatch = (alertZone === eventZone || alertZone === "Cumbres");
             const dateMatch = (alertDate === eventDate);
-
             return zoneMatch && dateMatch;
         });
-
-        if (found) {
-            console.log(`[AEMET] ✅ MATCH! ${municipio} (${eventZone}) coincide con alerta ${found.level} del ${eventDate}`);
-        } else {
-            // Si hay alertas pero ninguna coincide, investigamos por qué
-            const alertsInZone = alerts.filter(a => a.zone === eventZone || a.zone === "Cumbres");
-            if (alertsInZone.length > 0) {
-                console.warn(`[AEMET] ⚠️ ${municipio} tiene zona (${eventZone}), pero la fecha ${eventDate} no coincide con las alertas disponibles:`,
-                    alertsInZone.map(a => a.date)
-                );
-            }
-        }
 
         return found;
     };
