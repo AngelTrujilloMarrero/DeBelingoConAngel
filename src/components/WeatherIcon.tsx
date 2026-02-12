@@ -24,8 +24,11 @@ const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, alert }) => 
             const diffTime = eventDate.getTime() - today.getTime();
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-            // Solo mostrar para el día actual y los 5 días siguientes (o si hay alerta)
-            if ((diffDays >= 0 && diffDays <= 5) || alert) {
+            // Solo mostrar para el día actual y los 5 días siguientes
+            if (diffDays >= 0 && diffDays <= 5) {
+                // Añadir un pequeño retraso aleatorio para evitar 429 si hay muchos eventos
+                await new Promise(resolve => setTimeout(resolve, Math.random() * 2000));
+
                 setLoading(true);
                 try {
                     const fullMunicipio = municipioMapping[municipio] || municipio;
@@ -35,6 +38,10 @@ const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, alert }) => 
                         const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lng}&daily=weather_code,temperature_2m_max&start_date=${date}&end_date=${date}&timezone=Atlantic/Canary`;
 
                         const response = await fetch(weatherUrl);
+                        if (response.status === 429) {
+                            console.warn("[Weather] Rate limit hit (429). Retrying later.");
+                            return;
+                        }
                         const data = await response.json();
 
                         if (data.daily) {
@@ -51,10 +58,11 @@ const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, alert }) => 
         };
 
         checkAndFetchWeather();
-    }, [date, municipio, alert]);
+    }, [date, municipio]);
 
-    if (loading) return <Loader2 className="w-4 h-4 animate-spin text-gray-400" />;
-    if (weatherCode === null && !alert) return null;
+    // IMPORTANTE: Si no hay ni código de tiempo ni alerta, no renderizar nada.
+    // Pero NO retornar null si hay alerta aunque loading sea true.
+    if (weatherCode === null && !loading && !alert) return null;
 
     const getIcon = (code: number) => {
         if (code === 0) return <Sun className="w-5 h-5 text-yellow-400" />;
@@ -93,8 +101,10 @@ const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, alert }) => 
             onMouseEnter={() => setShowTooltip(true)}
             onMouseLeave={() => setShowTooltip(false)}
         >
-            <div className="flex items-center gap-1">
-                {weatherCode !== null && (
+            <div className="flex items-center gap-1 min-w-[40px] justify-center">
+                {loading ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-gray-600" />
+                ) : weatherCode !== null && (
                     <>
                         <div className="transition-transform duration-300 group-hover/weather:scale-110">
                             {getIcon(weatherCode)}
@@ -120,7 +130,12 @@ const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, alert }) => 
             {showTooltip && (
                 <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900/95 backdrop-blur-md text-white text-xs rounded-lg shadow-xl min-w-[200px] z-50 border border-white/10 animate-in fade-in zoom-in duration-200">
                     <div className="flex flex-col gap-2">
-                        {weatherCode !== null && (
+                        {loading ? (
+                            <div className="flex items-center gap-2 text-gray-400 py-1">
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                                <span>Cargando previsión...</span>
+                            </div>
+                        ) : weatherCode !== null && (
                             <div className="flex flex-col items-center gap-1 pb-2 border-b border-white/10">
                                 <span className="font-bold text-blue-300 uppercase text-[10px] tracking-wider">Previsión Meteorológica</span>
                                 <div className="flex items-center gap-2">

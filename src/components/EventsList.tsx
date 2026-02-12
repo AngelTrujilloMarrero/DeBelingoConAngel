@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Calendar, Clock, MapPin, Music2, Download, Navigation, Plus, Edit, Trash2, Info, ExternalLink, ChevronDown, Facebook, Instagram, Globe, Phone, Bus, RotateCcw } from 'lucide-react';
 import { onValue, orchestrasRef } from '../utils/firebase';
 import { orchestraDetails } from '../data/orchestras';
@@ -25,7 +25,28 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
   const [endDate, setEndDate] = useState('');
   const [expandedEventIds, setExpandedEventIds] = useState<string[]>([]);
   const [dbOrchestras, setDbOrchestras] = useState<Record<string, any>>({});
-  const { getAlertForEvent } = useAemetAlerts();
+  const { alerts: aemetAlerts, getAlertForEvent } = useAemetAlerts();
+
+  // Log para confirmar que EventsList detecta cuando las alertas cambian
+  useEffect(() => {
+    if (aemetAlerts.length > 0) {
+      console.log(`[EventsList] ✅ AEMET alerts received in component: ${aemetAlerts.length} alerts. Component will re-render.`);
+    }
+  }, [aemetAlerts]);
+
+  // Memoizar las alertas por evento para que se recalculen cuando cambian las alertas
+  const alertsByEvent = useMemo(() => {
+    if (aemetAlerts.length === 0) return {};
+    const map: Record<string, ReturnType<typeof getAlertForEvent>> = {};
+    events.forEach(event => {
+      const alert = getAlertForEvent(event.municipio, event.day);
+      if (alert) {
+        map[event.id] = alert;
+      }
+    });
+    console.log(`[EventsList] 🔄 Recalculated alerts map: ${Object.keys(map).length} events with alerts`);
+    return map;
+  }, [aemetAlerts, events, getAlertForEvent]);
 
   useEffect(() => {
     // Load orchestra archive lazily
@@ -161,7 +182,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                           <WeatherIcon
                             date={event.day}
                             municipio={event.municipio}
-                            alert={getAlertForEvent(event.municipio, event.day)}
+                            alert={alertsByEvent[event.id]}
                           />
                           <a
                             href={generateTransitLink(event)}
@@ -241,11 +262,11 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                                               <Phone className="w-4 h-4" />
                                             </a>
                                           )}
-                                           {(info.website || info.Otros) && (
-                                             <a href={info.website || info.Otros} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 transition-colors">
-                                               <Globe className="w-4 h-4" />
-                                             </a>
-                                           )}
+                                          {(info.website || info.Otros) && (
+                                            <a href={info.website || info.Otros} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 transition-colors">
+                                              <Globe className="w-4 h-4" />
+                                            </a>
+                                          )}
                                         </div>
                                       </div>
                                     </div>
@@ -261,10 +282,10 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                                   {event.programa && (
                                     <p className="mt-2">
                                       También puedes consultar el{' '}
-                                      <a 
-                                        href={event.programa} 
-                                        target="_blank" 
-                                        rel="noopener noreferrer" 
+                                      <a
+                                        href={event.programa}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
                                         className="underline text-yellow-100 hover:text-yellow-50 transition-colors"
                                       >
                                         programa oficial del evento
