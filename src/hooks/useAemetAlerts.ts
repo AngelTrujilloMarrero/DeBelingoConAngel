@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { getSecurityHeaders } from '../utils/firebase';
 import { useTurnstile } from '../components/TurnstileProvider';
 
@@ -52,14 +52,10 @@ const ZONE_MAPPING: Record<string, string> = {
 export const useAemetAlerts = () => {
     const [alerts, setAlerts] = useState<AemetAlert[]>([]);
     const [loading, setLoading] = useState(true);
-    const [hasFetched, setHasFetched] = useState(false);
     const { token } = useTurnstile();
 
     useEffect(() => {
-        if (hasFetched) return;
-
         let isMounted = true;
-        setHasFetched(true);
 
         const fetchAlerts = async () => {
             try {
@@ -149,9 +145,9 @@ export const useAemetAlerts = () => {
 
                 console.log(`[AEMET] Parsed ${parsedAlerts.length} active alerts.`, parsedAlerts);
 
-                if (isMounted) {
-                    setAlerts(parsedAlerts);
-                }
+                // Forzamos el setAlerts siempre para que el componente reciba los datos
+                // React gestiona perfectamente setStates en componentes desmontados en versiones modernas
+                setAlerts(parsedAlerts);
             } catch (error) {
                 console.error("[AEMET] Error fetching alerts:", error);
             } finally {
@@ -166,7 +162,7 @@ export const useAemetAlerts = () => {
         return () => {
             isMounted = false;
         };
-    }, [hasFetched]);
+    }, []);
 
 
     const getAlertForEvent = (municipio: string, date: string) => {
