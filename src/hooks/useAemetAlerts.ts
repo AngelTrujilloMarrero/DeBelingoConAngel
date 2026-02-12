@@ -172,44 +172,50 @@ export const useAemetAlerts = () => {
     const getAlertForEvent = (municipio: string, date: string) => {
         if (!municipio || !date) return undefined;
 
-        const eventDateNormalized = date.split('T')[0].trim();
-        const munSearch = municipio.trim().toLowerCase(); // Mantener trim() para robustez
+        // 1. Normalizar fecha del evento (YYYY-MM-DD)
+        const eventDate = date.split('T')[0].trim();
+
+        // 2. Normalizar municipio del evento
+        const munSearch = municipio.toLowerCase();
 
         let eventZone = "";
-        // Buscar la clave del mapeo dentro del string (ej: 'Santa Cruz' dentro de 'Plaza de la Candelaria, Santa Cruz')
         for (const [key, zone] of Object.entries(ZONE_MAPPING)) {
-            const cleanKey = key.toLowerCase();
-            // Usamos una comparación más flexible
-            if (munSearch.includes(cleanKey)) {
+            if (munSearch.includes(key.toLowerCase())) {
                 eventZone = zone;
                 break;
             }
         }
 
         if (!eventZone) {
-            // Log silencioso si no hay zona, para no saturar
+            // console.log(`[AEMET] ❌ No se encontró zona para: ${municipio}`);
             return undefined;
         }
 
-        // Buscar alerta
-        const foundAlert = alerts.find(a =>
-            (a.zone === eventZone || a.zone === "Cumbres") &&
-            a.date === eventDateNormalized
-        );
+        // 3. Buscar coincidencia exacta
+        const found = alerts.find(a => {
+            // Normalizar zona de la alerta (por si acaso viene con espacios)
+            const alertZone = a.zone.trim();
+            const alertDate = a.date.trim();
 
-        if (foundAlert) {
-            console.log(`[AEMET] ✅ ¡ALERTA ENCONTRADA! Para ${municipio} el ${eventDateNormalized}. Nivel: ${foundAlert.level}`);
+            const zoneMatch = (alertZone === eventZone || alertZone === "Cumbres");
+            const dateMatch = (alertDate === eventDate);
+
+            return zoneMatch && dateMatch;
+        });
+
+        if (found) {
+            console.log(`[AEMET] ✅ MATCH! ${municipio} (${eventZone}) coincide con alerta ${found.level} del ${eventDate}`);
         } else {
-            // Este log es clave: nos dirá si detectamos la zona pero no la fecha
-            const anyAlertInZone = alerts.some(a => a.zone === eventZone);
-            if (anyAlertInZone) {
-                console.log(`[AEMET] ⚠️ Zona detectada (${eventZone}) para ${municipio}, pero no hay alertas para la fecha ${eventDateNormalized}. Alertas disponibles para esta zona:`,
-                    alerts.filter(a => a.zone === eventZone).map(a => a.date)
+            // Si hay alertas pero ninguna coincide, investigamos por qué
+            const alertsInZone = alerts.filter(a => a.zone === eventZone || a.zone === "Cumbres");
+            if (alertsInZone.length > 0) {
+                console.warn(`[AEMET] ⚠️ ${municipio} tiene zona (${eventZone}), pero la fecha ${eventDate} no coincide con las alertas disponibles:`,
+                    alertsInZone.map(a => a.date)
                 );
             }
         }
 
-        return foundAlert;
+        return found;
     };
 
     return { alerts, loading, getAlertForEvent };
