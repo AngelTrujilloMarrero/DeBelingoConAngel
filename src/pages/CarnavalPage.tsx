@@ -174,20 +174,26 @@ const CarnavalPage: React.FC = () => {
                             />
                         </div>
 
-                        {/* Day Filter */}
-                        <div className="flex gap-2 overflow-x-auto pb-2 w-full md:w-auto no-scrollbar scroll-smooth">
-                            {days.map(day => (
-                                <button
-                                    key={day}
-                                    onClick={() => setSelectedDay(day)}
-                                    className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all duration-300 ${selectedDay === day
-                                        ? 'bg-blue-600 text-white shadow-lg scale-105'
-                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200 active:scale-95'
-                                        }`}
-                                >
-                                    {day}
-                                </button>
-                            ))}
+                        {/* Day Filter - Enhanced Responsive Scroll */}
+                        <div className="relative w-full md:w-auto -mx-6 md:mx-0 px-6 md:px-0">
+                            {/* Fade indicators for mobile scroll */}
+                            <div className="absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none md:hidden" />
+                            <div className="absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l from-white to-transparent z-10 pointer-events-none md:hidden" />
+
+                            <div className="flex gap-2 overflow-x-auto pb-4 md:pb-0 w-full no-scrollbar scroll-smooth snap-x">
+                                {days.map(day => (
+                                    <button
+                                        key={day}
+                                        onClick={() => setSelectedDay(day)}
+                                        className={`px-5 py-2.5 rounded-full text-sm font-bold whitespace-nowrap transition-all duration-300 snap-start active:scale-90 ${selectedDay === day
+                                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-200 scale-105'
+                                            : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                            }`}
+                                    >
+                                        {day}
+                                    </button>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
