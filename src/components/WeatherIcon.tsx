@@ -15,6 +15,7 @@ const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, time, alert 
     const [temp, setTemp] = useState<number | null>(null);
     const [isDay, setIsDay] = useState<number | null>(null);
     const [isHourly, setIsHourly] = useState(false);
+    const [coords, setCoords] = useState<{ lat: number, lng: number } | null>(null);
     const [loading, setLoading] = useState(false);
     const [showTooltip, setShowTooltip] = useState(false);
 
@@ -38,6 +39,7 @@ const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, time, alert 
                     const coords = await geocodeAddress(`${fullMunicipio}, Tenerife`);
 
                     if (coords) {
+                        setCoords(coords);
                         // Intentar parsear la hora
                         let hour: number | null = null;
                         if (time) {
@@ -131,12 +133,19 @@ const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, time, alert 
                 {loading ? (
                     <Loader2 className="w-4 h-4 animate-spin text-gray-600" />
                 ) : weatherCode !== null && (
-                    <>
-                        <div className="transition-transform duration-300 group-hover/weather:scale-110">
+                    <a
+                        href={coords ? `https://www.windy.com/${coords.lat}/${coords.lng}?${coords.lat},${coords.lng},12` : "https://www.windy.com/28.468/-16.255?28.468,-16.255,12"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 transition-all duration-300 hover:scale-110"
+                        onClick={(e) => e.stopPropagation()}
+                        title="Ver previsión detallada en Windy"
+                    >
+                        <div className="transition-transform duration-300">
                             {getIcon(weatherCode)}
                         </div>
-                        {temp !== null && <span className="text-xs font-bold text-gray-300 group-hover/weather:text-white transition-colors">{Math.round(temp)}°</span>}
-                    </>
+                        {temp !== null && <span className="text-xs font-bold text-gray-300 hover:text-white transition-colors">{Math.round(temp)}°</span>}
+                    </a>
                 )}
             </div>
 
@@ -163,7 +172,7 @@ const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, time, alert 
                             </div>
                         ) : weatherCode !== null && (
                             <div className="flex flex-col items-center gap-1 pb-2 border-b border-white/10">
-                                <span className="font-bold text-blue-300 uppercase text-[10px] tracking-wider">
+                                <span className="font-bold text-blue-300 uppercase text-[10px] tracking-wider text-center">
                                     {isHourly && time ? `Previsión para las ${time}H` : 'Previsión Meteorológica (Máx)'}
                                 </span>
                                 <div className="flex items-center gap-2">
@@ -176,6 +185,16 @@ const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, time, alert 
                                         </span>
                                     </div>
                                 </div>
+                                <a
+                                    href={coords ? `https://www.windy.com/${coords.lat}/${coords.lng}?${coords.lat},${coords.lng},12` : "https://www.windy.com/28.468/-16.255?28.468,-16.255,12"}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="mt-1 flex items-center gap-1 text-[9px] text-gray-400 hover:text-blue-300 transition-colors"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <ExternalLink className="w-2 h-2" />
+                                    Datos: Open-Meteo | Ver en Windy
+                                </a>
                             </div>
                         )}
 
