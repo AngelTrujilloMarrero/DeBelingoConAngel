@@ -66,7 +66,13 @@ const scheduleData: Event[] = [
     { day: 'Lunes 16', stage: 'Plaza del Príncipe', time: '02:00', artist: 'Iván Cacú y su orquesta' },
     { day: 'Lunes 16', stage: 'Plaza del Príncipe', time: '04:00', artist: 'Orquesta Malibú Band' },
     { day: 'Lunes 16', stage: 'Av. Francisco La Roche', time: '18:00', artist: 'Grupos Coreográficos' },
-    { day: 'Lunes 16', stage: 'Av. Francisco La Roche', time: '21:00', artist: 'Artistas La Mueve Radio' },
+    { day: 'Lunes 16', stage: 'Av. Francisco La Roche', time: '00:15h', artist: 'Mandy Hdez (La Mueve)' },
+    { day: 'Lunes 16', stage: 'Av. Francisco La Roche', time: '00:45h', artist: 'Yet Garbey (La Mueve)' },
+    { day: 'Lunes 16', stage: 'Av. Francisco La Roche', time: '01:50h', artist: 'K-Narias (La Mueve)' },
+    { day: 'Lunes 16', stage: 'Av. Francisco La Roche', time: '02:40h', artist: 'Osmani García (La Mueve)' },
+    { day: 'Lunes 16', stage: 'Av. Francisco La Roche', time: '03:30h', artist: 'Aissa (La Mueve)' },
+    { day: 'Lunes 16', stage: 'Av. Francisco La Roche', time: '04:15h', artist: 'DJ Conjurer (La Mueve)' },
+    { day: 'Lunes 16', stage: 'Av. Francisco La Roche', time: '05:00h', artist: 'Evando Moreira (La Mueve)' },
 
     // Martes 17
     { day: 'Martes 17', stage: 'Plaza del Príncipe', time: '11:00', artist: 'NiFú NiFá' },
