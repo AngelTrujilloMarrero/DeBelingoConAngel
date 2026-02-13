@@ -57,7 +57,7 @@ const scheduleData: Event[] = [
     { day: 'Lunes 16', stage: 'Calle de la Noria', time: '18:00', artist: 'Murgas Infantiles' },
     { day: 'Lunes 16', stage: 'Plaza de la Candelaria', time: '18:00', artist: 'Murgas Adultas' },
     { day: 'Lunes 16', stage: 'Plaza de la Candelaria', time: '21:00', artist: 'Dragnaval (2ª edición)' },
-    { day: 'Lunes 16', stage: 'Plaza de la Candelaria', time: 'A cont. - 02:30', artist: 'Manny Cruz' },
+    { day: 'Lunes 16', stage: 'Plaza de la Candelaria', time: '01:00h', artist: 'Manny Cruz' },
     { day: 'Lunes 16', stage: 'Plaza de la Candelaria', time: 'Hasta 04:00', artist: 'Chichi Peralta' },
     { day: 'Lunes 16', stage: 'Plaza de la Candelaria', time: 'Hasta 06:00', artist: 'Orquesta Dorada Band' },
     { day: 'Lunes 16', stage: 'Plaza del Príncipe', time: '18:00 - 22:00', artist: 'Murgas Adultas' },
@@ -162,21 +162,21 @@ const CarnavalPage: React.FC = () => {
                             <input
                                 type="text"
                                 placeholder="Buscar artista o escenario..."
-                                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all"
+                                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all font-medium"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                             />
                         </div>
 
                         {/* Day Filter */}
-                        <div className="flex gap-2 overflow-x-auto pb-2 w-full md:w-auto no-scrollbar">
+                        <div className="flex gap-2 overflow-x-auto pb-2 w-full md:w-auto no-scrollbar scroll-smooth">
                             {days.map(day => (
                                 <button
                                     key={day}
                                     onClick={() => setSelectedDay(day)}
-                                    className={`px-4 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${selectedDay === day
-                                        ? 'bg-blue-600 text-white shadow-md'
-                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                                    className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all duration-300 ${selectedDay === day
+                                        ? 'bg-blue-600 text-white shadow-lg scale-105'
+                                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200 active:scale-95'
                                         }`}
                                 >
                                     {day}
@@ -186,16 +186,47 @@ const CarnavalPage: React.FC = () => {
                     </div>
                 </div>
 
-                {/* Schedule Table */}
-                <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+                {/* Mobile/Responsive Layout - Cards on Mobile, Table on Desktop */}
+                <div className="space-y-4 md:hidden">
+                    {filteredEvents.length > 0 ? (
+                        filteredEvents.map((event, index) => (
+                            <div key={index} className="bg-white p-5 rounded-2xl shadow-md border border-gray-100 space-y-3 active:scale-[0.98] transition-transform">
+                                <div className="flex justify-between items-start">
+                                    <div className="flex items-center gap-2 text-blue-600 font-bold text-sm bg-blue-50 px-3 py-1 rounded-full">
+                                        <Calendar className="w-4 h-4" />
+                                        {event.day}
+                                    </div>
+                                    <div className="flex items-center gap-1.5 text-gray-700 font-mono text-xs font-bold bg-gray-50 px-3 py-1 rounded-full border border-gray-100">
+                                        <Clock className="w-3.5 h-3.5 text-blue-500" />
+                                        {event.time}
+                                    </div>
+                                </div>
+                                <h3 className="text-lg font-bold text-gray-900 leading-tight">
+                                    {event.artist}
+                                </h3>
+                                <div className="flex items-center gap-2 text-gray-500 text-sm font-medium">
+                                    <MapPin className="w-4 h-4 text-red-400" />
+                                    {event.stage}
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="bg-white p-12 text-center rounded-2xl text-gray-500 shadow-md">
+                            No se encontraron eventos.
+                        </div>
+                    )}
+                </div>
+
+                {/* Desktop Layout - Table */}
+                <div className="hidden md:block bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
                     <div className="overflow-x-auto">
                         <table className="w-full text-left border-collapse">
                             <thead>
                                 <tr className="bg-gray-50 border-b border-gray-200">
-                                    <th className="p-4 md:p-6 text-sm font-semibold text-gray-500 uppercase tracking-wider w-1/4">Día</th>
-                                    <th className="p-4 md:p-6 text-sm font-semibold text-gray-500 uppercase tracking-wider w-1/4">Escenario / Lugar</th>
-                                    <th className="p-4 md:p-6 text-sm font-semibold text-gray-500 uppercase tracking-wider w-1/6">Hora</th>
-                                    <th className="p-4 md:p-6 text-sm font-semibold text-gray-500 uppercase tracking-wider w-1/3">Actuación / Artista</th>
+                                    <th className="p-6 text-sm font-bold text-gray-500 uppercase tracking-widest w-1/4">Día</th>
+                                    <th className="p-6 text-sm font-bold text-gray-500 uppercase tracking-widest w-1/4">Escenario / Lugar</th>
+                                    <th className="p-6 text-sm font-bold text-gray-500 uppercase tracking-widest w-1/6">Hora</th>
+                                    <th className="p-6 text-sm font-bold text-gray-500 uppercase tracking-widest w-1/3">Actuación / Artista</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-gray-100">
@@ -205,48 +236,42 @@ const CarnavalPage: React.FC = () => {
                                             key={index}
                                             className="hover:bg-blue-50/50 transition-colors group"
                                         >
-                                            <td className="p-4 md:p-6">
+                                            <td className="p-6">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="p-2 bg-blue-100 text-blue-600 rounded-lg group-hover:bg-blue-200 transition-colors">
+                                                    <div className="p-2.5 bg-blue-100 text-blue-600 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
                                                         <Calendar className="w-5 h-5" />
                                                     </div>
-                                                    <span className="font-medium text-gray-900">{event.day}</span>
+                                                    <span className="font-bold text-gray-900">{event.day}</span>
                                                 </div>
                                             </td>
-                                            <td className="p-4 md:p-6">
-                                                <div className="flex items-center gap-2 text-gray-600">
-                                                    <MapPin className="w-4 h-4 text-gray-400" />
+                                            <td className="p-6">
+                                                <div className="flex items-center gap-2 text-gray-700 font-medium">
+                                                    <MapPin className="w-4.5 h-4.5 text-gray-400 group-hover:text-red-500 transition-colors" />
                                                     {event.stage}
                                                 </div>
                                             </td>
-                                            <td className="p-4 md:p-6">
-                                                <div className="flex items-center gap-2 text-gray-600 font-mono text-sm">
-                                                    <Clock className="w-4 h-4 text-gray-400" />
+                                            <td className="p-6">
+                                                <div className="flex items-center gap-2 text-gray-700 font-mono text-sm font-bold">
+                                                    <Clock className="w-4.5 h-4.5 text-blue-500" />
                                                     {event.time}
                                                 </div>
                                             </td>
-                                            <td className="p-4 md:p-6">
+                                            <td className="p-6">
                                                 <div className="flex items-center gap-3">
-                                                    <Music className="w-4 h-4 text-pink-500" />
-                                                    <span className="font-semibold text-gray-800">{event.artist}</span>
+                                                    <Music className="w-5 h-5 text-pink-500 group-hover:scale-125 transition-transform" />
+                                                    <span className="font-bold text-gray-800 text-lg">{event.artist}</span>
                                                 </div>
                                             </td>
                                         </tr>
                                     ))
-                                ) : (
-                                    <tr>
-                                        <td colSpan={4} className="p-8 text-center text-gray-500">
-                                            No se encontraron eventos que coincidan con tu búsqueda.
-                                        </td>
-                                    </tr>
-                                )}
+                                ) : null}
                             </tbody>
                         </table>
                     </div>
                 </div>
 
-                <div className="mt-8 text-center text-gray-500 text-sm">
-                    <p>Información extraída de la programación oficial del Carnaval de Santa Cruz de Tenerife.</p>
+                <div className="mt-12 text-center text-gray-400 text-xs font-semibold tracking-wide uppercase">
+                    <p>Programación oficial · Carnaval de Santa Cruz de Tenerife</p>
                 </div>
             </div>
         </div>
