@@ -3,7 +3,7 @@ import Header from './components/Header';
 import VisitCounter from './components/VisitCounter';
 import { useEvents } from './hooks/useEvents';
 import { Loader2 } from 'lucide-react';
-import { EventosPage, MapaPage, EstadisticasPage, RedesPage, FormacionesPage, BlogPage } from './pages';
+import { EventosPage, MapaPage, EstadisticasPage, RedesPage, FormacionesPage, BlogPage, CarnavalPage } from './pages';
 import MessageBoard from './components/MessageBoard';
 import BlogPost from './components/BlogPost';
 import { useEffect } from 'react';
@@ -47,6 +47,7 @@ function App() {
             <Route path="/redes" element={<RedesPage />} />
             <Route path="/blog" element={<BlogPage />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
+            <Route path="/carnaval-santa-cruz" element={<CarnavalPage />} />
           </Routes>
         </div>
 
