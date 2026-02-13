@@ -182,6 +182,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                           <WeatherIcon
                             date={event.day}
                             municipio={event.municipio}
+                            time={event.hora}
                             alert={alertsByEvent[event.id]}
                           />
                           <a

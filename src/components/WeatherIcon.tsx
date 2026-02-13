@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { Sun, Cloud, CloudSun, CloudFog, CloudDrizzle, CloudRain, CloudLightning, Snowflake, Thermometer, Loader2, AlertTriangle, ExternalLink } from 'lucide-react';
+import { Sun, Moon, Cloud, CloudSun, CloudMoon, CloudFog, CloudDrizzle, CloudRain, CloudLightning, Snowflake, Thermometer, Loader2, AlertTriangle, ExternalLink } from 'lucide-react';
 import { geocodeAddress, municipioMapping } from '../utils/geocoding';
 import { AemetAlert } from '../hooks/useAemetAlerts';
 
 interface WeatherIconProps {
     date: string; // YYYY-MM-DD
     municipio: string;
+    time?: string; // HH:mm or HH
     alert?: AemetAlert;
 }
 
-const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, alert }) => {
+const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, time, alert }) => {
     const [weatherCode, setWeatherCode] = useState<number | null>(null);
     const [temp, setTemp] = useState<number | null>(null);
+    const [isDay, setIsDay] = useState<number | null>(null);
+    const [isHourly, setIsHourly] = useState(false);
     const [loading, setLoading] = useState(false);
     const [showTooltip, setShowTooltip] = useState(false);
 
@@ -24,7 +27,7 @@ const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, alert }) => 
             const diffTime = eventDate.getTime() - today.getTime();
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
-            // Solo mostrar para el día actual y los 5 días siguientes
+            // Solo mostrar para el día actual y los 5 días siguientes (pronóstico detallado)
             if (diffDays >= 0 && diffDays <= 5) {
                 // Añadir un pequeño retraso aleatorio para evitar 429 si hay muchos eventos
                 await new Promise(resolve => setTimeout(resolve, Math.random() * 2000));
@@ -35,7 +38,23 @@ const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, alert }) => 
                     const coords = await geocodeAddress(`${fullMunicipio}, Tenerife`);
 
                     if (coords) {
-                        const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lng}&daily=weather_code,temperature_2m_max&start_date=${date}&end_date=${date}&timezone=Atlantic/Canary`;
+                        // Intentar parsear la hora
+                        let hour: number | null = null;
+                        if (time) {
+                            const match = time.trim().match(/^(\d{1,2})/);
+                            if (match) {
+                                hour = parseInt(match[1]);
+                            }
+                        }
+
+                        let weatherUrl: string;
+                        if (hour !== null && hour >= 0 && hour <= 23) {
+                            weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lng}&hourly=weather_code,temperature_2m,is_day&start_date=${date}&end_date=${date}&timezone=Atlantic/Canary`;
+                            setIsHourly(true);
+                        } else {
+                            weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lng}&daily=weather_code,temperature_2m_max&start_date=${date}&end_date=${date}&timezone=Atlantic/Canary`;
+                            setIsHourly(false);
+                        }
 
                         const response = await fetch(weatherUrl);
                         if (response.status === 429) {
@@ -44,9 +63,14 @@ const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, alert }) => 
                         }
                         const data = await response.json();
 
-                        if (data.daily) {
+                        if (hour !== null && data.hourly) {
+                            setWeatherCode(data.hourly.weather_code[hour]);
+                            setTemp(data.hourly.temperature_2m[hour]);
+                            setIsDay(data.hourly.is_day[hour]);
+                        } else if (data.daily) {
                             setWeatherCode(data.daily.weather_code[0]);
                             setTemp(data.daily.temperature_2m_max[0]);
+                            setIsDay(1); // Por defecto día para previsión diaria
                         }
                     }
                 } catch (error) {
@@ -58,15 +82,16 @@ const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, alert }) => 
         };
 
         checkAndFetchWeather();
-    }, [date, municipio]);
+    }, [date, municipio, time]);
 
     // IMPORTANTE: Si no hay ni código de tiempo ni alerta, no renderizar nada.
     // Pero NO retornar null si hay alerta aunque loading sea true.
     if (weatherCode === null && !loading && !alert) return null;
 
     const getIcon = (code: number) => {
-        if (code === 0) return <Sun className="w-5 h-5 text-yellow-400" />;
-        if (code >= 1 && code <= 3) return <CloudSun className="w-5 h-5 text-gray-300" />;
+        const isNight = isDay === 0;
+        if (code === 0) return isNight ? <Moon className="w-5 h-5 text-blue-200" /> : <Sun className="w-5 h-5 text-yellow-400" />;
+        if (code >= 1 && code <= 3) return isNight ? <CloudMoon className="w-5 h-5 text-gray-300" /> : <CloudSun className="w-5 h-5 text-gray-300" />;
         if (code === 45 || code === 48) return <CloudFog className="w-5 h-5 text-gray-400" />;
         if (code >= 51 && code <= 55) return <CloudDrizzle className="w-5 h-5 text-blue-300" />;
         if (code >= 61 && code <= 65) return <CloudRain className="w-5 h-5 text-blue-400" />;
@@ -77,8 +102,9 @@ const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, alert }) => 
     };
 
     const getDescription = (code: number) => {
-        if (code === 0) return "Despejado";
-        if (code >= 1 && code <= 3) return "Parcialmente nublado";
+        const isNight = isDay === 0;
+        if (code === 0) return isNight ? "Despejado (Noche)" : "Despejado";
+        if (code >= 1 && code <= 3) return isNight ? "Parcialmente nublado (Noche)" : "Parcialmente nublado";
         if (code === 45 || code === 48) return "Niebla";
         if (code >= 51 && code <= 55) return "Llovizna";
         if (code >= 61 && code <= 65) return "Lluvia";
@@ -137,14 +163,16 @@ const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, alert }) => 
                             </div>
                         ) : weatherCode !== null && (
                             <div className="flex flex-col items-center gap-1 pb-2 border-b border-white/10">
-                                <span className="font-bold text-blue-300 uppercase text-[10px] tracking-wider">Previsión Meteorológica</span>
+                                <span className="font-bold text-blue-300 uppercase text-[10px] tracking-wider">
+                                    {isHourly && time ? `Previsión para las ${time}H` : 'Previsión Meteorológica (Máx)'}
+                                </span>
                                 <div className="flex items-center gap-2">
                                     {getIcon(weatherCode)}
                                     <div className="flex flex-col">
                                         <span className="font-semibold text-white">{getDescription(weatherCode)}</span>
                                         <span className="text-gray-400 flex items-center gap-1">
                                             <Thermometer className="w-3 h-3 text-red-400" />
-                                            Máx: {Math.round(temp ?? 0)}°C
+                                            {isHourly ? 'Temp: ' : 'Máx: '}{Math.round(temp ?? 0)}°C
                                         </span>
                                     </div>
                                 </div>
