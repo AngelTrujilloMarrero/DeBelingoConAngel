@@ -115,8 +115,15 @@ const scheduleData: Event[] = [
     { day: 'Sábado 21', stage: 'Plaza del Príncipe', time: '23:30 - 01:30', artist: 'Orquesta Tenerife' },
     { day: 'Sábado 21', stage: 'Plaza del Príncipe', time: '01:30 - 03:45', artist: 'Orquesta Maracaibo' },
     { day: 'Sábado 21', stage: 'Plaza del Príncipe', time: '03:45 - 06:00', artist: 'Orquesta Banda Loca' },
-    { day: 'Sábado 21', stage: 'Av. Francisco La Roche', time: '15:00h', artist: 'Nicky Jam, Tay de León, Leoni Torres, Pepe Benavente, Sebastián Yatra, DJ WES, Anaé, Eddy Herrera' },
-    { day: 'Sábado 21', stage: 'Av. Francisco La Roche', time: 'Cierre - 06:00', artist: 'DJ Jonay' },
+    { day: 'Sábado 21', stage: 'Av. Francisco La Roche', time: '15:00 - 15:30', artist: 'DJ WES' },
+    { day: 'Sábado 21', stage: 'Av. Francisco La Roche', time: '15:30 - 17:00', artist: 'LEONI TORRES' },
+    { day: 'Sábado 21', stage: 'Av. Francisco La Roche', time: '17:00 - 17:30', artist: 'ANAÉ' },
+    { day: 'Sábado 21', stage: 'Av. Francisco La Roche', time: '17:30 - 19:00', artist: 'EDDY HERRERA' },
+    { day: 'Sábado 21', stage: 'Av. Francisco La Roche', time: '19:00 - 19:30', artist: 'PEPE BENAVENTE' },
+    { day: 'Sábado 21', stage: 'Av. Francisco La Roche', time: '19:30 - 21:00', artist: 'SEBASTIÁN YATRA' },
+    { day: 'Sábado 21', stage: 'Av. Francisco La Roche', time: '21:00 - 21:30', artist: 'TAY DE LEÓN' },
+    { day: 'Sábado 21', stage: 'Av. Francisco La Roche', time: '21:30 - 23:00', artist: 'NICKY JAM' },
+    { day: 'Sábado 21', stage: 'Av. Francisco La Roche', time: '23:00 - 06:00', artist: 'DJ JONAY' },
 
     // Domingo 22
     { day: 'Domingo 22', stage: 'Plaza de La Candelaria', time: '17:00', artist: 'Carnaval Senior' },
