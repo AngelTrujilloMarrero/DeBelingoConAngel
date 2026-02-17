@@ -72,8 +72,18 @@ const BlogPostComponent = () => {
           Volver al Blog
         </Link>
 
-        {/* Article Header - Centrado sin imagen */}
+        {/* Article Header */}
         <article className="bg-gradient-to-br from-gray-800/50 to-gray-700/50 backdrop-blur-sm rounded-xl border border-white/10 overflow-hidden">
+          {/* Cover Image */}
+          {post.coverImage && (
+            <div className="w-full h-64 md:h-96 relative">
+              <img
+                src={post.coverImage.url}
+                alt={post.title}
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
           {/* Article Content - Centrado */}
           <div className="p-8 text-center">
             {/* Title */}
