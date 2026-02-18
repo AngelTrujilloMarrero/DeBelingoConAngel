@@ -351,12 +351,13 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
       {/* Search & AI Block */}
       <div className="bg-gray-900 border-4 border-black p-6 rounded-2xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] space-y-4">
         <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-          <label className="text-white font-black flex items-center gap-2 text-xl uppercase tracking-tighter">
+          <label htmlFor="user-location-input" className="text-white font-black flex items-center gap-2 text-xl uppercase tracking-tighter">
             <MapPin className="w-6 h-6 text-yellow-400" />
             ¿Donde te encuentras?
           </label>
           <div className="flex flex-col sm:flex-row w-full md:w-auto gap-2">
             <input
+              id="user-location-input"
               type="text"
               placeholder="Tu municipio (ej: Arafo)..."
               value={userLocation}

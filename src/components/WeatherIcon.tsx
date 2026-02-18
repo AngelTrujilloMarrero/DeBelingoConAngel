@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Sun, Moon, Cloud, CloudSun, CloudMoon, CloudFog, CloudDrizzle, CloudRain, CloudLightning, Snowflake, Thermometer, Loader2, AlertTriangle, ExternalLink } from 'lucide-react';
 import { geocodeAddress, municipioMapping } from '../utils/geocoding';
 import { AemetAlert } from '../hooks/useAemetAlerts';
@@ -11,80 +12,72 @@ interface WeatherIconProps {
 }
 
 const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, time, alert }) => {
-    const [weatherCode, setWeatherCode] = useState<number | null>(null);
-    const [temp, setTemp] = useState<number | null>(null);
-    const [isDay, setIsDay] = useState<number | null>(null);
-    const [isHourly, setIsHourly] = useState(false);
-    const [coords, setCoords] = useState<{ lat: number, lng: number } | null>(null);
-    const [loading, setLoading] = useState(false);
     const [showTooltip, setShowTooltip] = useState(false);
 
-    useEffect(() => {
-        const checkAndFetchWeather = async () => {
-            const today = new Date();
-            today.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const eventDate = new Date(date);
+    const diffTime = eventDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const shouldFetchWeather = diffDays >= 0 && diffDays <= 5;
 
-            const eventDate = new Date(date);
-            const diffTime = eventDate.getTime() - today.getTime();
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const { data: weatherData, isLoading: loading } = useQuery({
+        queryKey: ['weather', date, municipio, time],
+        queryFn: async () => {
+            await new Promise(resolve => setTimeout(resolve, Math.random() * 2000));
+            
+            const fullMunicipio = municipioMapping[municipio] || municipio;
+            const coords = await geocodeAddress(`${fullMunicipio}, Tenerife`);
 
-            // Solo mostrar para el día actual y los 5 días siguientes (pronóstico detallado)
-            if (diffDays >= 0 && diffDays <= 5) {
-                // Añadir un pequeño retraso aleatorio para evitar 429 si hay muchos eventos
-                await new Promise(resolve => setTimeout(resolve, Math.random() * 2000));
+            if (!coords) return null;
 
-                setLoading(true);
-                try {
-                    const fullMunicipio = municipioMapping[municipio] || municipio;
-                    const coords = await geocodeAddress(`${fullMunicipio}, Tenerife`);
-
-                    if (coords) {
-                        setCoords(coords);
-                        // Intentar parsear la hora
-                        let hour: number | null = null;
-                        if (time) {
-                            const match = time.trim().match(/^(\d{1,2})/);
-                            if (match) {
-                                hour = parseInt(match[1]);
-                            }
-                        }
-
-                        let weatherUrl: string;
-                        if (hour !== null && hour >= 0 && hour <= 23) {
-                            weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lng}&hourly=weather_code,temperature_2m,is_day&start_date=${date}&end_date=${date}&timezone=Atlantic/Canary`;
-                            setIsHourly(true);
-                        } else {
-                            weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lng}&daily=weather_code,temperature_2m_max&start_date=${date}&end_date=${date}&timezone=Atlantic/Canary`;
-                            setIsHourly(false);
-                        }
-
-                        const response = await fetch(weatherUrl);
-                        if (response.status === 429) {
-                            console.warn("[Weather] Rate limit hit (429). Retrying later.");
-                            return;
-                        }
-                        const data = await response.json();
-
-                        if (hour !== null && data.hourly) {
-                            setWeatherCode(data.hourly.weather_code[hour]);
-                            setTemp(data.hourly.temperature_2m[hour]);
-                            setIsDay(data.hourly.is_day[hour]);
-                        } else if (data.daily) {
-                            setWeatherCode(data.daily.weather_code[0]);
-                            setTemp(data.daily.temperature_2m_max[0]);
-                            setIsDay(1); // Por defecto día para previsión diaria
-                        }
-                    }
-                } catch (error) {
-                    console.error("Error fetching weather:", error);
-                } finally {
-                    setLoading(false);
+            let hour: number | null = null;
+            if (time) {
+                const match = time.trim().match(/^(\d{1,2})/);
+                if (match) {
+                    hour = parseInt(match[1]);
                 }
             }
-        };
 
-        checkAndFetchWeather();
-    }, [date, municipio, time]);
+            let weatherUrl: string;
+            const isHourly = hour !== null && hour >= 0 && hour <= 23;
+            if (isHourly) {
+                weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lng}&hourly=weather_code,temperature_2m,is_day&start_date=${date}&end_date=${date}&timezone=Atlantic/Canary`;
+            } else {
+                weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lng}&daily=weather_code,temperature_2m_max&start_date=${date}&end_date=${date}&timezone=Atlantic/Canary`;
+            }
+
+            const response = await fetch(weatherUrl);
+            if (response.status === 429) {
+                console.warn("[Weather] Rate limit hit (429). Retrying later.");
+                return null;
+            }
+            const data = await response.json();
+
+            let weatherCode: number | null = null;
+            let temp: number | null = null;
+            let isDay = 1;
+
+            if (hour !== null && data.hourly) {
+                weatherCode = data.hourly.weather_code[hour];
+                temp = data.hourly.temperature_2m[hour];
+                isDay = data.hourly.is_day[hour];
+            } else if (data.daily) {
+                weatherCode = data.daily.weather_code[0];
+                temp = data.daily.temperature_2m_max[0];
+            }
+
+            return { weatherCode, temp, isDay, coords };
+        },
+        enabled: shouldFetchWeather,
+        staleTime: 1000 * 60 * 30,
+    });
+
+    const weatherCode = weatherData?.weatherCode ?? null;
+    const temp = weatherData?.temp ?? null;
+    const isDay = weatherData?.isDay ?? null;
+    const coords = weatherData?.coords ?? null;
+    const isHourly = weatherData ? (time ? parseInt(time.trim().match(/^(\d{1,2})/)?.[1] || '0') >= 0 : false) : false;
 
     // IMPORTANTE: Si no hay ni código de tiempo ni alerta, no renderizar nada.
     // Pero NO retornar null si hay alerta aunque loading sea true.

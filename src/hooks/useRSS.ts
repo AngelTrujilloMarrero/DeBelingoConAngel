@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { staticPosts } from '../data/staticPosts';
 
 export interface BlogPost {
@@ -329,21 +330,18 @@ const fetchBlogPosts = async (): Promise<BlogPost[]> => {
 
 export const useRSS = () => {
   const [posts, setPosts] = useState<BlogPost[]>([]);
-  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isUsingFallback, setIsUsingFallback] = useState(false);
+  const queryClient = useQueryClient();
 
   const refreshPosts = useCallback(async () => {
     try {
-      setLoading(true);
       setError(null);
       
-      // Limpieza agresiva de caché como en belingo_viewer.html
       cachedPosts = [];
       cachedAt = 0;
       fetchPromise = null;
       
-      // Forzar limpieza de caches del navegador
       if ('caches' in window) {
         try {
           const cacheNames = await caches.keys();
@@ -355,11 +353,11 @@ export const useRSS = () => {
         }
       }
       
-      // Forzar recarga completa sin caché
+      await queryClient.invalidateQueries({ queryKey: ['blogPosts'] });
+      
       const data = await fetchBlogPosts();
       setPosts(data);
       
-      // Detectar si estamos usando fallback
       const usingFallback = data.length > 0 && data[0].id.startsWith('fallback-');
       setIsUsingFallback(usingFallback);
       
@@ -373,51 +371,27 @@ export const useRSS = () => {
       const fallbackPosts = getFallbackPosts();
       setPosts(fallbackPosts);
       setIsUsingFallback(true);
-    } finally {
-      setLoading(false);
     }
-  }, []);
+  }, [queryClient]);
+
+  const { data: fetchedPosts = [], isLoading: queryLoading } = useQuery({
+    queryKey: ['blogPosts'],
+    queryFn: fetchBlogPosts,
+    staleTime: 1000 * 60 * 15,
+  });
 
   useEffect(() => {
-    let mounted = true;
-    
-    const loadPosts = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        const data = await fetchBlogPosts();
-        
-        if (mounted) {
-          setPosts(data);
-          
-          // Detectar si estamos usando fallback
-          const usingFallback = data.length > 0 && data[0].id.startsWith('fallback-');
-          setIsUsingFallback(usingFallback);
-          
-          if (usingFallback) {
-            setError('No se pudieron cargar los posts del blog. Mostrando contenido de ejemplo.');
-          }
-        }
-      } catch (err) {
-        if (mounted) {
-          const errorMessage = err instanceof Error ? err.message : 'Error al cargar el blog';
-          setError(errorMessage);
-          const fallbackPosts = getFallbackPosts();
-          setPosts(fallbackPosts);
-          setIsUsingFallback(true);
-        }
-      } finally {
-        if (mounted) {
-          setLoading(false);
-        }
+    if (!queryLoading) {
+      const usingFallback = fetchedPosts.length > 0 && fetchedPosts[0].id.startsWith('fallback-');
+      setIsUsingFallback(usingFallback);
+      setPosts(fetchedPosts);
+      if (usingFallback) {
+        setError('No se pudieron cargar los posts del blog. Mostrando contenido de ejemplo.');
       }
-    };
-    
-    loadPosts();
-    
-    return () => { mounted = false; };
-  }, []);
+    }
+  }, [fetchedPosts, queryLoading]);
+
+  const loading = queryLoading;
 
   const getPostBySlug = useCallback(async (slug: string): Promise<BlogPost | null> => {
     try {

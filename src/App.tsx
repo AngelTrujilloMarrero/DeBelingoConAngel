@@ -8,12 +8,14 @@ import MessageBoard from './components/MessageBoard';
 import BlogPost from './components/BlogPost';
 import { useEffect } from 'react';
 import { TurnstileProvider } from './components/TurnstileProvider';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
-function App() {
+const queryClient = new QueryClient();
+
+function AppContent() {
   const { events, recentActivity, loading } = useEvents();
   const { pathname } = useLocation();
 
-  // Automatically scroll to top on route change
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [pathname]);
@@ -76,6 +78,14 @@ function App() {
         </footer>
       </div>
     </TurnstileProvider>
+  );
+}
+
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AppContent />
+    </QueryClientProvider>
   );
 }
 

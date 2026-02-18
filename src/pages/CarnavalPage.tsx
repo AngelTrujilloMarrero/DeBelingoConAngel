@@ -208,8 +208,8 @@ const CarnavalPage: React.FC = () => {
                 {/* Mobile/Responsive Layout - Cards on Mobile, Table on Desktop */}
                 <div className="space-y-4 md:hidden">
                     {filteredEvents.length > 0 ? (
-                        filteredEvents.map((event, index) => (
-                            <div key={index} className="bg-white p-5 rounded-2xl shadow-md border border-gray-100 space-y-3 active:scale-[0.98] transition-transform">
+                        filteredEvents.map((event) => (
+                            <div key={`${event.day}-${event.time}-${event.artist}`} className="bg-white p-5 rounded-2xl shadow-md border border-gray-100 space-y-3 active:scale-[0.98] transition-transform">
                                 <div className="flex justify-between items-start">
                                     <div className="flex items-center gap-2 text-blue-600 font-bold text-sm bg-blue-50 px-3 py-1 rounded-full">
                                         <Calendar className="w-4 h-4" />
@@ -250,9 +250,9 @@ const CarnavalPage: React.FC = () => {
                             </thead>
                             <tbody className="divide-y divide-gray-100">
                                 {filteredEvents.length > 0 ? (
-                                    filteredEvents.map((event, index) => (
+                                    filteredEvents.map((event) => (
                                         <tr
-                                            key={index}
+                                            key={`${event.day}-${event.time}-${event.artist}`}
                                             className="hover:bg-blue-50/50 transition-colors group"
                                         >
                                             <td className="p-6">

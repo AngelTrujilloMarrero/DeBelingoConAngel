@@ -1,10 +1,10 @@
 import { useState, useEffect, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { onValue } from '../utils/firebase';
 import { eventsRef, eventDeletionsRef } from '../utils/firebase';
 import { Event, RecentActivityItem } from '../types';
 import { getCachedHistoricalStats } from '../utils/dataLoaders';
 
-// Función para cargar eventos históricos desde archivos estáticos por año
 const loadEventsFromArchive = async (year: number): Promise<Event[]> => {
   try {
     const response = await fetch(`/events-archive/${year}.json`);
@@ -81,6 +81,17 @@ export function useEvents() {
 
   const deletionsRef = useRef<RecentActivityItem[]>([]);
 
+  const currentYear = new Date().getFullYear();
+  const previousYear = currentYear - 1;
+
+  const { data: archivedEvents = [] } = useQuery({
+    queryKey: ['archivedEvents', previousYear],
+    queryFn: () => loadEventsFromArchive(previousYear),
+    staleTime: Infinity,
+  });
+
+  const hasArchivedEvents = archivedEvents.length > 0;
+
   useEffect(() => {
     let unsubscribeEvents: (() => void) | null = null;
     let unsubscribeDeletions: (() => void) | null = null;
@@ -88,7 +99,6 @@ export function useEvents() {
     const setupEventListeners = async () => {
       setLoading(true);
 
-      // Load historical data lazily
       if (!historicalData) {
         const stats = await getCachedHistoricalStats();
         historicalData = stats as {
@@ -97,14 +107,6 @@ export function useEvents() {
         };
       }
 
-      const currentYear = new Date().getFullYear();
-      const previousYear = currentYear - 1;
-
-      // 1. Cargar eventos del año anterior desde archivos estáticos
-      const archivedEvents = await loadEventsFromArchive(previousYear);
-      const hasArchivedEvents = archivedEvents.length > 0;
-
-      // 2. Escuchar cambios en eventos de Firebase (año actual)
       unsubscribeEvents = onValue(eventsRef, (snapshot) => {
         const data = snapshot.val();
         const loadedEvents: Event[] = [];
@@ -115,10 +117,6 @@ export function useEvents() {
             const event: Event = { id: key, ...value };
             const eventYear = new Date(event.day).getFullYear();
 
-            // Lógica de carga híbrida:
-            // 1. Siempre cargamos el año actual (o superior)
-            // 2. Si NO hay archivo histórico cargado, cargamos todo el año anterior de Firebase (evita el "apagón" del 1 de enero)
-            // 3. Si HAY archivo histórico, solo cargamos diciembre del año anterior de Firebase (margen de seguridad para solapamiento)
             const eventMonth = new Date(event.day).getMonth();
             const isCurrentOrFuture = eventYear >= currentYear;
             const isPrevYearAndNoArchive = !hasArchivedEvents && eventYear === previousYear;
@@ -133,8 +131,6 @@ export function useEvents() {
           });
         }
 
-        // Combinar eventos y eliminar duplicados por ID
-        // Es posible que un evento exista tanto en el archivo (si ya se generó) como en Firebase
         const combinedEvents = [...historicalData.events, ...archivedEvents, ...loadedEvents];
         const uniqueEventsMap = new Map();
         combinedEvents.forEach(event => {
@@ -145,7 +141,6 @@ export function useEvents() {
 
         setEvents(Array.from(uniqueEventsMap.values()));
 
-        // Actualizar actividad reciente basada en los datos actuales
         updateActivityLocally(allEvents, deletionsRef.current, previousYear);
       });
 
@@ -262,7 +257,7 @@ export function useEvents() {
       if (unsubscribeEvents) unsubscribeEvents();
       if (unsubscribeDeletions) unsubscribeDeletions();
     };
-  }, []);
+  }, [archivedEvents, hasArchivedEvents, currentYear, previousYear]);
 
   return { events, recentActivity, loading };
 }

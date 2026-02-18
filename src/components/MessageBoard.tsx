@@ -340,6 +340,9 @@ const MessageBoard: React.FC = () => {
                                                                         className="max-w-full h-auto rounded-lg border border-gray-600/50 cursor-pointer hover:border-blue-500/50 transition-colors"
                                                                         style={{ maxHeight: '300px' }}
                                                                         onClick={() => handleImageClick(mainMsg.imageUrl)}
+                                                                        onKeyDown={(e) => e.key === 'Enter' && handleImageClick(mainMsg.imageUrl)}
+                                                                        role="button"
+                                                                        tabIndex={0}
                                                                     />
                                                                     {mainMsg.imageInfo && (
                                                                         <div className="mt-1 text-xs text-gray-500">
@@ -391,6 +394,9 @@ const MessageBoard: React.FC = () => {
                                                                             className="max-w-full h-auto rounded-lg border border-blue-500/30 cursor-pointer hover:border-blue-400/50 transition-colors"
                                                                             style={{ maxHeight: '200px' }}
                                                                             onClick={() => handleImageClick(reply.imageUrl)}
+                                                                            onKeyDown={(e) => e.key === 'Enter' && handleImageClick(reply.imageUrl)}
+                                                                            role="button"
+                                                                            tabIndex={0}
                                                                         />
                                                                         {reply.imageInfo && (
                                                                             <div className="mt-1 text-xs text-gray-500">
@@ -422,7 +428,7 @@ const MessageBoard: React.FC = () => {
                                 <form onSubmit={handleSubmit} className="space-y-6 bg-gray-800/40 p-6 lg:p-8 rounded-3xl border border-gray-700/50 backdrop-blur-sm shadow-xl">
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between">
-                                            <label className="text-sm font-bold text-blue-300 uppercase tracking-widest ml-1">Tu Mensaje</label>
+                                            <label htmlFor="message-textarea" className="text-sm font-bold text-blue-300 uppercase tracking-widest ml-1">Tu Mensaje</label>
                                             <div className="flex items-center gap-3">
                                                 <button
                                                     type="button"
@@ -437,6 +443,7 @@ const MessageBoard: React.FC = () => {
                                             </div>
                                         </div>
                                         <textarea
+                                            id="message-textarea"
                                             value={newMessage}
                                             onChange={(e) => setNewMessage(e.target.value.substring(0, 300))}
                                             disabled={dailyLimitReached || sending}

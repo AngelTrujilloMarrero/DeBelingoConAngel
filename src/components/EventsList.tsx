@@ -217,10 +217,10 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                         <div className="flex items-center gap-2 text-green-400 font-semibold min-w-0 max-w-full overflow-hidden">
                           <Music2 className="w-5 h-5 flex-shrink-0" />
                           <span className="text-sm leading-relaxed min-w-0 orchestra-names-container">
-                            {event.orquesta.split(',').map((orquesta, index, arr) => (
-                              <span key={index} className="orchestra-name-unit">
+                            {event.orquesta.split(',').map((orquesta, i, arr) => (
+                              <span key={`${event.id}-${i}`} className="orchestra-name-unit">
                                 {orquesta.trim()}
-                                {index < arr.length - 1 && <span className="orchestra-separator">,</span>}
+                                {i < arr.length - 1 && <span className="orchestra-separator">,</span>}
                               </span>
                             ))}
                           </span>
@@ -238,13 +238,13 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                                 Información de las formaciones
                               </h4>
                               <div className="grid gap-3">
-                                {event.orquesta.split(',').map((orqName, idx) => {
+                                {event.orquesta.split(',').map((orqName, i) => {
                                   const cleanName = orqName.trim();
                                   if (!cleanName || cleanName === 'DJ') return null;
                                   const info = getOrchestraInfo(cleanName);
 
                                   return (
-                                    <div key={idx} className="bg-gray-800/50 p-3 rounded border border-gray-700/50">
+                                    <div key={`${event.id}-${i}`} className="bg-gray-800/50 p-3 rounded border border-gray-700/50">
                                       <div className="flex flex-wrap items-center justify-between gap-2">
                                         <span className="font-bold text-white">{cleanName}</span>
                                         <div className="flex gap-2">
@@ -346,8 +346,8 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                 Últimos movimientos
               </h4>
               <div className="space-y-2">
-                {recentActivity.map((item, index) => (
-                  <div key={index} className="flex items-center gap-3 text-sm bg-gray-800/50 p-2 rounded border border-gray-700/50">
+                {recentActivity.map((item) => (
+                  <div key={item.event.id} className="flex items-center gap-3 text-sm bg-gray-800/50 p-2 rounded border border-gray-700/50">
                     <div className={`p-1.5 rounded-full ${item.type === 'add' ? 'bg-green-500/20 text-green-400' :
                       item.type === 'edit' ? 'bg-blue-500/20 text-blue-400' :
                         item.type === 'reagregado' ? 'bg-purple-500/20 text-purple-400' :

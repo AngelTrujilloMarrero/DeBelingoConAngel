@@ -113,11 +113,11 @@ const Header: React.FC = () => {
           }`}>
           <div className={`hidden md:block transition-all duration-500 ${!isDynamicHeaderPage ? 'scale-[0.65]' : ''}`}>
             <h1 className="text-lg md:text-xl lg:text-3xl font-bold font-orbitron tracking-widest transform scale-x-110 origin-center inline-block group/text cursor-pointer transition-transform duration-300 hover:scale-125 py-1 perspective-[1000px]">
-              {"DE BELINGO CON ÁNGEL".split('').map((char, index) => (
+              {"DE BELINGO CON ÁNGEL".split('').map((char, i) => (
                 <span
-                  key={index}
+                  key={`char-${i}`}
                   className="gradient-text-wave group-hover/text:animate-[wave_1s_ease-in-out_infinite]"
-                  style={{ animationDelay: `${index * 0.05}s` }}
+                  style={{ animationDelay: `${i * 0.05}s` }}
                 >
                   {char === ' ' ? '\u00A0' : char}
                 </span>

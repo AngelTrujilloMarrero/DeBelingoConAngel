@@ -341,8 +341,8 @@ const OrquestaAnalysis: React.FC<OrquestaAnalysisProps> = ({
                     </h4>
                     {analysis.puntosFuertes.length > 0 ? (
                         <ul className="space-y-2">
-                            {analysis.puntosFuertes.map((punto, idx) => (
-                                <li key={idx} className="text-gray-300 text-sm flex items-start gap-2">
+                            {analysis.puntosFuertes.map((punto) => (
+                                <li key={punto} className="text-gray-300 text-sm flex items-start gap-2">
                                     <span className="text-green-400">✓</span> {punto}
                                 </li>
                             ))}
@@ -359,8 +359,8 @@ const OrquestaAnalysis: React.FC<OrquestaAnalysisProps> = ({
                     </h4>
                     {analysis.puntosDebiles.length > 0 ? (
                         <ul className="space-y-2">
-                            {analysis.puntosDebiles.map((punto, idx) => (
-                                <li key={idx} className="text-gray-300 text-sm flex items-start gap-2">
+                            {analysis.puntosDebiles.map((punto) => (
+                                <li key={punto} className="text-gray-300 text-sm flex items-start gap-2">
                                     <span className="text-red-400">!</span> {punto}
                                 </li>
                             ))}

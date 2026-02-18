@@ -1,10 +1,11 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, lazy, Suspense } from 'react';
 import { X, TrendingUp, TrendingDown, Calendar, MapPin, Star } from 'lucide-react';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import { Doughnut } from 'react-chartjs-2';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
 import { Event } from '../types';
 import { zonasIsla, diasSemana } from '../utils/zones';
+
+const Doughnut = lazy(() => import('react-chartjs-2').then(module => ({ default: module.Doughnut })));
 
 ChartJS.register(ArcElement, Tooltip, Legend, ChartDataLabels);
 
@@ -247,12 +248,14 @@ const ComparativaDetailedAnalysis: React.FC<ComparativaDetailedAnalysisProps> = 
                                 {[
                                     { stats: analysis.prevStats.zoneCounts, year: selectedYear - 1 },
                                     { stats: analysis.currentStats.zoneCounts, year: selectedYear }
-                                ].map((item, idx) => (
+                                ].map((item) => (
                                     Object.keys(item.stats).length > 0 && (
-                                        <div key={idx} className="flex flex-col items-center">
+                                        <div key={item.year} className="flex flex-col items-center">
                                             <h4 className="text-sm font-medium text-gray-500 mb-4">{item.year}</h4>
                                             <div className="relative w-full max-w-[280px] aspect-square">
-                                                <Doughnut data={createDoughnutData(item.stats, 'Zonas')} options={chartOptions as any} />
+                                                <Suspense fallback={<div className="flex items-center justify-center h-full">Cargando...</div>}>
+                                                    <Doughnut data={createDoughnutData(item.stats, 'Zonas')} options={chartOptions as any} />
+                                                </Suspense>
                                                 {/* Center Text for Doughnut feel */}
                                                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                                                     <span className="text-2xl font-bold text-gray-700/50">
@@ -278,12 +281,14 @@ const ComparativaDetailedAnalysis: React.FC<ComparativaDetailedAnalysisProps> = 
                                 {[
                                     { stats: analysis.prevStats.dayCounts, year: selectedYear - 1 },
                                     { stats: analysis.currentStats.dayCounts, year: selectedYear }
-                                ].map((item, idx) => (
+                                ].map((item) => (
                                     Object.keys(item.stats).length > 0 && (
-                                        <div key={idx} className="flex flex-col items-center">
+                                        <div key={item.year} className="flex flex-col items-center">
                                             <h4 className="text-sm font-medium text-gray-500 mb-4">{item.year}</h4>
                                             <div className="relative w-full max-w-[280px] aspect-square">
-                                                <Doughnut data={createDoughnutData(item.stats, 'Días')} options={chartOptions as any} />
+                                                <Suspense fallback={<div className="flex items-center justify-center h-full">Cargando...</div>}>
+                                                    <Doughnut data={createDoughnutData(item.stats, 'Días')} options={chartOptions as any} />
+                                                </Suspense>
                                                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                                                     <span className="text-2xl font-bold text-gray-700/50">
                                                         {Object.values(item.stats).reduce((a, b) => a + b, 0)}
@@ -309,12 +314,14 @@ const ComparativaDetailedAnalysis: React.FC<ComparativaDetailedAnalysisProps> = 
                                     {[
                                         { stats: analysis.prevStats.typeCounts, year: selectedYear - 1 },
                                         { stats: analysis.currentStats.typeCounts, year: selectedYear }
-                                    ].map((item, idx) => (
-                                        Object.keys(item.stats).length > 0 && (
-                                            <div key={idx} className="flex flex-col items-center">
+                                ].map((item) => (
+                                    Object.keys(item.stats).length > 0 && (
+                                        <div key={item.year} className="flex flex-col items-center">
                                                 <h4 className="text-sm font-medium text-gray-500 mb-4">{item.year}</h4>
                                                 <div className="relative w-full max-w-[280px] aspect-square">
-                                                    <Doughnut data={createDoughnutData(item.stats, 'Tipos')} options={chartOptions as any} />
+                                                    <Suspense fallback={<div className="flex items-center justify-center h-full">Cargando...</div>}>
+                                                        <Doughnut data={createDoughnutData(item.stats, 'Tipos')} options={chartOptions as any} />
+                                                    </Suspense>
                                                     <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                                                         <span className="text-2xl font-bold text-gray-700/50">
                                                             {Object.values(item.stats).reduce((a, b) => a + b, 0)}

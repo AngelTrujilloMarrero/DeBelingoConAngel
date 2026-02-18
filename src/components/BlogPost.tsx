@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { useRSS, BlogPost as BlogPostType } from '../hooks/useRSS';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { ArrowLeft, Calendar, Clock, User, Tag } from 'lucide-react';
+import DOMPurify from 'dompurify';
 
 const BlogPostComponent = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -137,10 +138,19 @@ const BlogPostComponent = () => {
             )}
 
             {/* Article Body - Centrado */}
-            <div
-              className="prose prose-lg prose-invert max-w-4xl mx-auto prose-headings:text-white prose-headings:text-center prose-p:text-white/90 prose-strong:text-white prose-li:text-white/90 prose-blockquote:text-white/70 prose-code:text-white prose-blockquote:border-l-blue-500/50 text-justify"
-              dangerouslySetInnerHTML={{ __html: post.content.html }}
-            />
+            {(() => {
+              const sanitizedHtml = DOMPurify.sanitize(post.content.html, {
+                USE_PROFILES: { html: true },
+                ADD_TAGS: ['iframe'],
+                ADD_ATTR: ['allow', 'allowfullscreen', 'frameborder', 'scrolling', 'target'],
+              });
+              return (
+                <div
+                  className="prose prose-lg prose-invert max-w-4xl mx-auto prose-headings:text-white prose-headings:text-center prose-p:text-white/90 prose-strong:text-white prose-li:text-white/90 prose-blockquote:text-white/70 prose-code:text-white prose-blockquote:border-l-blue-500/50 text-justify"
+                  dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
+                />
+              );
+            })()}
 
 
           </div>

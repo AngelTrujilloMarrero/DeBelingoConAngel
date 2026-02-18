@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Phone, Globe, Smartphone, Car, Search, MapPin, ExternalLink, Info } from 'lucide-react';
 
 interface TaxiCompany {
@@ -33,16 +34,17 @@ interface TaxiData {
 }
 
 const TaxiInfo: React.FC = () => {
-    const [taxiData, setTaxiData] = useState<TaxiData | null>(null);
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedMunicipio, setSelectedMunicipio] = useState<string | null>(null);
 
-    useEffect(() => {
-        fetch('/data/taxis-tenerife.json')
-            .then(res => res.json())
-            .then(data => setTaxiData(data))
-            .catch(err => console.error('Error loading taxi data:', err));
-    }, []);
+    const { data: taxiData } = useQuery<TaxiData>({
+        queryKey: ['taxiData'],
+        queryFn: async () => {
+            const res = await fetch('/data/taxis-tenerife.json');
+            return res.json();
+        },
+        staleTime: Infinity,
+    });
 
     if (!taxiData) return null;
 
@@ -122,8 +124,8 @@ const TaxiInfo: React.FC = () => {
                             </div>
 
                             <div className="space-y-6">
-                                {taxiData.municipios[m].empresas.map((emp, idx) => (
-                                    <div key={idx} className="space-y-3 bg-white/5 p-4 rounded-xl border border-white/5">
+                                {taxiData.municipios[m].empresas.map((emp) => (
+                                    <div key={emp.nombre} className="space-y-3 bg-white/5 p-4 rounded-xl border border-white/5">
                                         <p className="text-yellow-400 font-black text-sm uppercase tracking-wider">{emp.nombre}</p>
                                         <div className="flex flex-wrap gap-3">
                                             <a

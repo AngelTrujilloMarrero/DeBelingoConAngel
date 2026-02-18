@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, lazy, Suspense } from 'react';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -9,7 +9,6 @@ import {
   Legend,
 } from 'chart.js';
 import ChartDataLabels from 'chartjs-plugin-datalabels';
-import { Bar } from 'react-chartjs-2';
 import { BarChart3, Calendar, Trophy, TrendingUp, TrendingDown, ChevronDown, MousePointerClick, MapPin } from 'lucide-react';
 import { Event, OrquestaCount, MonthlyOrquestaCount } from '../types';
 import { getRandomColor } from '../utils/helpers';
@@ -18,6 +17,8 @@ import OrquestaAnalysis from './OrquestaAnalysis';
 import ComparativaDetailedAnalysis from './ComparativaDetailedAnalysis';
 import LoadingSpinner from './LoadingSpinner';
 import { getCachedHistoricalStats } from '../utils/dataLoaders';
+
+const Bar = lazy(() => import('react-chartjs-2').then(module => ({ default: module.Bar })));
 
 let historicalData: {
   years: Record<string, {
@@ -43,7 +44,7 @@ interface StatisticsProps {
 }
 
 const Statistics: React.FC<StatisticsProps> = ({ events }) => {
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [selectedYear, setSelectedYear] = useState(() => new Date().getFullYear());
   const [currentYearData, setCurrentYearData] = useState<OrquestaCount>({});
   const [nextYearData, setNextYearData] = useState<OrquestaCount>({});
   const [monthlyData, setMonthlyData] = useState<MonthlyOrquestaCount>({});
@@ -57,10 +58,6 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
   const [visibleItems, setVisibleItems] = useState(20);
   const [expandedCompMonth, setExpandedCompMonth] = useState<string | null>(null);
   const [dataLoaded, setDataLoaded] = useState(false);
-
-  useEffect(() => {
-    setVisibleItems(20);
-  }, [selectedYear, showTotal]);
 
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth();
@@ -300,7 +297,7 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
             {availableYears.map(year => (
               <button
                 key={year}
-                onClick={() => { setSelectedYear(year); setSelectedOrquesta(null); }}
+                onClick={() => { setSelectedYear(year); setSelectedOrquesta(null); setVisibleItems(20); }}
                 className={`px-6 py-3 rounded-lg font-semibold transition-all duration-300 ${selectedYear === year
                   ? 'bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg'
                   : 'text-gray-300 hover:text-white hover:bg-gray-700'
@@ -338,7 +335,9 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
           {Object.keys(currentYearData).length > 0 ? (
             <>
               <div className="w-full cursor-pointer" style={{ height: 'calc(100vh - 400px)', minHeight: '400px', maxHeight: '600px' }}>
-                <Bar data={currentYearChartData} options={chartOptions} />
+                <Suspense fallback={<div className="flex items-center justify-center h-full"><LoadingSpinner /></div>}>
+                  <Bar data={currentYearChartData} options={chartOptions} />
+                </Suspense>
               </div>
 
               {showAnalysis && (
@@ -493,7 +492,7 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
       {/* Ranking Total (Collapsible) */}
       <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl shadow-2xl overflow-hidden mt-12 border border-white/5">
         <button
-          onClick={() => setShowTotal(!showTotal)}
+          onClick={() => { setShowTotal(!showTotal); setVisibleItems(20); }}
           className="w-full flex items-center justify-between p-6 bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 transition-all duration-300 group"
         >
           <div className="flex items-center gap-3 flex-wrap">
@@ -521,6 +520,12 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
                     setSelectedOrquesta(prev => prev === item.name ? null : item.name);
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                   }}
+                  onKeyDown={(e) => e.key === 'Enter' && (() => {
+                    setSelectedOrquesta(prev => prev === item.name ? null : item.name);
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                  })()}
+                  role="button"
+                  tabIndex={0}
                   className="flex items-center justify-between p-2 rounded-lg bg-black/20 border border-white/5 hover:bg-white/10 hover:border-blue-500/30 transition-all cursor-pointer group"
                 >
                   <div className="flex items-center gap-2 overflow-hidden min-w-0">
@@ -714,9 +719,9 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
                             </tr>
                           </thead>
                           <tbody>
-                            {visibleRows.map((item, idx) => (
+                            {visibleRows.map((item) => (
                               <tr
-                                key={idx}
+                                key={item.name}
                                 className="border-b border-white/5 hover:bg-white/5 cursor-pointer transition-all duration-200 group/row"
                                 onClick={() => setSelectedComparativaOrquesta({ name: item.name, month })}
                               >

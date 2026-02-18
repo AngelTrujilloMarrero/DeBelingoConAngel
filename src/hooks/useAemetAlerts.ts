@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import { getSecurityHeaders } from '../utils/firebase';
 import { useTurnstile } from '../components/TurnstileProvider';
 
@@ -50,119 +51,90 @@ const ZONE_MAPPING: Record<string, string> = {
 };
 
 export const useAemetAlerts = () => {
-    const [alerts, setAlerts] = useState<AemetAlert[]>([]);
-    const [loading, setLoading] = useState(true);
     const { token } = useTurnstile();
 
-    useEffect(() => {
-        let isMounted = true;
+    const fetchAlerts = async (): Promise<AemetAlert[]> => {
+        const headers = await getSecurityHeaders();
 
-        const fetchAlerts = async () => {
-            try {
-                setLoading(true);
-                const headers = await getSecurityHeaders();
+        const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL ||
+            (import.meta.env.PROD ? 'https://de-belingo-con-angel.vercel.app' : '');
 
-                // Determinar URL base
-                const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL ||
-                    (import.meta.env.PROD ? 'https://de-belingo-con-angel.vercel.app' : '');
+        const proxyUrl = `${API_BASE_URL}/api/aemet-proxy`;
 
-                const proxyUrl = `${API_BASE_URL}/api/aemet-proxy`;
+        console.log(`[AEMET] Fetching alerts from: ${proxyUrl}`);
+        const response = await fetch(proxyUrl, { headers });
 
-                console.log(`[AEMET] Fetching alerts from: ${proxyUrl}`);
-                const response = await fetch(proxyUrl, { headers });
+        if (!response.ok) {
+            console.warn(`[AEMET] Proxy unavailable (${response.status})`);
+            return [];
+        }
 
-                if (!response.ok) {
-                    console.warn(`[AEMET] Proxy unavailable (${response.status})`);
-                    if (isMounted) {
-                        setAlerts([]);
-                        setLoading(false);
-                    }
-                    return;
-                }
+        const xmlText = await response.text();
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+        const items = xmlDoc.querySelectorAll("item");
 
-                const xmlText = await response.text();
-                const parser = new DOMParser();
-                const xmlDoc = parser.parseFromString(xmlText, "text/xml");
-                const items = xmlDoc.querySelectorAll("item");
+        const parsedAlerts: AemetAlert[] = [];
 
-                const parsedAlerts: AemetAlert[] = [];
+        items.forEach(item => {
+            const title = item.querySelector("title")?.textContent || "";
+            const description = item.querySelector("description")?.textContent || "";
+            const link = item.querySelector("link")?.textContent || "";
 
-                items.forEach(item => {
-                    const title = item.querySelector("title")?.textContent || "";
-                    const description = item.querySelector("description")?.textContent || "";
-                    const link = item.querySelector("link")?.textContent || "";
+            if (title.toLowerCase().includes("no hay avisos")) return;
 
-                    if (title.toLowerCase().includes("no hay avisos")) return;
+            let level: AlertLevel = null;
+            if (title.toLowerCase().includes("rojo")) level = 'red';
+            else if (title.toLowerCase().includes("naranja")) level = 'orange';
+            else if (title.toLowerCase().includes("amarillo")) level = 'yellow';
 
-                    // Extraer nivel
-                    let level: AlertLevel = null;
-                    if (title.toLowerCase().includes("rojo")) level = 'red';
-                    else if (title.toLowerCase().includes("naranja")) level = 'orange';
-                    else if (title.toLowerCase().includes("amarillo")) level = 'yellow';
+            if (!level) return;
 
-                    if (!level) return;
+            let zone = "";
+            if (title.toLowerCase().includes("metropolitana")) zone = "Metropolitana";
+            else if (title.toLowerCase().includes("norte")) zone = "Norte";
+            else if (title.toLowerCase().includes("este, sur y oeste")) zone = "Sur";
+            else if (title.toLowerCase().includes("cumbres")) zone = "Cumbres";
 
-                    // Extraer zona (Norte, Metropolitana, Este, sur y oeste, Cumbres)
-                    let zone = "";
-                    if (title.toLowerCase().includes("metropolitana")) zone = "Metropolitana";
-                    else if (title.toLowerCase().includes("norte")) zone = "Norte";
-                    else if (title.toLowerCase().includes("este, sur y oeste")) zone = "Sur";
-                    else if (title.toLowerCase().includes("cumbres")) zone = "Cumbres";
+            let phenomenon = "Fenómeno adverso";
+            const parts = title.split(".");
+            if (parts.length >= 3) {
+                phenomenon = parts[2].trim();
+            } else if (title.includes(" por ")) {
+                phenomenon = title.split(" por ")[1]?.split(" en ")[0] || phenomenon;
+            }
 
-                    // Extraer fenómeno (Formato: Aviso. Nivel X. Fenómeno. Zona)
-                    // Intentamos split por punto o por " por "
-                    let phenomenon = "Fenómeno adverso";
-                    const parts = title.split(".");
-                    if (parts.length >= 3) {
-                        phenomenon = parts[2].trim();
-                    } else if (title.includes(" por ")) {
-                        phenomenon = title.split(" por ")[1]?.split(" en ")[0] || phenomenon;
-                    }
-
-                    // Extraer fecha (AEMET RSS usa formato DD-MM-YYYY en descripción)
-                    // Soportamos tanto guiones como barras
-                    const dateMatch = description.match(/(\d{2})[-/](\d{2})[-/](\d{4})/);
-                    let alertDate = "";
-                    if (dateMatch) {
-                        alertDate = `${dateMatch[3]}-${dateMatch[2]}-${dateMatch[1]}`;
-                    } else {
-                        const pubDate = item.querySelector("pubDate")?.textContent;
-                        if (pubDate) {
-                            const d = new Date(pubDate);
-                            alertDate = d.toISOString().split('T')[0];
-                        }
-                    }
-
-                    parsedAlerts.push({
-                        level,
-                        phenomenon,
-                        zone,
-                        description,
-                        link,
-                        date: alertDate
-                    });
-                });
-
-                console.log(`[AEMET] Parsed ${parsedAlerts.length} active alerts.`, parsedAlerts);
-
-                // Forzamos el setAlerts siempre para que el componente reciba los datos
-                // React gestiona perfectamente setStates en componentes desmontados en versiones modernas
-                setAlerts(parsedAlerts);
-            } catch (error) {
-                console.error("[AEMET] Error fetching alerts:", error);
-            } finally {
-                if (isMounted) {
-                    setLoading(false);
+            const dateMatch = description.match(/(\d{2})[-/](\d{2})[-/](\d{4})/);
+            let alertDate = "";
+            if (dateMatch) {
+                alertDate = `${dateMatch[3]}-${dateMatch[2]}-${dateMatch[1]}`;
+            } else {
+                const pubDate = item.querySelector("pubDate")?.textContent;
+                if (pubDate) {
+                    const d = new Date(pubDate);
+                    alertDate = d.toISOString().split('T')[0];
                 }
             }
-        };
 
-        fetchAlerts();
+            parsedAlerts.push({
+                level,
+                phenomenon,
+                zone,
+                description,
+                link,
+                date: alertDate
+            });
+        });
 
-        return () => {
-            isMounted = false;
-        };
-    }, []);
+        console.log(`[AEMET] Parsed ${parsedAlerts.length} active alerts.`, parsedAlerts);
+        return parsedAlerts;
+    };
+
+    const { data: alerts = [], isLoading: loading } = useQuery({
+        queryKey: ['aemetAlerts'],
+        queryFn: fetchAlerts,
+        staleTime: 1000 * 60 * 15,
+    });
 
 
     const getAlertForEvent = (municipio: string, date: string) => {
