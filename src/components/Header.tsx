@@ -114,6 +114,20 @@ const Header: React.FC = () => {
         {/* Group Title */}
         <div className={`w-full flex flex-col items-center transition-all duration-500 ease-in-out ${isDynamicHeaderPage && isScrolled ? 'max-h-0 opacity-0 pointer-events-none mb-0 overflow-hidden' : 'max-h-16 opacity-100 mb-0 overflow-visible'
           }`}>
+          {/* Visible on mobile - small */}
+          <div className={`block md:hidden transition-all duration-500 ${!isDynamicHeaderPage ? 'scale-[0.65]' : ''}`}>
+            <h1 className="text-xs font-bold font-orbitron tracking-widest transform scale-x-110 origin-center inline-block group/text cursor-pointer transition-transform duration-300 py-0.5">
+              {"DE BELINGO CON ÁNGEL".split('').map((char, i) => (
+                <span
+                  key={`char-${i}`}
+                  className="gradient-text-wave"
+                >
+                  {char === ' ' ? '\u00A0' : char}
+                </span>
+              ))}
+            </h1>
+          </div>
+          {/* Visible on desktop */}
           <div className={`hidden md:block transition-all duration-500 ${!isDynamicHeaderPage ? 'scale-[0.65]' : ''}`}>
             <h1 className="text-lg md:text-xl lg:text-3xl font-bold font-orbitron tracking-widest transform scale-x-110 origin-center inline-block group/text cursor-pointer transition-transform duration-300 hover:scale-125 py-1 perspective-[1000px]">
               {"DE BELINGO CON ÁNGEL".split('').map((char, i) => (
