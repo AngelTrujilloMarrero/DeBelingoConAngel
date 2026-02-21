@@ -77,15 +77,15 @@ const Header: React.FC = () => {
         />
       </div>
 
-      <div className={`relative container mx-auto px-4 text-center flex flex-col items-center justify-center z-10 transition-all duration-500 ease-in-out ${isDynamicHeaderPage && isScrolled ? 'gap-0 py-2' : (!isDynamicHeaderPage ? 'gap-0 py-0' : 'py-4 lg:py-6 gap-2 lg:gap-4')
+      <div className={`relative container mx-auto px-4 text-center flex flex-col items-center justify-center z-10 transition-all duration-500 ease-in-out ${isDynamicHeaderPage && isScrolled ? 'gap-0 py-1' : (!isDynamicHeaderPage ? 'gap-0 py-0' : 'py-1 lg:py-2 gap-1')
         }`}
         style={{ overflow: 'visible' }}
       >
 
         {/* Top section with Logo and Social Icons */}
-        <div className={`flex flex-col items-center justify-center w-full relative transition-all duration-500 ease-in-out ${isDynamicHeaderPage && isScrolled ? 'max-h-0 opacity-0 pointer-events-none mb-0 overflow-hidden' : 'max-h-[200px] opacity-100 mb-0.5 overflow-visible'
+        <div className={`flex flex-col items-center justify-center w-full relative transition-all duration-500 ease-in-out ${isDynamicHeaderPage && isScrolled ? 'max-h-0 opacity-0 pointer-events-none mb-0 overflow-hidden' : 'max-h-16 opacity-100 mb-0 overflow-visible'
           }`}>
-          <div className={`flex items-center gap-2 sm:gap-4 md:gap-6 lg:gap-8 transition-all duration-500 ${!isDynamicHeaderPage ? 'scale-[0.45]' : 'py-1'}`}>
+          <div className={`flex items-center gap-2 sm:gap-3 md:gap-4 transition-all duration-500 ${!isDynamicHeaderPage ? 'scale-[0.45]' : ''}`}>
             {/* Instagram Icon - Left */}
             <div className="flex items-center">
               <a href="https://www.instagram.com/debelingoconangel/" target="_blank" rel="noopener noreferrer" className="w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110">
@@ -94,9 +94,9 @@ const Header: React.FC = () => {
             </div>
 
             {/* TikTok Logo - Center */}
-            <div className="transform scale-[0.44] xs:scale-[0.5] sm:scale-[0.55] md:scale-[0.66] lg:scale-[0.77] transition-transform duration-300 relative z-20">
-              <a href="https://www.tiktok.com/@debelingoconangel" target="_blank" rel="noopener noreferrer" className="block bg-black rounded-lg shadow-lg transition-transform hover:scale-105 border border-white/30">
-                <svg viewBox="0 0 24 24" fill="white" className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 lg:w-40 lg:h-40">
+            <div className="flex items-center">
+              <a href="https://www.tiktok.com/@debelingoconangel" target="_blank" rel="noopener noreferrer" className="w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-black rounded-lg flex items-center justify-center shadow-lg transition-transform hover:scale-110 border border-white/40">
+                <svg viewBox="0 0 24 24" fill="white" className="w-4 h-4 sm:w-4.5 sm:h-4.5 lg:w-6 lg:h-6">
                   <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z"/>
                 </svg>
               </a>
@@ -112,7 +112,7 @@ const Header: React.FC = () => {
         </div>
 
         {/* Group Title */}
-        <div className={`w-full flex flex-col items-center transition-all duration-500 ease-in-out ${isDynamicHeaderPage && isScrolled ? 'max-h-0 opacity-0 pointer-events-none mb-0 overflow-hidden' : 'max-h-32 opacity-100 mb-0.5 overflow-visible'
+        <div className={`w-full flex flex-col items-center transition-all duration-500 ease-in-out ${isDynamicHeaderPage && isScrolled ? 'max-h-0 opacity-0 pointer-events-none mb-0 overflow-hidden' : 'max-h-16 opacity-100 mb-0 overflow-visible'
           }`}>
           <div className={`hidden md:block transition-all duration-500 ${!isDynamicHeaderPage ? 'scale-[0.65]' : ''}`}>
             <h1 className="text-lg md:text-xl lg:text-3xl font-bold font-orbitron tracking-widest transform scale-x-110 origin-center inline-block group/text cursor-pointer transition-transform duration-300 hover:scale-125 py-1 perspective-[1000px]">
@@ -134,8 +134,8 @@ const Header: React.FC = () => {
 
         {/* Navigation - ALWAYS VISIBLE */}
         <div className={`w-full flex justify-center transition-all duration-500 ${isDynamicHeaderPage && isScrolled
-          ? 'py-2 sm:py-1 scale-100 sm:scale-95 origin-center'
-          : (!isDynamicHeaderPage ? 'py-0.5 scale-85' : 'py-1.5')
+          ? 'py-1 scale-100'
+          : (!isDynamicHeaderPage ? 'py-0.5 scale-85' : 'py-1')
           }`}>
           <Navigation />
         </div>
