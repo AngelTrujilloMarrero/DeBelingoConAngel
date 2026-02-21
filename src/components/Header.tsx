@@ -140,7 +140,7 @@ const Header: React.FC = () => {
                 </span>
               ))}
             </h1>
-            <p className={`text-xs md:text-sm lg:text-base font-semibold text-blue-100 animate-fade-in ${!isDynamicHeaderPage ? 'hidden' : 'mt-0.5'}`}>
+            <p className={`text-xs md:text-sm lg:text-base font-bold font-orbitron tracking-wider text-amber-300 drop-shadow-[0_0_8px_rgba(251,191,36,0.6)] hover:text-amber-200 hover:drop-shadow-[0_0_12px_rgba(251,191,36,0.8)] transition-all duration-300 animate-fade-in ${!isDynamicHeaderPage ? 'hidden' : 'mt-0.5'}`}>
               Verbenas en Tenerife
             </p>
           </div>
