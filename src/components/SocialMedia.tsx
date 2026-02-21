@@ -1,5 +1,5 @@
 import React from 'react';
-import { MessageCircle, Instagram, Heart, BookOpen, Scroll } from 'lucide-react';
+import { MessageCircle, Instagram, Heart, BookOpen, Scroll, Music2 } from 'lucide-react';
 import { socialFollowersRef, onValue, set, get } from '../utils/firebase';
 
 interface SocialLink {
@@ -13,14 +13,16 @@ interface SocialLink {
 interface FollowersData {
   Instagram: string;
   WhatsApp: string;
+  TikTok: string;
   lastUpdated?: string;
 }
 
-// Valores por defecto (fallback) - actualizados el 23/01/2026
+// Valores por defecto (fallback) - actualizados el 21/02/2026
 const DEFAULT_FOLLOWERS: FollowersData = {
   Instagram: '8.895',
   WhatsApp: '2.100',
-  lastUpdated: '2026-01-23'
+  TikTok: '0',
+  lastUpdated: '2026-02-21'
 };
 
 const SocialMedia: React.FC = () => {
@@ -58,6 +60,7 @@ const SocialMedia: React.FC = () => {
           setFollowers({
             Instagram: data.Instagram || DEFAULT_FOLLOWERS.Instagram,
             WhatsApp: data.WhatsApp || DEFAULT_FOLLOWERS.WhatsApp,
+            TikTok: data.TikTok || DEFAULT_FOLLOWERS.TikTok,
             lastUpdated: data.lastUpdated || DEFAULT_FOLLOWERS.lastUpdated
           });
           setDataSource('firebase');
@@ -95,6 +98,13 @@ const SocialMedia: React.FC = () => {
       icon: MessageCircle,
       color: 'from-green-500 to-green-600',
       hoverColor: 'hover:from-green-600 hover:to-green-700'
+    },
+    {
+      name: 'TikTok',
+      url: 'https://www.tiktok.com/@debelingoconangel',
+      icon: Music2,
+      color: 'from-gray-900 to-black',
+      hoverColor: 'hover:from-black hover:to-gray-900'
     }
   ];
 
@@ -114,7 +124,7 @@ const SocialMedia: React.FC = () => {
         </div>
 
         <div className="p-8">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {socialLinks.map((social) => {
               const IconComponent = social.icon;
               return (
@@ -147,7 +157,7 @@ const SocialMedia: React.FC = () => {
                         </span>
                       </div>
                       <p className="text-xs font-medium opacity-90 uppercase tracking-widest text-white/80">
-                        {social.name === 'Instagram' ? 'Seguidores' : 'Suscriptores'}
+                        {social.name === 'Instagram' ? 'Seguidores' : social.name === 'WhatsApp' ? 'Suscriptores' : 'Seguidores'}
                       </p>
                     </div>
 

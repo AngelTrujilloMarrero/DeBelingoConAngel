@@ -84,7 +84,7 @@ const Header: React.FC = () => {
       >
 
         {/* Top section with Logo and Social Icons */}
-        <div className={`flex flex-col items-center justify-center w-full relative transition-all duration-500 ease-in-out ${isDynamicHeaderPage && isScrolled ? 'max-h-0 opacity-0 pointer-events-none mb-0 overflow-hidden' : 'max-h-[200px] opacity-100 mb-0.5 overflow-visible'
+        <div className={`flex flex-col items-center justify-center w-full relative transition-all duration-500 ease-in-out ${isDynamicHeaderPage && isScrolled ? 'max-h-0 opacity-0 pointer-events-none mb-0 overflow-hidden' : 'max-h-[220px] opacity-100 mb-0.5 overflow-visible'
           }`}>
           <div className={`flex items-center gap-2 sm:gap-4 md:gap-6 lg:gap-8 transition-all duration-500 ${!isDynamicHeaderPage ? 'scale-[0.45]' : 'py-1'}`}>
             {/* Instagram Icon - Left */}
@@ -94,9 +94,19 @@ const Header: React.FC = () => {
               </a>
             </div>
 
-            {/* Logo in the center */}
-            <div className="transform scale-[0.44] xs:scale-[0.5] sm:scale-[0.55] md:scale-[0.66] lg:scale-[0.77] transition-transform duration-300 relative z-20">
-              <DBCALogo />
+            {/* Logo and TikTok Container - Center */}
+            <div className="flex flex-col items-center relative z-20">
+              <div className="transform scale-[0.8] xs:scale-90 sm:scale-95 md:scale-[1.1] lg:scale-1.2 transition-transform duration-300">
+                <DBCALogo />
+              </div>
+              {/* TikTok Icon - Below Logo */}
+              <div className="absolute -bottom-2">
+                <a href="https://www.tiktok.com/@debelingoconangel" target="_blank" rel="noopener noreferrer" className="w-5 h-5 sm:w-6 sm:h-6 lg:w-7 lg:h-7 bg-black rounded-lg flex items-center justify-center shadow-lg transition-transform hover:scale-110 border border-white/40">
+                  <svg viewBox="0 0 24 24" fill="white" className="w-3 h-3 sm:w-3.5 sm:h-3.5 lg:w-4 lg:h-4">
+                    <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z"/>
+                  </svg>
+                </a>
+              </div>
             </div>
 
             {/* WhatsApp Icon - Right */}
