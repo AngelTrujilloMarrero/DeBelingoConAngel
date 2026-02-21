@@ -14,6 +14,7 @@ interface FollowersData {
   Instagram: string;
   WhatsApp: string;
   TikTok: string;
+  TikTokLikes: string;
   lastUpdated?: string;
 }
 
@@ -22,6 +23,7 @@ const DEFAULT_FOLLOWERS: FollowersData = {
   Instagram: '8.895',
   WhatsApp: '2.100',
   TikTok: '0',
+  TikTokLikes: '0',
   lastUpdated: '2026-02-21'
 };
 
@@ -61,6 +63,7 @@ const SocialMedia: React.FC = () => {
             Instagram: data.Instagram || DEFAULT_FOLLOWERS.Instagram,
             WhatsApp: data.WhatsApp || DEFAULT_FOLLOWERS.WhatsApp,
             TikTok: data.TikTok || DEFAULT_FOLLOWERS.TikTok,
+            TikTokLikes: data.TikTokLikes || DEFAULT_FOLLOWERS.TikTokLikes,
             lastUpdated: data.lastUpdated || DEFAULT_FOLLOWERS.lastUpdated
           });
           setDataSource('firebase');
@@ -152,13 +155,27 @@ const SocialMedia: React.FC = () => {
                           {loading ? (
                             <span className="animate-pulse">...</span>
                           ) : (
-                            followers[social.name as keyof FollowersData] || 'N/A'
+                            social.name === 'TikTok' ? (followers.TikTok || '0') : (followers[social.name as keyof FollowersData] || 'N/A')
                           )}
                         </span>
                       </div>
                       <p className="text-xs font-medium opacity-90 uppercase tracking-widest text-white/80">
                         {social.name === 'Instagram' ? 'Seguidores' : social.name === 'WhatsApp' ? 'Suscriptores' : 'Seguidores'}
                       </p>
+                      {social.name === 'TikTok' && (
+                        <div className="mt-1">
+                          <span className="text-lg font-bold">
+                            {loading ? (
+                              <span className="animate-pulse">...</span>
+                            ) : (
+                              followers.TikTokLikes || '0'
+                            )}
+                          </span>
+                          <p className="text-xs font-medium opacity-90 uppercase tracking-widest text-white/80">
+                            Me gusta
+                          </p>
+                        </div>
+                      )}
                     </div>
 
                     {/* Hover effect indicator */}
