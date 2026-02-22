@@ -258,6 +258,16 @@ Ver `.env.example` para descripciones detalladas de cada variable.
 
 ## 🏗️ Arquitectura del Proyecto
 
+> **NOTA: Sección Carnaval SC temporalmente desactivada**
+> 
+> La página de Carnaval Santa Cruz ha sido desactivada temporalmente (no eliminada) ya que el Carnaval solo ocurre una vez al año (enero-febrero). 
+> El código se mantiene en el proyecto para reactivarlo fácilmente cada temporada:
+> - 📄 `src/pages/CarnavalPage.tsx` - Componente de la página
+> - 🔗 `src/components/Navigation.tsx` - Navegación (comentada)
+> - 🛤️ `src/App.tsx` - Ruta (comentada)
+> 
+> **Para reactivar:** Descomentar las secciones marcadas con `// TODO: Reactivar cuando comience la temporada de Carnaval` en Navigation.tsx y App.tsx
+
 ```
 src/
 ├── components/          # Componentes reutilizables

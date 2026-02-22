@@ -49,7 +49,10 @@ function AppContent() {
             <Route path="/redes" element={<RedesPage />} />
             <Route path="/blog" element={<BlogPage />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
+            {/*
+            // TODO: Reactivar cuando comience la temporada de Carnaval (enero-febrero)
             <Route path="/carnaval-santa-cruz" element={<CarnavalPage />} />
+            */}
           </Routes>
         </div>
 

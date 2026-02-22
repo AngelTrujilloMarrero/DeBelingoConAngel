@@ -13,12 +13,15 @@ const Navigation: React.FC = () => {
       <div className="px-1 sm:px-4">
         <div className="flex justify-center items-center flex-wrap gap-1 sm:gap-2">
           <NavLink to="/" className={navLinkClass}>Eventos</NavLink>
+{/*
+          // TODO: Reactivar cuando comience la temporada de Carnaval (enero-febrero)
           <NavLink to="/carnaval-santa-cruz" className={navLinkClass}>
             Carnaval SC
             <span className="ml-1 inline-flex items-center justify-center px-1.5 py-0.5 text-[10px] font-bold leading-none text-white bg-red-600 rounded-full animate-pulse">
               NUEVO
             </span>
           </NavLink>
+          */}
           <NavLink to="/mapa" className={navLinkClass}>Mapa</NavLink>
           <NavLink to="/estadisticas" className={navLinkClass}>Estadísticas</NavLink>
           <NavLink to="/formaciones" className={navLinkClass}>Formaciones</NavLink>
