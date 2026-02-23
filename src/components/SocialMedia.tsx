@@ -321,7 +321,7 @@ const SocialMedia: React.FC = () => {
             </p>
 
             <p className="bg-purple-900/30 border-l-4 border-purple-500 p-4 italic">
-              <strong className="text-purple-300">Nota importante:</strong> A partir del 23 de enero de 2026, se cierran las cuentas de Facebook y Telegram por diferencias con estas plataformas que no le llegan seguidores. Seguimos activos en Instagram y WhatsApp para seguir compartiendo las mejores verbenas de Tenerife.
+              <strong className="text-purple-300">Nota importante:</strong> A partir del 23 de enero de 2026, se cierran las cuentas de Facebook y Telegram por diferencias con estas plataformas. Seguimos activos en Instagram,TikTok y WhatsApp para seguir compartiendo las mejores verbenas de Tenerife.
             </p>
 
             <p className="text-center font-semibold text-lg md:text-xl mt-6 md:mt-8 text-purple-200">
