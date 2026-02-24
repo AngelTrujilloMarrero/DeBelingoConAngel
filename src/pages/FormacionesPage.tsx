@@ -210,7 +210,7 @@ const FormacionesPage: React.FC<FormacionesPageProps> = ({ events }) => {
     }
 
     return (
-        <div className="space-y-8 animate-fadeIn">
+        <div className="container mx-auto px-4 py-8 space-y-8 animate-fadeIn">
             {/* Hero Section */}
             <div className="text-center space-y-4 py-8">
                 <h1 className="text-4xl md:text-5xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500">

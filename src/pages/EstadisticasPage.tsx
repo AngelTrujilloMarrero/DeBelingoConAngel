@@ -10,7 +10,7 @@ interface EstadisticasPageProps {
 
 const EstadisticasPage: React.FC<EstadisticasPageProps> = ({ events }) => {
     return (
-        <div className="space-y-6">
+        <div className="container mx-auto px-4 py-8 space-y-6">
             <Suspense fallback={
                 <div className="flex justify-center items-center py-20">
                     <Loader2 className="w-10 h-10 animate-spin text-blue-500" />

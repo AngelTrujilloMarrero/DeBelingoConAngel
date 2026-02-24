@@ -358,15 +358,3 @@
 .count-animation {
   animation: countUp 0.3s ease-out;
 }
-
-.footer-rounded {
-  border-top-left-radius: 32px;
-  border-top-right-radius: 32px;
-}
-
-@media (min-width: 768px) {
-  .footer-rounded {
-    border-top-left-radius: 48px;
-    border-top-right-radius: 48px;
-  }
-}

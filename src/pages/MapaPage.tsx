@@ -9,7 +9,7 @@ interface MapaPageProps {
 
 const MapaPage: React.FC<MapaPageProps> = ({ events }) => {
     return (
-        <div className="space-y-6">
+        <div className="container mx-auto px-4 py-8 space-y-6">
             <MapComponent events={events} />
             <TaxiInfo />
         </div>

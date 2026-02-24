@@ -4,7 +4,7 @@ import SocialMedia from '../components/SocialMedia';
 
 const RedesPage: React.FC = () => {
     return (
-        <div className="space-y-6">
+        <div className="container mx-auto px-4 py-8 space-y-6">
             <SocialMedia />
         </div>
     );

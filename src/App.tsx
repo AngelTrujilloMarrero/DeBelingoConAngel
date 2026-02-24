@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import Header from './components/Header';
 import VisitCounter from './components/VisitCounter';
 import { useEvents } from './hooks/useEvents';
@@ -35,12 +35,12 @@ function AppContent() {
   console.log('App rendering, pathname:', pathname);
   return (
     <TurnstileProvider>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
         {/* Header - Siempre visible */}
         <Header />
 
         {/* Main Content - Cambia según la ruta */}
-        <div className={`${pathname === '/' || pathname.startsWith('/blog') ? 'w-full p-0' : 'container mx-auto px-4 py-8'}`}>
+        <div className="w-full">
           <Routes>
             <Route path="/" element={<EventosPage events={events} recentActivity={recentActivity} />} />
             <Route path="/mapa" element={<MapaPage events={events} />} />
@@ -49,10 +49,7 @@ function AppContent() {
             <Route path="/redes" element={<RedesPage />} />
             <Route path="/blog" element={<BlogPage />} />
             <Route path="/blog/:slug" element={<BlogPost />} />
-            {/*
-            // TODO: Reactivar cuando comience la temporada de Carnaval (enero-febrero)
-            <Route path="/carnaval-santa-cruz" element={<CarnavalPage />} />
-            */}
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
 
@@ -60,7 +57,7 @@ function AppContent() {
         {pathname === '/' && <MessageBoard />}
 
         {/* Footer - Siempre visible */}
-        <footer className={`${pathname === '/' ? '' : 'footer-rounded'} bg-gray-900 text-white py-12 relative overflow-hidden`}>
+        <footer className="bg-gray-900 text-white py-12 relative overflow-hidden">
           {/* Background Layers - Consistent with Header */}
           <div className="absolute inset-0 pointer-events-none">
             <div className="absolute inset-0 bg-[url('/fotos/eltablero.jpg')] bg-cover bg-center opacity-20" />
