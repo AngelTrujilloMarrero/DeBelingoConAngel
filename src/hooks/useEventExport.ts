@@ -524,8 +524,17 @@ export const useEventExport = (events: AppEvent[]) => {
             contentDiv.appendChild(generationDate);
 
             const festivalHeader = document.createElement('div');
-            const randomHue = Math.floor(Math.random() * 360);
-            const randomBgColor = `hsla(${randomHue}, 70%, 50%, 0.8)`;
+            const hueRanges = [
+                { min: 0, max: 30 },
+                { min: 45, max: 150 },
+                { min: 170, max: 260 },
+                { min: 280, max: 330 },
+            ];
+            const selectedRange = hueRanges[Math.floor(Math.random() * hueRanges.length)];
+            const randomHue = Math.floor(Math.random() * (selectedRange.max - selectedRange.min)) + selectedRange.min;
+            const randomSaturation = Math.floor(Math.random() * 40) + 60;
+            const randomLightness = Math.floor(Math.random() * 25) + 45;
+            const randomBgColor = `hsl(${randomHue}, ${randomSaturation}%, ${randomLightness}%)`;
 
             festivalHeader.style.cssText = `
                 display: flex;
