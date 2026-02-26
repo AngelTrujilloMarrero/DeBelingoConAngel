@@ -39,7 +39,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
     if (aemetAlerts.length === 0) return {};
     const map: Record<string, ReturnType<typeof getAlertForEvent>> = {};
     events.forEach(event => {
-      const alert = getAlertForEvent(event.municipio, event.day);
+      const alert = getAlertForEvent(event.municipio, event.day, event.hora);
       if (alert) {
         map[event.id] = alert;
       }

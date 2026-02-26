@@ -12,6 +12,8 @@ export interface AemetAlert {
     description: string;
     link: string;
     date: string; // YYYY-MM-DD
+    onset?: string; // HH:MM - hora de inicio del aviso
+    expires?: string; // HH:MM - hora de fin del aviso
 }
 
 const ZONE_MAPPING: Record<string, string> = {
@@ -116,13 +118,28 @@ export const useAemetAlerts = () => {
                 }
             }
 
+            let onset: string | undefined;
+            let expires: string | undefined;
+
+            const onsetMatch = description.match(/de\s+(\d{2}):(\d{2})/);
+            if (onsetMatch) {
+                onset = `${onsetMatch[1]}:${onsetMatch[2]}`;
+            }
+
+            const expiresMatch = description.match(/a\s+(\d{2}):(\d{2})/);
+            if (expiresMatch) {
+                expires = `${expiresMatch[1]}:${expiresMatch[2]}`;
+            }
+
             parsedAlerts.push({
                 level,
                 phenomenon,
                 zone,
                 description,
                 link,
-                date: alertDate
+                date: alertDate,
+                onset,
+                expires
             });
         });
 
@@ -137,13 +154,12 @@ export const useAemetAlerts = () => {
     });
 
 
-    const getAlertForEvent = (municipio: string, date: string) => {
+    const getAlertForEvent = (municipio: string, date: string, hora?: string) => {
         if (!municipio || !date) return undefined;
 
-        // 1. Normalizar fecha del evento (YYYY-MM-DD)
         const eventDate = date.split('T')[0].trim();
+        const eventTime = hora ? hora.trim() : null;
 
-        // 2. Normalizar municipio del evento
         const munSearch = municipio.toLowerCase();
 
         let eventZone = "";
@@ -155,17 +171,30 @@ export const useAemetAlerts = () => {
         }
 
         if (!eventZone) {
-            // console.log(`[AEMET] ❌ No se encontró zona para: ${municipio}`);
             return undefined;
         }
 
-        // 3. Buscar coincidencia exacta
         const found = alerts.find(a => {
             const alertZone = a.zone.trim();
             const alertDate = a.date.trim();
             const zoneMatch = (alertZone === eventZone || alertZone === "Cumbres");
             const dateMatch = (alertDate === eventDate);
-            return zoneMatch && dateMatch;
+
+            if (!zoneMatch || !dateMatch) return false;
+
+            if (!eventTime || !a.onset) {
+                console.log(`[AEMET] Showing alert (no time check): eventTime=${eventTime}, onset=${a.onset}`);
+                return true;
+            }
+
+            const eventMinutes = parseInt(eventTime.split(':')[0]) * 60 + parseInt(eventTime.split(':')[1]);
+            const onsetMinutes = parseInt(a.onset.split(':')[0]) * 60 + parseInt(a.onset.split(':')[1]);
+            const expiresMinutes = a.expires ? parseInt(a.expires.split(':')[0]) * 60 + parseInt(a.expires.split(':')[1]) : 24 * 60;
+
+            const inRange = eventMinutes >= onsetMinutes && eventMinutes <= expiresMinutes;
+            console.log(`[AEMET] Time check: event=${eventTime}(${eventMinutes}) onset=${a.onset}(${onsetMinutes}) expires=${a.expires || '23:59'}(${expiresMinutes}) inRange=${inRange}`);
+
+            return inRange;
         });
 
         return found;
