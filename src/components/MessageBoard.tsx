@@ -264,14 +264,14 @@ const MessageBoard: React.FC = () => {
         <div className="w-full mt-0 mb-0 animate-in fade-in slide-in-from-bottom-4 duration-1000">
             <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white shadow-2xl overflow-hidden">
                 {/* Header - Centered */}
-                <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6 md:p-10 border-b border-white/10">
-                    <div className="max-w-7xl mx-auto flex flex-col items-center justify-center text-center gap-6">
-                        <div className="flex flex-col items-center gap-4">
-                            <div className="p-4 bg-white/20 backdrop-blur-md rounded-2xl shadow-xl border border-white/20 transform hover:rotate-12 transition-transform duration-500">
-                                <MessageSquare className="w-10 h-10 text-white" />
+                <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4 md:p-6 border-b border-white/10">
+                    <div className="max-w-7xl mx-auto flex flex-col items-center justify-center text-center gap-4">
+                        <div className="flex flex-col items-center gap-3">
+                            <div className="p-3 bg-white/20 backdrop-blur-md rounded-2xl shadow-xl border border-white/20 transform hover:rotate-12 transition-transform duration-500">
+                                <MessageSquare className="w-8 h-8 text-white" />
                             </div>
                             <div>
-                                <h3 className="text-3xl md:text-5xl font-black tracking-tighter text-white drop-shadow-2xl uppercase italic">
+                                <h3 className="text-2xl md:text-3xl font-black tracking-tighter text-white drop-shadow-2xl uppercase italic">
                                     Muro de Mensajes
                                 </h3>
                                 <div className="mt-2 flex items-center justify-center gap-2">
@@ -291,7 +291,7 @@ const MessageBoard: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="max-w-7xl mx-auto p-6 md:p-10">
+                <div className="max-w-7xl mx-auto p-4 md:p-6">
                     <div className="grid lg:grid-cols-5 gap-0 lg:gap-10">
                         {/* Messages List */}
                         <div className="lg:col-span-3 space-y-4">
@@ -299,7 +299,7 @@ const MessageBoard: React.FC = () => {
                                 <span className="w-8 h-px bg-blue-400/30"></span>
                                 Mensajes Recientes
                             </h4>
-                            <div className="max-h-[500px] min-h-[200px] overflow-y-auto pr-4 custom-scrollbar space-y-4">
+                            <div className="max-h-[400px] min-h-[200px] overflow-y-auto pr-4 custom-scrollbar space-y-4">
                                 {loading ? (
                                     <div className="flex flex-col items-center justify-center h-48 space-y-4">
                                         <RefreshCw className="w-10 h-10 text-blue-500 animate-spin" />
