@@ -114,7 +114,7 @@ const SocialMedia: React.FC = () => {
   return (
     <div className="space-y-8">
             <p className="bg-purple-900/30 border-l-4 border-purple-500 p-4 italic">
-              <strong className="text-purple-300">Nota importante:</strong> A partir del 2 de marzo de 2026, se cierran todas las redes sociales (Instagram, TikTok, WhatsApp, Facebook, Telegram) por falta de rentabilidad. La única fuente de información será esta web para seguir compartiendo las mejores verbenas de Tenerife.
+              <strong className="text-purple-300">Nota importante:</strong> A partir del 2 de marzo de 2026, se cierran todas las redes sociales (Instagram, TikTok, WhatsApp, Facebook, Telegram). Todo tiene su final. La única fuente de información será esta web para seguir compartiendo las mejores verbenas de Tenerife.
             </p>
       <div className="biography-section relative overflow-hidden rounded-2xl shadow-2xl">
         {/* Fondo estilo papiro con colores de la página (grises oscuros, púrpuras) */}
