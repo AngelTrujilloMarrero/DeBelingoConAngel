@@ -264,42 +264,37 @@ const MessageBoard: React.FC = () => {
         <div className="w-full mt-0 mb-0 animate-in fade-in slide-in-from-bottom-4 duration-1000">
             <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white shadow-2xl overflow-hidden">
                 {/* Header - Centered */}
-                <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-4 md:p-6 border-b border-white/10">
-                    <div className="max-w-7xl mx-auto flex flex-col items-center justify-center text-center gap-4">
-                        <div className="flex flex-col items-center gap-3">
-                            <div className="p-3 bg-white/20 backdrop-blur-md rounded-2xl shadow-xl border border-white/20 transform hover:rotate-12 transition-transform duration-500">
-                                <MessageSquare className="w-8 h-8 text-white" />
+                <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-2 md:p-3 border-b border-white/10">
+                    <div className="max-w-7xl mx-auto flex flex-col items-center justify-center text-center gap-2">
+                        <div className="flex flex-col items-center gap-2">
+                            <div className="p-2 bg-white/20 backdrop-blur-md rounded-xl shadow-xl border border-white/20">
+                                <MessageSquare className="w-5 h-5 text-white" />
                             </div>
                             <div>
-                                <h3 className="text-2xl md:text-3xl font-black tracking-tighter text-white drop-shadow-2xl uppercase italic">
+                                <h3 className="text-xl md:text-2xl font-black tracking-tighter text-white drop-shadow-2xl uppercase italic">
                                     Muro de Mensajes
                                 </h3>
-                                <div className="mt-2 flex items-center justify-center gap-2">
-                                    <div className="h-px w-8 bg-blue-300/50"></div>
-                                    <p className="text-blue-100/90 font-bold uppercase tracking-[0.2em] text-xs">Comunidad Verbenera</p>
-                                    <div className="h-px w-8 bg-blue-300/50"></div>
-                                </div>
                             </div>
                         </div>
 
-                        <div className="bg-black/30 backdrop-blur-md px-6 py-2 rounded-full border border-white/10 flex items-center gap-3 shadow-lg">
-                            <span className={`h-2.5 w-2.5 rounded-full ${dailyLimitReached ? 'bg-red-500 animate-pulse' : 'bg-green-500 shadow-[0_0_12px_rgba(34,197,94,0.6)]'}`}></span>
-                            <span className={`text-xs font-black tracking-widest uppercase ${dailyLimitReached ? 'text-red-300' : 'text-green-300'}`}>
+                        <div className="bg-black/30 backdrop-blur-md px-4 py-1 rounded-full border border-white/10 flex items-center gap-2 shadow-lg">
+                            <span className={`h-2 w-2 rounded-full ${dailyLimitReached ? 'bg-red-500 animate-pulse' : 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]'}`}></span>
+                            <span className={`text-[10px] font-black tracking-widest uppercase ${dailyLimitReached ? 'text-red-300' : 'text-green-300'}`}>
                                 {dailyLimitReached ? 'Límite alcanzado' : 'Muro Abierto'}
                             </span>
                         </div>
                     </div>
                 </div>
 
-                <div className="max-w-7xl mx-auto p-4 md:p-6">
-                    <div className="grid lg:grid-cols-5 gap-0 lg:gap-10">
+                <div className="max-w-7xl mx-auto p-3 md:p-4">
+                    <div className="grid lg:grid-cols-5 gap-0 lg:gap-6">
                         {/* Messages List */}
-                        <div className="lg:col-span-3 space-y-4">
-                            <h4 className="text-xs font-bold text-blue-400 uppercase tracking-[0.2em] mb-3 flex items-center gap-2">
+                        <div className="lg:col-span-3 space-y-3">
+                            <h4 className="text-xs font-bold text-blue-400 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
                                 <span className="w-8 h-px bg-blue-400/30"></span>
                                 Mensajes Recientes
                             </h4>
-                            <div className="max-h-[400px] min-h-[200px] overflow-y-auto pr-4 custom-scrollbar space-y-4">
+                            <div className="max-h-[300px] min-h-[150px] overflow-y-auto pr-2 custom-scrollbar space-y-3">
                                 {loading ? (
                                     <div className="flex flex-col items-center justify-center h-48 space-y-4">
                                         <RefreshCw className="w-10 h-10 text-blue-500 animate-spin" />
@@ -328,7 +323,7 @@ const MessageBoard: React.FC = () => {
                                                                 </span>
                                                             )}
                                                         </div>
-                                                        <div className="bg-gradient-to-r from-gray-800/80 to-gray-700/80 backdrop-blur-sm rounded-2xl rounded-tl-none p-5 border border-gray-600/30 group-hover/msg:border-blue-500/40 transition-all duration-300 shadow-lg hover:shadow-blue-900/10">
+                                                        <div className="bg-gradient-to-r from-gray-800/80 to-gray-700/80 backdrop-blur-sm rounded-2xl rounded-tl-none p-3 border border-gray-600/30 group-hover/msg:border-blue-500/40 transition-all duration-300 shadow-lg hover:shadow-blue-900/10">
                                                             <p className="text-gray-200 leading-relaxed font-medium">{mainMsg.text}</p>
                                                             
                                                             {/* Mostrar imagen si existe */}
