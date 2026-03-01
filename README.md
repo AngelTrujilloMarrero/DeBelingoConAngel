@@ -11,7 +11,6 @@ Una plataforma digital que centraliza información sobre verbenas, conciertos y 
 - 🎵 Explorar formaciones y orquestas de Tenerife con información detallada
 - 📊 Análisis estadístico de orquestas y eventos con rankings
 - 📱 Seguir redes sociales con métricas en tiempo real
-- 📝 Leer artículos y noticias en el blog integrado
 - 💬 Comentarios y participación comunitaria
 - 🌤️ Información meteorológica con alertas AEMET
 
@@ -62,13 +61,6 @@ Una plataforma digital que centraliza información sobre verbenas, conciertos y 
 - Integración con Instagram y WhatsApp 
 - Actualizaciones automáticas de métricas
 - Contenido dinámico de la comunidad
-
-### 📝 Blog Integrado
-- Artículos sobre verbenas y eventos
-- Noticias y actualizaciones culturales
-- Alojado en Hashnode
-- Integración fluida con la plataforma
-- Visualización optimizada de contenido
 
 ### 💬 Comunidad
 - Tablero de mensajes y comentarios
@@ -284,13 +276,10 @@ src/
 │   ├── EstadisticasPage.tsx # Estadísticas y análisis
 │   ├── FormacionesPage.tsx # Información de orquestas
 │   ├── RedesPage.tsx   # Redes sociales
-│   ├── BlogPage.tsx    # Blog integrado
 │   └── ...
 ├── hooks/              # Hooks personalizados
 │   ├── useEvents.ts    # Gestión de eventos
-│   ├── useAemetAlerts.ts # Alertas meteorológicas
-│   ├── useHashnode.ts  # Integración con blog
-│   └── ...
+│   └── useAemetAlerts.ts # Alertas meteorológicas
 ├── utils/              # Utilidades
 │   ├── firebase.ts     # Configuración Firebase
 │   ├── geocoding.ts    # Utilidades de geolocalización
@@ -365,7 +354,6 @@ Este proyecto está licenciado bajo la [MIT License](./LICENSE).
 
 - **Proyecto**: De Belingo Con Ángel - Verbenas en Tenerife
 - **Web**: [https://debelingoconangel.web.app]
-- **Blog**: [https://de-belingo-con-angel.hashnode.dev](https://de-belingo-con-angel.hashnode.dev)
 - **Issues**: [GitHub Issues]
 
 ---

@@ -25,7 +25,6 @@ const Navigation: React.FC = () => {
           <NavLink to="/mapa" className={navLinkClass}>Mapa</NavLink>
           <NavLink to="/estadisticas" className={navLinkClass}>Estadísticas</NavLink>
           <NavLink to="/formaciones" className={navLinkClass}>Formaciones</NavLink>
-          <NavLink to="/blog" className={navLinkClass}>Blog</NavLink>
           <NavLink to="/redes" className={navLinkClass}>Redes&Bio</NavLink>
         </div>
       </div>

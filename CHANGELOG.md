@@ -29,13 +29,6 @@ El formato se basa en [Keep a Changelog](https://keepachangelog.com/es-ES/1.0.0/
   - Función "¿Dónde estás?" para localización del usuario
   - Cálculo de distancias y eventos cercanos
 
-- **📝 Blog integrado**: Inclusión de blog funcional alojado en Hashnode
-  - Página de blog accesible desde navegación principal
-  - Componente BlogPost para visualización individual de artículos
-  - Hook personalizado useHashnode para integración con API
-  - Contenido dinámico con noticias sobre verbenas y eventos
-  - Sistema de navegación entre artículos
-
 - **🌤️ Mejoras en Alertas Meteorológicas**
   - Integración completa con API de AEMET
   - Alertas por zonas de Tenerife (Norte, Sur, Metropolitana, Cumbres)
