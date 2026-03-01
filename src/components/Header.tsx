@@ -1,5 +1,4 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Instagram, MessageCircle } from 'lucide-react';
 import Navigation from './Navigation';
 
 const Header: React.FC = () => {
@@ -65,33 +64,7 @@ const Header: React.FC = () => {
       <div className={`relative container mx-auto px-4 text-center flex flex-col items-center justify-center z-10 transition-all duration-500 ease-in-out ${isScrolled ? 'gap-0 py-1' : 'py-1 lg:py-2 gap-1'}`}
         style={{ overflow: 'visible' }}
       >
-        {/* Top section with Logo and Social Icons */}
-        <div className={`flex flex-col items-center justify-center w-full relative transition-all duration-500 ease-in-out ${isScrolled ? 'max-h-0 opacity-0 pointer-events-none mb-0 overflow-hidden' : 'max-h-16 opacity-100 mb-0 overflow-visible'}`}>
-          <div className="flex items-center gap-2 sm:gap-3 md:gap-4 transition-all duration-500">
-            {/* Instagram Icon - Left */}
-            <div className="flex items-center">
-              <a href="https://www.instagram.com/debelingoconangel/" target="_blank" rel="noopener noreferrer" className="w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-pink-500 to-purple-600 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110">
-                <Instagram className="w-4 h-4 sm:w-4.5 sm:h-4.5 lg:w-6 lg:h-6 text-white" />
-              </a>
-            </div>
 
-            {/* TikTok Logo - Center */}
-            <div className="flex items-center">
-              <a href="https://www.tiktok.com/@debelingoconangel" target="_blank" rel="noopener noreferrer" className="w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-black rounded-lg flex items-center justify-center shadow-lg transition-transform hover:scale-110 border border-white/40">
-                <svg viewBox="0 0 24 24" fill="white" className="w-4 h-4 sm:w-4.5 sm:h-4.5 lg:w-6 lg:h-6">
-                  <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z"/>
-                </svg>
-              </a>
-            </div>
-
-            {/* WhatsApp Icon - Right */}
-            <div className="flex items-center">
-              <a href="https://www.whatsapp.com/channel/0029Va8nc2A77qVZokI0aC2K" target="_blank" rel="noopener noreferrer" className="w-7 h-7 sm:w-8 sm:h-8 lg:w-10 lg:h-10 bg-gradient-to-br from-green-400 to-green-600 rounded-full flex items-center justify-center shadow-lg transition-transform hover:scale-110">
-                <MessageCircle className="w-4 h-4 sm:w-4.5 sm:h-4.5 lg:w-6 lg:h-6 text-white" />
-              </a>
-            </div>
-          </div>
-        </div>
 
         {/* Group Title */}
         <div className={`w-full flex flex-col items-center transition-all duration-500 ease-in-out ${isScrolled ? 'max-h-0 opacity-0 pointer-events-none mb-0 overflow-hidden' : 'max-h-16 opacity-100 mb-0 overflow-visible'}`}>

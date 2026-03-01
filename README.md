@@ -10,7 +10,6 @@ Una plataforma digital que centraliza información sobre verbenas, conciertos y 
 - 🗺️ Visualizar eventos en mapa interactivo con transporte público TITSA
 - 🎵 Explorar formaciones y orquestas de Tenerife con información detallada
 - 📊 Análisis estadístico de orquestas y eventos con rankings
-- 📱 Seguir redes sociales con métricas en tiempo real
 - 💬 Comentarios y participación comunitaria
 - 🌤️ Información meteorológica con alertas AEMET
 
@@ -55,12 +54,9 @@ Una plataforma digital que centraliza información sobre verbenas, conciertos y 
 - Búsqueda y filtrado avanzado
 - Estadísticas de eventos por formación
 
-### 📱 Redes Sociales
-- Enlaces a redes sociales oficiales
-- Contador de seguidores en tiempo real
-- Integración con Instagram y WhatsApp 
-- Actualizaciones automáticas de métricas
-- Contenido dinámico de la comunidad
+### 💬 Biografía
+- Historia de De Belingo Con Ángel
+- Información sobre el proyecto y su evolución
 
 ### 💬 Comunidad
 - Tablero de mensajes y comentarios
@@ -275,7 +271,7 @@ src/
 │   ├── MapaPage.tsx    # Página del mapa con TITSA
 │   ├── EstadisticasPage.tsx # Estadísticas y análisis
 │   ├── FormacionesPage.tsx # Información de orquestas
-│   ├── RedesPage.tsx   # Redes sociales
+│   ├── RedesPage.tsx   # Biografía
 │   └── ...
 ├── hooks/              # Hooks personalizados
 │   ├── useEvents.ts    # Gestión de eventos
