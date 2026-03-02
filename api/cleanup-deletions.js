@@ -1,11 +1,21 @@
 import admin from 'firebase-admin';
 
 if (!admin.apps.length) {
+    let privateKey = process.env.FIREBASE_PRIVATE_KEY;
+    if (privateKey) {
+        // Si la clave viene envuelta en comillas dobles innecesarias por error de pegado
+        if (privateKey.startsWith('"') && privateKey.endsWith('"')) {
+            privateKey = privateKey.substring(1, privateKey.length - 1);
+        }
+        // Reemplazar saltos de línea de texto por reales
+        privateKey = privateKey.replace(/\\n/g, '\n');
+    }
+
     admin.initializeApp({
         credential: admin.credential.cert({
             projectId: process.env.FIREBASE_PROJECT_ID,
             clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-            privateKey: process.env.FIREBASE_PRIVATE_KEY ? process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n') : undefined,
+            privateKey: privateKey,
         }),
         databaseURL: process.env.FIREBASE_DATABASE_URL || 'https://debelingoconangel-default-rtdb.europe-west1.firebasedatabase.app'
     });
