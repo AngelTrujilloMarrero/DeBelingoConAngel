@@ -63,5 +63,11 @@
       "destination": "https://debelingoconangel.web.app/$1",
       "permanent": true
     }
+  ],
+  "crons": [
+    {
+      "path": "/api/cleanup-deletions",
+      "schedule": "0 0 * * *"
+    }
   ]
 }

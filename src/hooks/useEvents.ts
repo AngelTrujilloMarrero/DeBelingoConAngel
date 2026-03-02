@@ -80,6 +80,8 @@ export function useEvents() {
   const [loading, setLoading] = useState(true);
 
   const deletionsRef = useRef<RecentActivityItem[]>([]);
+  const allEventsRef = useRef<Event[]>([]);
+
 
   const currentYear = new Date().getFullYear();
   const previousYear = currentYear - 1;
@@ -95,92 +97,6 @@ export function useEvents() {
   useEffect(() => {
     let unsubscribeEvents: (() => void) | null = null;
     let unsubscribeDeletions: (() => void) | null = null;
-
-    const setupEventListeners = async () => {
-      setLoading(true);
-
-      if (!historicalData) {
-        const stats = await getCachedHistoricalStats();
-        historicalData = stats as {
-          years: any;
-          events: Event[];
-        };
-      }
-
-      unsubscribeEvents = onValue(eventsRef, (snapshot) => {
-        const data = snapshot.val();
-        const loadedEvents: Event[] = [];
-        const allEvents: Event[] = [];
-
-        if (data) {
-          Object.entries(data).forEach(([key, value]: [string, any]) => {
-            const event: Event = { id: key, ...value };
-            const eventYear = new Date(event.day).getFullYear();
-
-            const eventMonth = new Date(event.day).getMonth();
-            const isCurrentOrFuture = eventYear >= currentYear;
-            const isPrevYearAndNoArchive = !hasArchivedEvents && eventYear === previousYear;
-            const isPrevYearDecember = eventYear === previousYear && eventMonth === 11;
-
-            if (isCurrentOrFuture || isPrevYearAndNoArchive || isPrevYearDecember) {
-              allEvents.push(event);
-              if (!event.cancelado) {
-                loadedEvents.push(event);
-              }
-            }
-          });
-        }
-
-        const combinedEvents = [...historicalData.events, ...archivedEvents, ...loadedEvents];
-        const uniqueEventsMap = new Map();
-        combinedEvents.forEach(event => {
-          if (event && event.id) {
-            uniqueEventsMap.set(event.id, event);
-          }
-        });
-
-        setEvents(Array.from(uniqueEventsMap.values()));
-
-        updateActivityLocally(allEvents, deletionsRef.current, previousYear);
-      });
-
-      // 3. Escuchar eliminaciones de Firebase
-      unsubscribeDeletions = onValue(eventDeletionsRef, (snapshot) => {
-        const deletions: RecentActivityItem[] = [];
-        const data = snapshot.val();
-
-        if (data) {
-          Object.entries(data).forEach(([key, value]: [string, any]) => {
-            const deletion = value as {
-              eventId: string;
-              deletedBy: string;
-              deletedAt: string;
-              eventData: Event;
-            };
-
-            const deletionDate = new Date(deletion.deletedAt);
-            const fourHundredDaysAgo = new Date();
-            fourHundredDaysAgo.setDate(fourHundredDaysAgo.getDate() - 400);
-
-            if (deletionDate >= fourHundredDaysAgo) {
-              const eventYear = new Date(deletion.eventData.day).getFullYear();
-              // Solo considerar eliminaciones del año actual o anterior (para mostrar actividad relevante)
-              if (eventYear >= previousYear) {
-                deletions.push({
-                  type: 'delete',
-                  event: {
-                    ...deletion.eventData,
-                    FechaEditado: deletion.deletedAt
-                  }
-                });
-              }
-            }
-          });
-        }
-
-        deletionsRef.current = deletions;
-      });
-    };
 
     const updateActivityLocally = (allEvents: Event[], currentDeletions: RecentActivityItem[], thresholdYear: number) => {
       const currentActivity: RecentActivityItem[] = allEvents
@@ -249,6 +165,94 @@ export function useEvents() {
 
       setRecentActivity(sortedActivity);
       setLoading(false);
+    };
+
+    const setupEventListeners = async () => {
+      setLoading(true);
+
+      if (!historicalData) {
+        const stats = await getCachedHistoricalStats();
+        historicalData = stats as {
+          years: any;
+          events: Event[];
+        };
+      }
+
+      unsubscribeEvents = onValue(eventsRef, (snapshot) => {
+        const data = snapshot.val();
+        const loadedEvents: Event[] = [];
+        const allEvents: Event[] = [];
+
+        if (data) {
+          Object.entries(data).forEach(([key, value]: [string, any]) => {
+            const event: Event = { id: key, ...value };
+            const eventYear = new Date(event.day).getFullYear();
+
+            const eventMonth = new Date(event.day).getMonth();
+            const isCurrentOrFuture = eventYear >= currentYear;
+            const isPrevYearAndNoArchive = !hasArchivedEvents && eventYear === previousYear;
+            const isPrevYearDecember = eventYear === previousYear && eventMonth === 11;
+
+            if (isCurrentOrFuture || isPrevYearAndNoArchive || isPrevYearDecember) {
+              allEvents.push(event);
+              if (!event.cancelado) {
+                loadedEvents.push(event);
+              }
+            }
+          });
+        }
+
+        const combinedEvents = [...historicalData.events, ...archivedEvents, ...loadedEvents];
+        const uniqueEventsMap = new Map();
+        combinedEvents.forEach(event => {
+          if (event && event.id) {
+            uniqueEventsMap.set(event.id, event);
+          }
+        });
+
+        setEvents(Array.from(uniqueEventsMap.values()));
+
+        allEventsRef.current = allEvents;
+        updateActivityLocally(allEventsRef.current, deletionsRef.current, previousYear);
+      });
+
+      // 3. Escuchar eliminaciones de Firebase
+      unsubscribeDeletions = onValue(eventDeletionsRef, (snapshot) => {
+        const deletions: RecentActivityItem[] = [];
+        const data = snapshot.val();
+
+        if (data) {
+          Object.entries(data).forEach(([key, value]: [string, any]) => {
+            const deletion = value as {
+              eventId: string;
+              deletedBy: string;
+              deletedAt: string;
+              eventData: Event;
+            };
+
+            const deletionDate = new Date(deletion.deletedAt);
+            const fourHundredDaysAgo = new Date();
+            fourHundredDaysAgo.setDate(fourHundredDaysAgo.getDate() - 400);
+
+            if (deletionDate >= fourHundredDaysAgo) {
+              const eventYear = new Date(deletion.eventData.day).getFullYear();
+              // Solo considerar eliminaciones del año actual o anterior (para mostrar actividad relevante)
+              if (eventYear >= previousYear) {
+                deletions.push({
+                  type: 'delete',
+                  event: {
+                    ...deletion.eventData,
+                    FechaEditado: deletion.deletedAt
+                  }
+                });
+              }
+            }
+          });
+        }
+
+        deletionsRef.current = deletions;
+        updateActivityLocally(allEventsRef.current, deletionsRef.current, previousYear);
+      });
     };
 
     setupEventListeners();

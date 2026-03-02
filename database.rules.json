@@ -23,6 +23,17 @@
       ".read": true,
       ".write": "auth != null && (auth.uid == 'nC4NMCMC7Gha7QH5en25xNQDtLp1' || auth.uid == 'JIdFCV7ppmXAltAajzBdTzI2qYE3')"
     },
+    "events": {
+      ".read": true,
+      ".write": "auth != null && (auth.uid == 'nC4NMCMC7Gha7QH5en25xNQDtLp1' || auth.uid == 'JIdFCV7ppmXAltAajzBdTzI2qYE3')"
+    },
+    "eventDeletions": {
+      ".read": true,
+      ".write": "auth != null && (auth.uid == 'nC4NMCMC7Gha7QH5en25xNQDtLp1' || auth.uid == 'JIdFCV7ppmXAltAajzBdTzI2qYE3')",
+      ".indexOn": [
+        "deletedAt"
+      ]
+    },
     "guestbook": {
       "messages": {
         ".read": true,
