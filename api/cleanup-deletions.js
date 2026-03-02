@@ -4,27 +4,24 @@ if (!admin.apps.length) {
     let privateKey = process.env.FIREBASE_PRIVATE_KEY;
     if (privateKey) {
         // Eliminar comillas accidentales y normalizar saltos de línea
-        privateKey = privateKey.replace(/^"|"$/g, ''); // Quita comillas al principio y al final
-        privateKey = privateKey.replace(/\\n/g, '\n'); // Convierte \n de texto a saltos reales
+        privateKey = privateKey.replace(/^"|"$/g, '');
+        privateKey = privateKey.replace(/\\n/g, '\n');
 
-        // Si por algún motivo los saltos de línea reales se perdieron al pegar en Vercel,
-        // pero la clave no tiene los \n escritos, Firebase fallará. 
-        // Este código asegura que el encabezado y pie tengan su salto de línea.
+        // Asegurar saltos de línea en el encabezado y pie si no existen
         if (!privateKey.includes('\n')) {
             privateKey = privateKey.replace('-----BEGIN PRIVATE KEY-----', '-----BEGIN PRIVATE KEY-----\n');
             privateKey = privateKey.replace('-----END PRIVATE KEY-----', '\n-----END PRIVATE KEY-----');
         }
     }
-}
 
-admin.initializeApp({
-    credential: admin.credential.cert({
-        projectId: process.env.FIREBASE_PROJECT_ID,
-        clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-        privateKey: privateKey,
-    }),
-    databaseURL: process.env.FIREBASE_DATABASE_URL || 'https://debelingoconangel-default-rtdb.europe-west1.firebasedatabase.app'
-});
+    admin.initializeApp({
+        credential: admin.credential.cert({
+            projectId: process.env.FIREBASE_PROJECT_ID,
+            clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
+            privateKey: privateKey,
+        }),
+        databaseURL: process.env.FIREBASE_DATABASE_URL || 'https://debelingoconangel-default-rtdb.europe-west1.firebasedatabase.app'
+    });
 }
 
 const db = admin.database();
@@ -34,13 +31,8 @@ const db = admin.database();
  * Borra registros con más de 400 días de antigüedad.
  */
 export default async function handler(req, res) {
-    // Opcional: Validar que la petición venga de Vercel Cron
-    // En producción Vercel añade la cabecera 'x-vercel-cron': '1'
-
     try {
         const deletionsRef = db.ref('eventDeletions');
-        // Para eficiencia con muchos datos, podríamos usar query de Firebase, 
-        // pero eventDeletions no suele ser masivo comparado con otros nodos.
         const snapshot = await deletionsRef.once('value');
         const data = snapshot.val() || {};
 
