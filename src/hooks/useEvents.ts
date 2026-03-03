@@ -161,7 +161,7 @@ export function useEvents() {
           const dateB = new Date(b.event.FechaEditado || b.event.FechaAgregado || 0).getTime();
           return dateB - dateA;
         })
-        .slice(0, 5);
+        .slice(0, 50);
 
       setRecentActivity(sortedActivity);
       setLoading(false);

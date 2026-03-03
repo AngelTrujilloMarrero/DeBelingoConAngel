@@ -25,6 +25,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
   const [endDate, setEndDate] = useState('');
   const [expandedEventIds, setExpandedEventIds] = useState<string[]>([]);
   const [dbOrchestras, setDbOrchestras] = useState<Record<string, any>>({});
+  const [visibleMovimientos, setVisibleMovimientos] = useState(5);
   const { alerts: aemetAlerts, getAlertForEvent } = useAemetAlerts();
 
   // Log para confirmar que EventsList detecta cuando las alertas cambian
@@ -348,7 +349,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                 Últimos movimientos
               </h4>
               <div className="space-y-2">
-                {recentActivity.map((item) => (
+                {recentActivity.slice(0, visibleMovimientos).map((item) => (
                   <div key={item.event.id} className="flex items-center gap-3 text-sm bg-gray-800/50 p-2 rounded border border-gray-700/50">
                     <div className={`p-1.5 rounded-full ${item.type === 'add' ? 'bg-green-500/20 text-green-400' :
                       item.type === 'edit' ? 'bg-blue-500/20 text-blue-400' :
@@ -382,6 +383,18 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                     </div>
                   </div>
                 ))}
+                {visibleMovimientos < recentActivity.length ? (
+                  <button
+                    onClick={() => {
+                      console.log('Click en Ver más, actual:', visibleMovimientos, 'total:', recentActivity.length);
+                      setVisibleMovimientos(prev => Math.min(prev + 5, recentActivity.length));
+                    }}
+                    className="w-full mt-2 py-2 text-sm text-gray-400 hover:text-white bg-gray-700/50 hover:bg-gray-600/50 rounded border border-gray-600/50 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <ChevronDown className="w-4 h-4" />
+                    Ver más ({recentActivity.length - visibleMovimientos} restantes)
+                  </button>
+                ) : null}
               </div>
             </div>
           )
