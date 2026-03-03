@@ -68,6 +68,10 @@
     {
       "path": "/api/cleanup-deletions",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cleanup-messages",
+      "schedule": "0 0 * * *"
     }
   ]
 }
