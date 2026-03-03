@@ -331,10 +331,12 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
           />
         </div>
 
-        <div className="relative z-10 text-center text-green-400 font-bold text-sm">
+        <div className="relative z-10 text-center font-bold text-sm">
           <div className="flex items-center justify-center gap-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full shadow-[0_0_8px_rgba(74,222,128,0.5)]"></div>
-            Última actualización: {lastUpdate}
+            <Clock className="w-3.5 h-3.5 text-orange-400 animate-pulse" style={{ filter: 'drop-shadow(0 0 6px rgba(249,115,22,0.8))' }} />
+            <span className="text-orange-400" style={{ textShadow: '0 0 10px rgba(249,115,22,0.6), 0 0 20px rgba(249,115,22,0.4)' }}>
+              Última actualización: {lastUpdate}
+            </span>
           </div>
         </div>
 

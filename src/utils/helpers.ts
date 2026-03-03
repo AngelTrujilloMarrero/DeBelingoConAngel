@@ -28,7 +28,9 @@ export function getLastUpdateDate(events: Event[], recentActivity: RecentActivit
     }
   });
 
-  return lastUpdateDate ? lastUpdateDate.toLocaleString('es-ES') : 'N/A';
+  return lastUpdateDate 
+    ? `${lastUpdateDate.toLocaleDateString('es-ES')} a las ${lastUpdateDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}H`
+    : 'N/A';
 }
 
 
