@@ -107,7 +107,14 @@ export function useEvents() {
             type = 'delete';
           } else if (event.reAgregado) {
             type = 'reagregado';
-          } else if (event.FechaAgregado === event.FechaEditado) {
+          } else if (event.FechaAgregado && event.FechaEditado) {
+            const timeA = new Date(event.FechaAgregado).getTime();
+            const timeE = new Date(event.FechaEditado).getTime();
+            // Si la diferencia es menor a 2 segundos, consideramos que es un "Añadido" (no editado)
+            if (Math.abs(timeA - timeE) < 2000) {
+              type = 'add';
+            }
+          } else if (event.FechaAgregado && !event.FechaEditado) {
             type = 'add';
           }
           return { type, event };
