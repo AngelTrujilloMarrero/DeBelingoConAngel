@@ -118,16 +118,16 @@ export function useEvents() {
         const result: RecentActivityItem[] = [];
 
         current.forEach(activity => {
-          if (activity.type === 'add') {
+          if (activity.type === 'add' || activity.type === 'edit') {
             const similarDeletionIndex = filteredDeletions.findIndex(deletion =>
               areSimilarEvents(activity.event, deletion.event) &&
-              isWithinTimeWindow(activity.event.FechaAgregado || '', deletion.event.FechaEditado || '')
+              isWithinTimeWindow(activity.event.FechaEditado || '', deletion.event.FechaEditado || '')
             );
 
             if (similarDeletionIndex !== -1) {
               const similarDeletion = filteredDeletions[similarDeletionIndex];
               result.push({
-                type: 'reagregado',  // Nuevo tipo para re-agregados
+                type: 'reagregado',
                 event: {
                   ...activity.event,
                   FechaEditado: similarDeletion.event.FechaEditado,
