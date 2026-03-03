@@ -231,10 +231,10 @@ export function useEvents() {
             };
 
             const deletionDate = new Date(deletion.deletedAt);
-            const fourHundredDaysAgo = new Date();
-            fourHundredDaysAgo.setDate(fourHundredDaysAgo.getDate() - 400);
+            const fortyDaysAgo = new Date();
+            fortyDaysAgo.setDate(fortyDaysAgo.getDate() - 40);
 
-            if (deletionDate >= fourHundredDaysAgo) {
+            if (deletionDate >= fortyDaysAgo) {
               const eventYear = new Date(deletion.eventData.day).getFullYear();
               // Solo considerar eliminaciones del año actual o anterior (para mostrar actividad relevante)
               if (eventYear >= previousYear) {

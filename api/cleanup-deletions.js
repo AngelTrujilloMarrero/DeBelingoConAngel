@@ -44,7 +44,7 @@ export default async function handler(req, res) {
 
         const data = snapshot.val() || {};
         const thresholdDate = new Date();
-        thresholdDate.setDate(thresholdDate.getDate() - 400);
+        thresholdDate.setDate(thresholdDate.getDate() - 40);
 
         const keysToDelete = Object.entries(data)
             .filter(([_, value]) => value.deletedAt && new Date(value.deletedAt) < thresholdDate)

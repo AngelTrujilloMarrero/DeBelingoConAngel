@@ -1,4 +1,4 @@
-import { Event } from '../types';
+import { Event, RecentActivityItem } from '../types';
 
 export function getRandomColor(): string {
   const letters = '0123456789ABCDEF';
@@ -9,20 +9,32 @@ export function getRandomColor(): string {
   return color;
 }
 
-export function getLastUpdateDate(events: Event[]): string {
+export function getLastUpdateDate(events: Event[], recentActivity: RecentActivityItem[] = []): string {
   let lastUpdateDate: Date | null = null;
+
+  // Revisar eventos actuales
   events.forEach(event => {
     const fechaEditado = new Date(event.FechaEditado || event.FechaAgregado || '');
     if (fechaEditado.toString() !== 'Invalid Date' && (!lastUpdateDate || fechaEditado > lastUpdateDate)) {
       lastUpdateDate = fechaEditado;
     }
   });
+
+  // Revisar actividad reciente (incluyendo eliminaciones)
+  recentActivity.forEach(item => {
+    const fecha = new Date(item.event.FechaEditado || item.event.FechaAgregado || '');
+    if (fecha.toString() !== 'Invalid Date' && (!lastUpdateDate || fecha > lastUpdateDate)) {
+      lastUpdateDate = fecha;
+    }
+  });
+
   return lastUpdateDate ? lastUpdateDate.toLocaleString('es-ES') : 'N/A';
 }
 
+
 export function groupEventsByDay(events: Event[]): { [key: string]: Event[] } {
   const eventsByDay: { [key: string]: Event[] } = {};
-  
+
   events.forEach(event => {
     const eventDate = new Date(event.day);
     const twoDaysAgo = new Date();
@@ -51,11 +63,11 @@ export function capitalizeFirstLetter(str: string): string {
 }
 
 export function formatDayName(date: Date): string {
-  const dayName = date.toLocaleDateString('es-ES', { 
-    weekday: 'long', 
-    day: 'numeric', 
-    month: 'long', 
-    year: 'numeric' 
+  const dayName = date.toLocaleDateString('es-ES', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric'
   });
   return capitalizeFirstLetter(dayName);
 }

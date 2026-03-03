@@ -79,9 +79,9 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
   const { eventsByDay, sortedEvents, lastUpdate } = useMemo(() => {
     const grouped = groupEventsByDay(events);
     const sorted = sortEventsByDateTime(events);
-    const update = getLastUpdateDate(sorted);
+    const update = getLastUpdateDate(sorted, recentActivity);
     return { eventsByDay: grouped, sortedEvents: sorted, lastUpdate: update };
-  }, [events]);
+  }, [events, recentActivity]);
 
   const toggleEvent = (id: string) => {
     setExpandedEventIds(prev =>
