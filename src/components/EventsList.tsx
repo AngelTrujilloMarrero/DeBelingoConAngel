@@ -394,6 +394,14 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                     <ChevronDown className="w-4 h-4" />
                     Ver más ({recentActivity.length - visibleMovimientos} restantes)
                   </button>
+                ) : visibleMovimientos > 5 ? (
+                  <button
+                    onClick={() => setVisibleMovimientos(5)}
+                    className="w-full mt-2 py-2 text-sm text-gray-400 hover:text-white bg-gray-700/50 hover:bg-gray-600/50 rounded border border-gray-600/50 transition-colors flex items-center justify-center gap-2"
+                  >
+                    <ChevronDown className="w-4 h-4 rotate-180" />
+                    Comprimir
+                  </button>
                 ) : null}
               </div>
             </div>
