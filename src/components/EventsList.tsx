@@ -382,12 +382,14 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                       </div>
                       {item.type === 'edit' && item.event.cambios && item.event.cambios.length > 0 && (
                         <div className="flex flex-wrap items-center gap-1 mt-1">
-                          <span className="text-blue-400/80 text-[10px] font-bold uppercase tracking-tight mr-0.5">Cambio de:</span>
+                          <span className="text-blue-400/80 text-[10px] font-bold uppercase tracking-tight mr-0.5">Cambios:</span>
                           {item.event.cambios.map((cambio) => {
                             const labels: Record<string, { label: string; color: string; icon: string }> = {
                               hora: { label: 'Hora', color: 'bg-amber-500/20 text-amber-300 border-amber-500/30', icon: '🕐' },
                               dia: { label: 'Día', color: 'bg-orange-500/20 text-orange-300 border-orange-500/30', icon: '📅' },
-                              orquestas: { label: 'Orquestas', color: 'bg-pink-500/20 text-pink-300 border-pink-500/30', icon: '🎵' },
+                              orquestas: { label: 'Formación', color: 'bg-pink-500/20 text-pink-300 border-pink-500/30', icon: '🎵' },
+                              orquesta_add: { label: 'Nueva orquesta', color: 'bg-green-500/20 text-green-300 border-green-500/30', icon: '➕' },
+                              orquesta_rem: { label: 'Orquesta quitada', color: 'bg-red-500/20 text-red-300 border-red-500/30', icon: '➖' },
                               lugar: { label: 'Lugar', color: 'bg-teal-500/20 text-teal-300 border-teal-500/30', icon: '📍' },
                               municipio: { label: 'Municipio', color: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30', icon: '🏘️' },
                               tipo: { label: 'Tipo', color: 'bg-violet-500/20 text-violet-300 border-violet-500/30', icon: '🏷️' },
