@@ -49,26 +49,41 @@ const EventosPage: React.FC<EventosPageProps> = ({ events, recentActivity }) => 
             const blob = dataURLtoBlob(generatedImage);
             const file = new File([blob], "verbenas_debelingo.png", { type: "image/png" });
 
-            if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-                await navigator.share({
-                    files: [file],
-                    title: 'Verbenas DeBelingo',
-                    text: '¡Mira las próximas verbenas!'
-                });
-            } else if (navigator.share) {
-                // Fallback para compartir solo texto/url si no deja archivos
-                await navigator.share({
-                    title: 'Verbenas DeBelingo',
-                    text: '¡Mira las próximas verbenas!',
-                    url: window.location.href
-                });
+            if (navigator.share) {
+                let sharedFile = false;
+                
+                // Intento 1: Compartir con archivo (falla en muchos embebidos)
+                try {
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        await navigator.share({
+                            files: [file],
+                            title: 'Verbenas DeBelingo',
+                            text: '¡Mira las próximas verbenas!'
+                        });
+                        sharedFile = true;
+                    }
+                } catch (e) {
+                    // Si el usuario cancela (AbortError), no hacemos fallback
+                    if ((e as Error).name === 'AbortError') return;
+                    console.warn("No se pudo compartir archivo, intentando texto:", e);
+                }
+
+                // Intento 2: Si falló compartir el archivo o canShare devolvió false, compartir URL
+                if (!sharedFile) {
+                    await navigator.share({
+                        title: 'Verbenas DeBelingo',
+                        text: '¡Mira las próximas verbenas!',
+                        url: window.location.href
+                    });
+                }
             } else {
-                alert("Tu navegador no soporta compartir directamente. Mantén pulsada la imagen para guardarla.");
+                alert("Tu navegador no soporta el botón de compartir. Usa 'Copiar Enlace' o mantén pulsada la imagen.");
             }
         } catch (error) {
-            console.error("Error sharing:", error);
-            if ((error as Error).name !== 'AbortError') {
-                alert("No se pudo compartir. Prueba manteniendo pulsada la imagen.");
+            console.error("Error sharing final:", error);
+            const errName = (error as Error).name;
+            if (errName !== 'AbortError') {
+                alert("Esta app bloquea el menú de compartir. Por favor, usa el botón 'Copiar Enlace'.");
             }
         }
     };
