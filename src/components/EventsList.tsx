@@ -381,7 +381,8 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                         {item.event.orquesta} - {new Date(item.event.day).toLocaleDateString('es-ES')}
                       </div>
                       {item.type === 'edit' && item.event.cambios && item.event.cambios.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1">
+                        <div className="flex flex-wrap items-center gap-1 mt-1">
+                          <span className="text-blue-400/80 text-[10px] font-bold uppercase tracking-tight mr-0.5">Cambio de:</span>
                           {item.event.cambios.map((cambio) => {
                             const labels: Record<string, { label: string; color: string; icon: string }> = {
                               hora: { label: 'Hora', color: 'bg-amber-500/20 text-amber-300 border-amber-500/30', icon: '🕐' },
