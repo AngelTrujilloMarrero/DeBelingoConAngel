@@ -13,6 +13,7 @@ export interface Event {
   originalEventId?: string;
   cancelTimestamp?: string;
   programa?: string;
+  cambios?: string[];
 }
 
 export interface OrquestaCount {

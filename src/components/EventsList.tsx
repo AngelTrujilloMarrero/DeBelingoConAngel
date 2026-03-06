@@ -380,6 +380,30 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                       <div className="text-gray-500 text-xs truncate">
                         {item.event.orquesta} - {new Date(item.event.day).toLocaleDateString('es-ES')}
                       </div>
+                      {item.type === 'edit' && item.event.cambios && item.event.cambios.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {item.event.cambios.map((cambio) => {
+                            const labels: Record<string, { label: string; color: string; icon: string }> = {
+                              hora: { label: 'Hora', color: 'bg-amber-500/20 text-amber-300 border-amber-500/30', icon: '🕐' },
+                              dia: { label: 'Día', color: 'bg-orange-500/20 text-orange-300 border-orange-500/30', icon: '📅' },
+                              orquestas: { label: 'Orquestas', color: 'bg-pink-500/20 text-pink-300 border-pink-500/30', icon: '🎵' },
+                              lugar: { label: 'Lugar', color: 'bg-teal-500/20 text-teal-300 border-teal-500/30', icon: '📍' },
+                              municipio: { label: 'Municipio', color: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30', icon: '🏘️' },
+                              tipo: { label: 'Tipo', color: 'bg-violet-500/20 text-violet-300 border-violet-500/30', icon: '🏷️' },
+                            };
+                            const info = labels[cambio] || { label: cambio, color: 'bg-gray-500/20 text-gray-300 border-gray-500/30', icon: '✏️' };
+                            return (
+                              <span
+                                key={cambio}
+                                className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-medium border ${info.color}`}
+                              >
+                                <span>{info.icon}</span>
+                                {info.label}
+                              </span>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
