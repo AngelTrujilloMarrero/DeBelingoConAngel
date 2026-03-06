@@ -1,7 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import EventsList from '../components/EventsList';
 import { Event as AppEvent, RecentActivityItem } from '../types';
-import { isEmbeddedBrowser } from '../utils/helpers';
+import { isEmbeddedBrowser, getBrowserInfo } from '../utils/helpers';
 import { useEventExport } from '../hooks/useEventExport';
 
 import {
@@ -28,26 +28,47 @@ const EventosPage: React.FC<EventosPageProps> = ({ events, recentActivity }) => 
         setFestivalSelectionVisible(!festivalSelectionVisible);
     }, [festivalSelectionVisible]);
 
+    const browserInfo = getBrowserInfo();
+
+    const dataURLtoBlob = (dataurl: string) => {
+        const arr = dataurl.split(',');
+        const mime = arr[0].match(/:(.*?);/)![1];
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+            u8arr[n] = bstr.charCodeAt(n);
+        }
+        return new Blob([u8arr], { type: mime });
+    };
+
     const handleShare = async () => {
         if (!generatedImage) return;
 
         try {
-            const blob = await (await fetch(generatedImage)).blob();
-            const file = new File([blob], "eventos_debelingo.png", { type: "image/png" });
+            const blob = dataURLtoBlob(generatedImage);
+            const file = new File([blob], "verbenas_debelingo.png", { type: "image/png" });
 
             if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
                 await navigator.share({
                     files: [file],
                     title: 'Verbenas DeBelingo',
-                    text: '¡Mira estas verbenas!'
+                    text: '¡Mira las próximas verbenas!'
+                });
+            } else if (navigator.share) {
+                // Fallback para compartir solo texto/url si no deja archivos
+                await navigator.share({
+                    title: 'Verbenas DeBelingo',
+                    text: '¡Mira las próximas verbenas!',
+                    url: window.location.href
                 });
             } else {
-                alert("Tu navegador no soporta compartir imágenes directamente. Prueba el botón de 'Copiar Imagen' o mantén pulsada la imagen.");
+                alert("Tu navegador no soporta compartir directamente. Mantén pulsada la imagen para guardarla.");
             }
         } catch (error) {
             console.error("Error sharing:", error);
             if ((error as Error).name !== 'AbortError') {
-                alert("No se pudo compartir la imagen.");
+                alert("No se pudo compartir. Prueba manteniendo pulsada la imagen.");
             }
         }
     };
@@ -55,22 +76,43 @@ const EventosPage: React.FC<EventosPageProps> = ({ events, recentActivity }) => 
     const handleCopy = async () => {
         if (!generatedImage) return;
         try {
-            const blob = await (await fetch(generatedImage)).blob();
-            await navigator.clipboard.write([
-                new ClipboardItem({
-                    [blob.type]: blob
-                })
-            ]);
-            alert("¡Imagen copiada! Ahora puedes pegarla en WhatsApp, Instagram, etc.");
+            const blob = dataURLtoBlob(generatedImage);
+            if (navigator.clipboard && window.ClipboardItem) {
+                await navigator.clipboard.write([
+                    new ClipboardItem({
+                        [blob.type]: blob
+                    })
+                ]);
+                alert("¡Imagen copiada al portapapeles!");
+            } else {
+                throw new Error("Clipboard API not available");
+            }
         } catch (err) {
             console.error("Error copying to clipboard:", err);
-            alert("No se pudo copiar la imagen automáticamente.");
+            alert("Tu navegador no permite copiar imágenes automáticamente. Mantén pulsada la imagen para guardarla.");
         }
     };
 
+    const handleCopyLink = () => {
+        const el = document.createElement('textarea');
+        el.value = window.location.href;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        alert("Enlace de la página copiado. Pégalo en Chrome o Safari para descargar sin problemas.");
+    };
+
     const handleOpenInBrowser = () => {
-        const currentUrl = window.location.href;
-        window.open(currentUrl, '_blank');
+        const url = window.location.href;
+        if (browserInfo.isAndroid) {
+            // Truco para Android: intenta forzar la apertura en Chrome
+            const intentUrl = `intent://${url.replace(/^https?:\/\//, '')}#Intent;scheme=https;package=com.android.chrome;end`;
+            window.location.href = intentUrl;
+        } else {
+            // iOS y otros: no hay truco fiable, abrimos normal y confiamos en el mensaje
+            window.open(url, '_blank');
+        }
     };
 
     return (
@@ -210,7 +252,16 @@ const EventosPage: React.FC<EventosPageProps> = ({ events, recentActivity }) => 
                                         className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2"
                                     >
                                         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" /><polyline points="15,3 21,3 21,9" /><line x1="10" y1="14" x2="21" y2="3" /></svg>
-                                        Abrir en Navegador
+                                        Explorar fuera de {browserInfo.isInstagram ? 'Instagram' : 'Facebook'}
+                                    </button>
+                                )}
+                                {isEmbeddedBrowser() && (
+                                    <button
+                                        onClick={handleCopyLink}
+                                        className="bg-amber-600 hover:bg-amber-700 text-white px-4 py-2 rounded-lg font-medium transition-all duration-300 flex items-center gap-2"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></svg>
+                                        Copiar Enlace
                                     </button>
                                 )}
                                 <button

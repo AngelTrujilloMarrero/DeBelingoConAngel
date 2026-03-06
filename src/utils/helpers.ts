@@ -74,9 +74,24 @@ export function formatDayName(date: Date): string {
   return capitalizeFirstLetter(dayName);
 }
 
-export function isEmbeddedBrowser(): boolean {
+export function getBrowserInfo() {
   const ua = navigator.userAgent || navigator.vendor || (window as any).opera;
-  return (ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1) || (ua.indexOf("Instagram") > -1);
+  const isInstagram = ua.indexOf("Instagram") > -1;
+  const isFacebook = (ua.indexOf("FBAN") > -1) || (ua.indexOf("FBAV") > -1);
+  const isAndroid = /Android/i.test(ua);
+  const isiOS = /iPhone|iPad|iPod/i.test(ua);
+  
+  return {
+    isEmbedded: isInstagram || isFacebook,
+    isInstagram,
+    isFacebook,
+    isAndroid,
+    isiOS
+  };
+}
+
+export function isEmbeddedBrowser(): boolean {
+  return getBrowserInfo().isEmbedded;
 }
 
 
