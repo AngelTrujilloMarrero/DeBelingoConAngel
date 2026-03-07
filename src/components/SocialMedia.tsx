@@ -231,7 +231,7 @@ const SocialMedia: React.FC = () => {
             </p>
 
             <p className="text-center font-semibold text-lg md:text-xl mt-6 md:mt-8 text-purple-200">
-              Espero que sea de su agrado tanto esta web como las redes sociales.
+              Espero que sea de su agrado tanto esta web.
             </p>
 
             <div className="text-center mt-6 md:mt-8 space-y-2">
