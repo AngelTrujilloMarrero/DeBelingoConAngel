@@ -388,15 +388,21 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                               orquesta_rem: { label: 'Orquesta quitada', color: 'bg-red-500/20 text-red-300 border-red-500/30', icon: '➖' },
                               grupo_add: { label: 'Nuevo grupo', color: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30', icon: '➕' },
                               grupo_rem: { label: 'Grupo quitado', color: 'bg-rose-500/20 text-rose-300 border-rose-500/30', icon: '➖' },
-                              solista_add: { label: 'Nuevo solista', color: 'bg-blue-500/20 text-blue-300 border-blue-500/30', icon: '➕' },
-                              solista_rem: { label: 'Solista quitado', color: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30', icon: '➖' },
+                              solista_add: { label: 'Nuevo artista', color: 'bg-blue-500/20 text-blue-300 border-blue-500/30', icon: '➕' },
+                              solista_rem: { label: 'Artista quitado', color: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30', icon: '➖' },
                               dj_add: { label: 'Nuevo DJ', color: 'bg-purple-500/20 text-purple-300 border-purple-500/30', icon: '🎧' },
                               dj_rem: { label: 'DJ quitado', color: 'bg-pink-500/20 text-pink-300 border-pink-500/30', icon: '➖' },
                               lugar: { label: 'Lugar', color: 'bg-teal-500/20 text-teal-300 border-teal-500/30', icon: '📍' },
                               municipio: { label: 'Municipio', color: 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30', icon: '🏘️' },
                               tipo: { label: 'Tipo', color: 'bg-violet-500/20 text-violet-300 border-violet-500/30', icon: '🏷️' },
+                              add: { label: 'Añadido', color: 'bg-green-500/20 text-green-300 border-green-500/30', icon: '➕' },
+                              remove: { label: 'Eliminado', color: 'bg-red-500/20 text-red-300 border-red-500/30', icon: '➖' },
+                              artist_add: { label: 'Nuevo artista', color: 'bg-blue-500/20 text-blue-300 border-blue-500/30', icon: '➕' },
+                              artist_rem: { label: 'Artista quitado', color: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30', icon: '➖' },
+                              artista: { label: 'Artista', color: 'bg-blue-500/20 text-blue-300 border-blue-500/30', icon: '🎤' },
+                              dj: { label: 'DJ', color: 'bg-purple-500/20 text-purple-300 border-purple-500/30', icon: '🎧' },
                             };
-                            const info = labels[cambio] || { label: cambio, color: 'bg-gray-500/20 text-gray-300 border-gray-500/30', icon: '✏️' };
+                            const info = labels[cambio] || { label: 'Cambio', color: 'bg-gray-500/20 text-gray-300 border-gray-500/30', icon: '✏️' };
                             return (
                               <span
                                 key={cambio}
