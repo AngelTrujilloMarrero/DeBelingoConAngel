@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Sun, Moon, Cloud, CloudSun, CloudMoon, CloudFog, CloudDrizzle, CloudRain, CloudLightning, Snowflake, Thermometer, Loader2, AlertTriangle, ExternalLink } from 'lucide-react';
+import { Sun, Moon, Cloud, CloudSun, CloudMoon, CloudFog, CloudDrizzle, CloudRain, CloudLightning, Snowflake, Thermometer, Loader2, AlertTriangle, ExternalLink, Wind, Waves, Flame, CloudSnow } from 'lucide-react';
 import { geocodeAddress, municipioMapping } from '../utils/geocoding';
 import { AemetAlert } from '../hooks/useAemetAlerts';
 
@@ -116,6 +116,18 @@ const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, time, alert 
         return 'text-gray-400';
     };
 
+    const getPhenomenonIcon = (phenomenon: string) => {
+        const p = phenomenon.toLowerCase();
+        if (p.includes('viento')) return <><Wind className="w-3 h-3" /><span className="text-[10px] font-bold leading-none">V</span></>;
+        if (p.includes('costero') || p.includes('mar')) return <><Waves className="w-3 h-3" /><span className="text-[10px] font-bold leading-none">C</span></>;
+        if (p.includes('lluv') || p.includes('chubasc')) return <><CloudRain className="w-3 h-3" /><span className="text-[10px] font-bold leading-none">L</span></>;
+        if (p.includes('calima') || p.includes('polvo')) return <><Flame className="w-3 h-3" /><span className="text-[10px] font-bold leading-none">K</span></>;
+        if (p.includes('nieve') || p.includes('nev')) return <><CloudSnow className="w-3 h-3" /><span className="text-[10px] font-bold leading-none">N</span></>;
+        if (p.includes('torment') || p.includes('rayo')) return <><CloudLightning className="w-3 h-3" /><span className="text-[10px] font-bold leading-none">T</span></>;
+        if (p.includes('niebla') || p.includes('niebl')) return <><CloudFog className="w-3 h-3" /><span className="text-[10px] font-bold leading-none">F</span></>;
+        return null;
+    };
+
     return (
         <div
             className="relative flex items-center gap-2 cursor-help group/weather"
@@ -147,11 +159,12 @@ const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, time, alert 
                     href={`https://www.aemet.es/es/eltiempo/prediccion/avisos?p=6596`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className={`transition-all duration-300 hover:scale-125 ${getAlertColor(alert.level || '')}`}
+                    className={`flex items-center gap-0.5 transition-all duration-300 hover:scale-125 ${getAlertColor(alert.level || '')}`}
                     onClick={(e) => e.stopPropagation()}
                     title={`Ver alerta ${alert.level} en web de AEMET`}
                 >
                     <AlertTriangle className="w-5 h-5 animate-pulse" />
+                    {getPhenomenonIcon(alert.phenomenon)}
                 </a>
             )}
 
