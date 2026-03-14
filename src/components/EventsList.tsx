@@ -447,27 +447,29 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                 ))}
               </div>
 
-              {/* Ver más / Comprimir */}
-              {visibleMovimientos < recentActivity.length ? (
-                <button
-                  onClick={() => {
-                    console.log('Click en Ver más, actual:', visibleMovimientos, 'total:', recentActivity.length);
-                    setVisibleMovimientos(prev => Math.min(prev + 5, recentActivity.length));
-                  }}
-                  className="w-full mt-2 py-1.5 text-xs text-gray-500 hover:text-gray-300 transition-colors flex items-center justify-center gap-1.5"
-                >
-                  <ChevronDown className="w-3.5 h-3.5" />
-                  Ver más ({recentActivity.length - visibleMovimientos} restantes)
-                </button>
-              ) : visibleMovimientos > 5 ? (
-                <button
-                  onClick={() => setVisibleMovimientos(5)}
-                  className="w-full mt-2 py-1.5 text-xs text-gray-500 hover:text-gray-300 transition-colors flex items-center justify-center gap-1.5"
-                >
-                  <ChevronDown className="w-3.5 h-3.5 rotate-180" />
-                  Comprimir
-                </button>
-              ) : null}
+              {/* Ver más / Comprimir — Lógica mejorada */}
+              <div className="flex items-center justify-center gap-4 mt-4 mb-2">
+                {visibleMovimientos < recentActivity.length && (
+                  <button
+                    onClick={() => setVisibleMovimientos(prev => Math.min(prev + 5, recentActivity.length))}
+                    className="flex items-center gap-1.5 py-1 px-3 text-xs text-gray-500 hover:text-gray-300 hover:bg-gray-800/30 rounded-full border border-gray-700/50 transition-all"
+                    title={`Ver ${Math.min(5, recentActivity.length - visibleMovimientos)} movimientos más`}
+                  >
+                    <ChevronDown className="w-3.5 h-3.5" />
+                    Ver más ({recentActivity.length - visibleMovimientos})
+                  </button>
+                )}
+                
+                {visibleMovimientos > 5 && (
+                  <button
+                    onClick={() => setVisibleMovimientos(5)}
+                    className="flex items-center gap-1.5 py-1 px-3 text-xs text-gray-500 hover:text-blue-400 hover:bg-blue-500/10 rounded-full border border-gray-700/50 hover:border-blue-500/30 transition-all"
+                  >
+                    <ChevronDown className="w-3.5 h-3.5 rotate-180" />
+                    {visibleMovimientos === recentActivity.length ? 'Cerrar lista' : 'Comprimir'}
+                  </button>
+                )}
+              </div>
             </>
           )
         }
