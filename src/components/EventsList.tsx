@@ -337,48 +337,69 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
           </div>
         </div>
 
-        {/* Recent Activity Block */}
+        {/* Recent Activity — Timeline */}
         {
           recentActivity && recentActivity.length > 0 && (
-            <div className="bg-gray-900/50 rounded-lg p-4 border border-gray-700 w-full">
-              <h4 className="text-gray-400 text-xs font-semibold uppercase tracking-wider mb-3 text-center">
-                Últimos movimientos
-              </h4>
-              <div className="space-y-2">
-                {recentActivity.slice(0, visibleMovimientos).map((item) => (
-                  <div key={item.event.id} className="flex items-center gap-3 text-sm bg-gray-800/50 p-2 rounded border border-gray-700/50">
-                    <div className={`p-1.5 rounded-full ${item.type === 'add' ? 'bg-green-500/20 text-green-400' :
-                      item.type === 'edit' ? 'bg-blue-500/20 text-blue-400' :
-                        item.type === 'reagregado' ? 'bg-purple-500/20 text-purple-400' :
-                          'bg-red-500/20 text-red-400'
-                      }`}>
-                      {item.type === 'add' ? <Plus className="w-3 h-3" /> :
-                        item.type === 'edit' ? <Edit className="w-3 h-3" /> :
-                          item.type === 'reagregado' ? <RotateCcw className="w-3 h-3" /> :
-                            <Trash2 className="w-3 h-3" />}
+            <>
+              <div className="flex items-center gap-3 pt-2">
+                <div className="flex-1 h-px bg-gradient-to-r from-transparent to-gray-600/60" />
+                <h4 className="text-gray-400 text-xs font-semibold uppercase tracking-widest whitespace-nowrap">
+                  Últimos movimientos
+                </h4>
+                <div className="flex-1 h-px bg-gradient-to-l from-transparent to-gray-600/60" />
+              </div>
+
+              <div className="activity-timeline mt-2">
+                {recentActivity.slice(0, visibleMovimientos).map((item, index) => (
+                  <div key={item.event.id} className="activity-timeline-item">
+                    {/* Node */}
+                    <div className={`activity-timeline-node ${index === 0 ? 'latest' : ''} ${
+                      item.type === 'add' ? 'bg-green-500/30 text-green-400' :
+                      item.type === 'edit' ? 'bg-blue-500/30 text-blue-400' :
+                      item.type === 'reagregado' ? 'bg-purple-500/30 text-purple-400' :
+                      'bg-red-500/30 text-red-400'
+                    }`}>
+                      {item.type === 'add' ? <Plus /> :
+                        item.type === 'edit' ? <Edit /> :
+                          item.type === 'reagregado' ? <RotateCcw /> :
+                            <Trash2 />}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className={`font-medium ${item.type === 'add' ? 'text-green-300' :
-                          item.type === 'edit' ? 'text-blue-300' :
-                            item.type === 'reagregado' ? 'text-purple-300' :
-                              'text-red-300'
-                          }`}>
-                          {item.type === 'add' ? 'Nuevo:' :
-                            item.type === 'edit' ? 'Modificado:' :
-                              item.type === 'reagregado' ? 'Re-agregado:' :
-                                'Eliminado:'}
+
+                    {/* Content */}
+                    <div className="text-sm">
+                      <div className="flex items-center justify-center gap-2 flex-wrap mb-1">
+                        {index === 0 && (
+                          <span className="bg-blue-500/20 text-blue-400 text-[9px] font-black px-1.5 py-0.5 rounded-full border border-blue-500/30 mr-1 animate-pulse">
+                            MÁS RECIENTE
+                          </span>
+                        )}
+                        <span className={`font-semibold text-xs uppercase tracking-wide ${
+                          item.type === 'add' ? 'text-green-400' :
+                          item.type === 'edit' ? 'text-blue-400' :
+                          item.type === 'reagregado' ? 'text-purple-400' :
+                          'text-red-400'
+                        }`}>
+                          {item.type === 'add' ? 'Nuevo' :
+                            item.type === 'edit' ? 'Modificado' :
+                              item.type === 'reagregado' ? 'Re-agregado' :
+                                'Eliminado'}
                         </span>
-                        <span className="text-gray-300 truncate">
+                        <span className="text-gray-200">
                           {item.event.lugar ? `${item.event.lugar}, ` : ''}{item.event.municipio}
                         </span>
                       </div>
-                      <div className="text-gray-500 text-xs truncate">
-                        {item.event.orquesta} - {new Date(item.event.day).toLocaleDateString('es-ES')}
+                      
+                      <div className="text-gray-500 text-xs flex items-center justify-center gap-1.5 flex-wrap">
+                        <span>{item.event.orquesta}</span>
+                        <span className="text-gray-700">·</span>
+                        <span>{new Date(item.event.day).toLocaleDateString('es-ES')}</span>
+                        <span className="text-gray-700">·</span>
+                        <span className="text-gray-400 italic">{item.event.tipo}</span>
                       </div>
+
                       {item.type === 'edit' && item.event.cambios && item.event.cambios.length > 0 && (
-                        <div className="flex flex-wrap items-center gap-1 mt-1">
-                          <span className="text-blue-400/80 text-[10px] font-bold uppercase tracking-tight mr-0.5">Cambios:</span>
+                        <div className="flex flex-wrap items-center justify-center gap-1 mt-2">
+                          <span className="text-blue-400/80 text-[10px] font-bold uppercase tracking-tight mr-1">Cambios:</span>
                           {item.event.cambios.map((cambio) => {
                             const labels: Record<string, { label: string; color: string; icon: string }> = {
                               hora: { label: 'Hora', color: 'bg-amber-500/20 text-amber-300 border-amber-500/30', icon: '🕐' },
@@ -415,31 +436,39 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                           })}
                         </div>
                       )}
+                      
+                      {index === recentActivity.slice(0, visibleMovimientos).length - 1 && recentActivity.length > 1 && (
+                        <div className="mt-4 text-[9px] text-gray-600 font-bold tracking-widest uppercase">
+                          Inicio del bloque
+                        </div>
+                      )}
                     </div>
                   </div>
                 ))}
-                {visibleMovimientos < recentActivity.length ? (
-                  <button
-                    onClick={() => {
-                      console.log('Click en Ver más, actual:', visibleMovimientos, 'total:', recentActivity.length);
-                      setVisibleMovimientos(prev => Math.min(prev + 5, recentActivity.length));
-                    }}
-                    className="w-full mt-2 py-2 text-sm text-gray-400 hover:text-white bg-gray-700/50 hover:bg-gray-600/50 rounded border border-gray-600/50 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <ChevronDown className="w-4 h-4" />
-                    Ver más ({recentActivity.length - visibleMovimientos} restantes)
-                  </button>
-                ) : visibleMovimientos > 5 ? (
-                  <button
-                    onClick={() => setVisibleMovimientos(5)}
-                    className="w-full mt-2 py-2 text-sm text-gray-400 hover:text-white bg-gray-700/50 hover:bg-gray-600/50 rounded border border-gray-600/50 transition-colors flex items-center justify-center gap-2"
-                  >
-                    <ChevronDown className="w-4 h-4 rotate-180" />
-                    Comprimir
-                  </button>
-                ) : null}
               </div>
-            </div>
+
+              {/* Ver más / Comprimir */}
+              {visibleMovimientos < recentActivity.length ? (
+                <button
+                  onClick={() => {
+                    console.log('Click en Ver más, actual:', visibleMovimientos, 'total:', recentActivity.length);
+                    setVisibleMovimientos(prev => Math.min(prev + 5, recentActivity.length));
+                  }}
+                  className="w-full mt-2 py-1.5 text-xs text-gray-500 hover:text-gray-300 transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <ChevronDown className="w-3.5 h-3.5" />
+                  Ver más ({recentActivity.length - visibleMovimientos} restantes)
+                </button>
+              ) : visibleMovimientos > 5 ? (
+                <button
+                  onClick={() => setVisibleMovimientos(5)}
+                  className="w-full mt-2 py-1.5 text-xs text-gray-500 hover:text-gray-300 transition-colors flex items-center justify-center gap-1.5"
+                >
+                  <ChevronDown className="w-3.5 h-3.5 rotate-180" />
+                  Comprimir
+                </button>
+              ) : null}
+            </>
           )
         }
 

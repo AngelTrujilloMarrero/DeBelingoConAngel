@@ -358,3 +358,97 @@
 .count-animation {
   animation: countUp 0.3s ease-out;
 }
+
+/* Timeline - Últimos Movimientos */
+.activity-timeline {
+  position: relative;
+  padding-left: 0;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.activity-timeline::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 10px;
+  bottom: 10px;
+  width: 2px;
+  background: linear-gradient(to bottom, 
+    rgba(59, 130, 246, 0.5), 
+    rgba(107, 114, 128, 0.2) 80%,
+    transparent);
+  transform: translateX(-50%);
+  border-radius: 1px;
+}
+
+.activity-timeline-item {
+  position: relative;
+  padding: 12px 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.activity-timeline-item:hover {
+  opacity: 1 !important;
+  transform: scale(1.02);
+}
+
+.activity-timeline-item:not(:hover) {
+  opacity: 0.85;
+}
+
+.activity-timeline-node {
+  position: relative;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  box-shadow: 0 0 0 4px rgba(31, 41, 55, 1);
+  margin-bottom: 8px;
+}
+
+.activity-timeline-node.latest {
+  box-shadow: 0 0 0 4px rgba(31, 41, 55, 1), 0 0 12px rgba(59, 130, 246, 0.5);
+  animation: node-pulse 2s infinite;
+}
+
+@keyframes node-pulse {
+  0% { box-shadow: 0 0 0 0px rgba(59, 130, 246, 0.4), 0 0 0 4px rgba(31, 41, 55, 1); }
+  70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0), 0 0 0 4px rgba(31, 41, 55, 1); }
+  100% { box-shadow: 0 0 0 0px rgba(59, 130, 246, 0), 0 0 0 4px rgba(31, 41, 55, 1); }
+}
+
+.activity-timeline-node svg {
+  width: 8px;
+  height: 8px;
+}
+
+@keyframes timeline-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.activity-timeline-item {
+  animation: timeline-slide-in 0.3s ease-out both;
+}
+
+.activity-timeline-item:nth-child(1) { animation-delay: 0ms; }
+.activity-timeline-item:nth-child(2) { animation-delay: 40ms; }
+.activity-timeline-item:nth-child(3) { animation-delay: 80ms; }
+.activity-timeline-item:nth-child(4) { animation-delay: 120ms; }
+.activity-timeline-item:nth-child(5) { animation-delay: 160ms; }
