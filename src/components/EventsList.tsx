@@ -462,7 +462,11 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                 
                 {visibleMovimientos > 5 && (
                   <button
-                    onClick={() => setVisibleMovimientos(5)}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      setVisibleMovimientos(5);
+                    }}
                     className="flex items-center gap-1.5 py-1 px-3 text-xs text-gray-500 hover:text-blue-400 hover:bg-blue-500/10 rounded-full border border-gray-700/50 hover:border-blue-500/30 transition-all"
                   >
                     <ChevronDown className="w-3.5 h-3.5 rotate-180" />
