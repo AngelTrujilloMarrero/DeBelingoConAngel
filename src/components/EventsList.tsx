@@ -367,7 +367,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
 
                     {/* Content */}
                     <div className="text-sm">
-                      <div className="flex items-center justify-center gap-2 flex-wrap mb-1">
+                      <div className="flex items-center justify-start gap-2 flex-wrap mb-1">
                         {index === 0 && (
                           <span className="bg-blue-500/20 text-blue-400 text-[9px] font-black px-1.5 py-0.5 rounded-full border border-blue-500/30 mr-1 animate-pulse">
                             MÁS RECIENTE
@@ -389,7 +389,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                         </span>
                       </div>
                       
-                      <div className="text-gray-500 text-xs flex items-center justify-center gap-1.5 flex-wrap">
+                      <div className="text-gray-500 text-xs flex items-center justify-start gap-1.5 flex-wrap">
                         <span>{item.event.orquesta}</span>
                         <span className="text-gray-700">·</span>
                         <span>{new Date(item.event.day).toLocaleDateString('es-ES')}</span>
@@ -398,7 +398,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                       </div>
 
                       {item.type === 'edit' && item.event.cambios && item.event.cambios.length > 0 && (
-                        <div className="flex flex-wrap items-center justify-center gap-1 mt-2">
+                        <div className="flex flex-wrap items-center justify-start gap-1 mt-2">
                           <span className="text-blue-400/80 text-[10px] font-bold uppercase tracking-tight mr-1">Cambios:</span>
                           {item.event.cambios.map((cambio) => {
                             const labels: Record<string, { label: string; color: string; icon: string }> = {
