@@ -10,7 +10,7 @@ let archiveMap: Record<string, any> = {};
 import { groupEventsByDay, sortEventsByDateTime, formatDayName, getLastUpdateDate } from '../utils/helpers';
 import WeatherIcon from './WeatherIcon';
 import TITSALogo from './TITSALogo';
-import { useAemetAlerts } from '../hooks/useAemetAlerts';
+import { useAemetAlerts, AemetAlert } from '../hooks/useAemetAlerts';
 
 interface EventsListProps {
   events: Event[];
@@ -38,11 +38,11 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
   // Memoizar las alertas por evento para que se recalculen cuando cambian las alertas
   const alertsByEvent = useMemo(() => {
     if (aemetAlerts.length === 0) return {};
-    const map: Record<string, ReturnType<typeof getAlertForEvent>> = {};
+    const map: Record<string, AemetAlert[]> = {};
     events.forEach(event => {
-      const alert = getAlertForEvent(event.municipio, event.day, event.hora);
-      if (alert) {
-        map[event.id] = alert;
+      const alerts = getAlertForEvent(event.municipio, event.day, event.hora);
+      if (alerts.length > 0) {
+        map[event.id] = alerts;
       }
     });
     console.log(`[EventsList] 🔄 Recalculated alerts map: ${Object.keys(map).length} events with alerts`);

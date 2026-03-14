@@ -154,8 +154,8 @@ export const useAemetAlerts = () => {
     });
 
 
-    const getAlertForEvent = (municipio: string, date: string, hora?: string) => {
-        if (!municipio || !date) return undefined;
+    const getAlertForEvent = (municipio: string, date: string, hora?: string): AemetAlert[] => {
+        if (!municipio || !date) return [];
 
         const eventDate = date.split('T')[0].trim();
         const eventTime = hora ? hora.trim() : null;
@@ -171,10 +171,10 @@ export const useAemetAlerts = () => {
         }
 
         if (!eventZone) {
-            return undefined;
+            return [];
         }
 
-        const found = alerts.find(a => {
+        const found = alerts.filter(a => {
             const alertZone = a.zone.trim();
             const alertDate = a.date.trim();
             const zoneMatch = (alertZone === eventZone || alertZone === "Cumbres");

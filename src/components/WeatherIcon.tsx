@@ -8,7 +8,7 @@ interface WeatherIconProps {
     date: string; // YYYY-MM-DD
     municipio: string;
     time?: string; // HH:mm or HH
-    alert?: AemetAlert;
+    alert?: AemetAlert[];
 }
 
 const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, time, alert }) => {
@@ -81,7 +81,7 @@ const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, time, alert 
 
     // IMPORTANTE: Si no hay ni código de tiempo ni alerta, no renderizar nada.
     // Pero NO retornar null si hay alerta aunque loading sea true.
-    if (weatherCode === null && !loading && !alert) return null;
+    if (weatherCode === null && !loading && (!alert || alert.length === 0)) return null;
 
     const getIcon = (code: number) => {
         const isNight = isDay === 0;
@@ -154,18 +154,24 @@ const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, time, alert 
                 )}
             </div>
 
-            {alert && (
-                <a
-                    href={`https://www.aemet.es/es/eltiempo/prediccion/avisos?p=6596`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`flex items-center gap-0.5 transition-all duration-300 hover:scale-125 ${getAlertColor(alert.level || '')}`}
-                    onClick={(e) => e.stopPropagation()}
-                    title={`Ver alerta ${alert.level} en web de AEMET`}
-                >
-                    <AlertTriangle className="w-5 h-5 animate-pulse" />
-                    {getPhenomenonIcon(alert.phenomenon)}
-                </a>
+            {alert && alert.length > 0 && (
+                <div className="flex items-center gap-0.5">
+                    <a
+                        href={`https://www.aemet.es/es/eltiempo/prediccion/avisos?p=6596`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`flex items-center gap-0.5 transition-all duration-300 hover:scale-125 ${getAlertColor(alert[0].level || '')}`}
+                        onClick={(e) => e.stopPropagation()}
+                        title={`Ver alerta ${alert[0].level} en web de AEMET`}
+                    >
+                        <AlertTriangle className="w-5 h-5 animate-pulse" />
+                    </a>
+                    {alert.map((a, idx) => (
+                        <span key={idx} className={`${getAlertColor(a.level || '')}`}>
+                            {getPhenomenonIcon(a.phenomenon)}
+                        </span>
+                    ))}
+                </div>
             )}
 
             {showTooltip && (
@@ -204,13 +210,17 @@ const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, time, alert 
                             </div>
                         )}
 
-                        {alert && (
-                            <div className="flex flex-col gap-1">
-                                <span className={`font-bold uppercase text-[10px] tracking-wider flex items-center gap-1 ${getAlertColor(alert.level || '')}`}>
-                                    <AlertTriangle className="w-3 h-3" />
-                                    Alerta AEMET: {alert.level}
-                                </span>
-                                <p className="text-[11px] leading-tight text-gray-300 italic">{alert.phenomenon} en {alert.zone}</p>
+                        {alert && alert.length > 0 && (
+                            <div className="flex flex-col gap-2">
+                                {alert.map((a, idx) => (
+                                    <div key={idx} className="flex flex-col gap-1">
+                                        <span className={`font-bold uppercase text-[10px] tracking-wider flex items-center gap-1 ${getAlertColor(a.level || '')}`}>
+                                            <AlertTriangle className="w-3 h-3" />
+                                            Alerta AEMET: {a.level}
+                                        </span>
+                                        <p className="text-[11px] leading-tight text-gray-300 italic">{a.phenomenon} en {a.zone}</p>
+                                    </div>
+                                ))}
                                 <a
                                     href={`https://www.aemet.es/es/eltiempo/prediccion/avisos?p=6596`}
                                     target="_blank"
