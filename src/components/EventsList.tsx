@@ -369,7 +369,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                     <div className="text-sm">
                       <div className="flex items-center justify-start gap-2 flex-wrap mb-1">
                         {index === 0 && (
-                          <span className="bg-blue-500/20 text-blue-400 text-[9px] font-black px-1.5 py-0.5 rounded-full border border-blue-500/30 mr-1 animate-pulse">
+                          <span className="bg-cyan-500/20 text-cyan-300 text-[9px] font-black px-1.5 py-0.5 rounded-full border border-cyan-500/30 mr-1 animate-pulse">
                             MÁS RECIENTE
                           </span>
                         )}
