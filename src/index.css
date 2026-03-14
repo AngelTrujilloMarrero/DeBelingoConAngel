@@ -362,7 +362,7 @@
 /* Timeline - Últimos Movimientos */
 .activity-timeline {
   position: relative;
-  padding-left: 0;
+  padding-left: 24px;
   max-width: 500px;
   margin-left: auto;
   margin-right: auto;
@@ -371,7 +371,7 @@
 .activity-timeline::before {
   content: '';
   position: absolute;
-  left: 50%;
+  left: 0;
   top: 10px;
   bottom: 10px;
   width: 2px;
@@ -379,7 +379,6 @@
     rgba(59, 130, 246, 0.5), 
     rgba(107, 114, 128, 0.2) 80%,
     transparent);
-  transform: translateX(-50%);
   border-radius: 1px;
 }
 
@@ -389,8 +388,9 @@
   width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
+  align-items: flex-start;
+  text-align: left;
+  padding-left: 20px;
   transition: all 0.3s ease;
 }
 
@@ -404,7 +404,9 @@
 }
 
 .activity-timeline-node {
-  position: relative;
+  position: absolute;
+  left: -20px;
+  top: 16px;
   width: 14px;
   height: 14px;
   border-radius: 50%;
@@ -412,7 +414,7 @@
   align-items: center;
   justify-content: center;
   z-index: 2;
-  box-shadow: 0 0 0 4px rgba(31, 41, 55, 1);
+  box-shadow: 0 0 0 3px rgba(31, 41, 55, 1);
   margin-bottom: 8px;
 }
 
