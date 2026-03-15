@@ -12,16 +12,22 @@ interface VisitData {
   device: string;
   referrer: string;
   duration?: number;
-  // Nuevos campos (sin cookies)
+  // Parámetros técnicos (sin cookies)
   screenWidth?: number;
   screenHeight?: number;
   language?: string;
   timezone?: string;
   connection?: string;
+  memory?: number;        // RAM aproximada
+  cores?: number;         // Núcleos CPU
+  colorDepth?: number;    // Bits de color
+  touchPoints?: number;   // Soporte táctil
+  orientation?: string;   // Portrait/Landscape
 }
 
 const getDeviceInfo = () => {
   const ua = navigator.userAgent;
+  const nav = navigator as any;
 
   // --- Browser ---
   let browser = 'Unknown';
@@ -29,14 +35,13 @@ const getDeviceInfo = () => {
   else if (ua.includes('OPR/') || ua.includes('Opera')) browser = 'Opera';
   else if (ua.includes('SamsungBrowser')) browser = 'Samsung Browser';
   else if (ua.includes('Firefox')) browser = 'Firefox';
-  // Chrome debe ir ANTES de Safari porque Chrome incluye "Safari" en su UA
   else if (ua.includes('Chrome')) browser = 'Chrome';
   else if (ua.includes('Safari')) browser = 'Safari';
 
-  // --- OS: Android ANTES que Linux (Android UA contiene "Linux") ---
+  // --- OS ---
   let os = 'Unknown';
   if (ua.includes('Windows')) os = 'Windows';
-  else if (ua.includes('Android')) os = 'Android';          // ← ANTES de Linux
+  else if (ua.includes('Android')) os = 'Android';
   else if (ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
   else if (ua.includes('Mac OS X')) os = 'macOS';
   else if (ua.includes('CrOS')) os = 'Chrome OS';
@@ -55,17 +60,24 @@ const getDeviceInfo = () => {
     device = 'mobile';
   }
 
-  // --- Parámetros adicionales sin cookies ---
+  // --- Parámetros adicionales ---
   const screenWidth = window.screen?.width ?? undefined;
   const screenHeight = window.screen?.height ?? undefined;
   const language = navigator.language || undefined;
   const timezone = Intl?.DateTimeFormat?.()?.resolvedOptions?.()?.timeZone || undefined;
-
-  // API de red (no disponible en todos los navegadores)
-  const nav = navigator as any;
   const connection = nav.connection?.effectiveType || nav.mozConnection?.effectiveType || undefined;
+  
+  // Nuevos parámetros técnicos
+  const memory = nav.deviceMemory || undefined; 
+  const cores = nav.hardwareConcurrency || undefined;
+  const colorDepth = window.screen?.colorDepth || undefined;
+  const touchPoints = nav.maxTouchPoints || undefined;
+  const orientation = window.screen?.orientation?.type || undefined;
 
-  return { browser, os, device, screenWidth, screenHeight, language, timezone, connection };
+  return { 
+    browser, os, device, screenWidth, screenHeight, language, 
+    timezone, connection, memory, cores, colorDepth, touchPoints, orientation 
+  };
 };
 
 const getGeoInfo = async (): Promise<{ country: string; city: string }> => {
@@ -94,7 +106,7 @@ export function useAnalytics() {
       hasTracked.current = true;
 
       try {
-        const { browser, os, device, screenWidth, screenHeight, language, timezone, connection } = getDeviceInfo();
+        const info = getDeviceInfo();
         const { country, city } = await getGeoInfo();
 
         const visitData: VisitData = {
@@ -102,15 +114,20 @@ export function useAnalytics() {
           page: window.location.pathname || '/',
           country,
           city,
-          browser,
-          os,
-          device,
+          browser: info.browser,
+          os: info.os,
+          device: info.device,
           referrer: document.referrer || 'direct',
-          ...(screenWidth !== undefined && { screenWidth }),
-          ...(screenHeight !== undefined && { screenHeight }),
-          ...(language && { language }),
-          ...(timezone && { timezone }),
-          ...(connection && { connection }),
+          ...(info.screenWidth && { screenWidth: info.screenWidth }),
+          ...(info.screenHeight && { screenHeight: info.screenHeight }),
+          ...(info.language && { language: info.language }),
+          ...(info.timezone && { timezone: info.timezone }),
+          ...(info.connection && { connection: info.connection }),
+          ...(info.memory && { memory: info.memory }),
+          ...(info.cores && { cores: info.cores }),
+          ...(info.colorDepth && { colorDepth: info.colorDepth }),
+          ...(info.touchPoints !== undefined && { touchPoints: info.touchPoints }),
+          ...(info.orientation && { orientation: info.orientation }),
         };
 
         const visitsRef = ref(db, 'analytics/visits');
@@ -120,7 +137,7 @@ export function useAnalytics() {
           return (current || 0) + 1;
         });
 
-        console.log('[Analytics] Visit tracked:', visitData);
+        console.log('[Analytics] Visit tracked (Deep Analysis):', visitData);
       } catch (error) {
         console.error('[Analytics] Error tracking visit:', error);
       }
@@ -131,15 +148,15 @@ export function useAnalytics() {
     const handleBeforeUnload = () => {
       const duration = Math.round((Date.now() - startTime.current) / 1000);
       if (duration > 5) {
-        const { browser, os, device } = getDeviceInfo();
+        const info = getDeviceInfo();
         const visitData: VisitData = {
           timestamp: Date.now(),
           page: window.location.pathname || '/',
           country: 'Unknown',
           city: 'Unknown',
-          browser,
-          os,
-          device,
+          browser: info.browser,
+          os: info.os,
+          device: info.device,
           referrer: document.referrer || 'direct',
           duration
         };
