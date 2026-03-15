@@ -455,3 +455,94 @@ exports.manualCleanupDeletions = functions.https.onRequest(async (req, res) => {
     res.status(500).json({ success: false, error: error.message });
   }
 });
+
+// ========================================================================
+// 🧹 CLEANUP ANALYTICS (NEW)
+// ========================================================================
+
+// Función para limpiar analytics antiguos (más de 12 meses / 365 días)
+exports.cleanupOldAnalytics = functions.pubsub
+  .schedule('30 2 * * *') // Todos los días a las 2:30 AM
+  .timeZone('Europe/Madrid')
+  .onRun(async (context) => {
+    try {
+      const db = admin.database();
+      const analyticsRef = db.ref('analytics/visits');
+      const snapshot = await analyticsRef.once('value');
+
+      const oneYearAgo = new Date();
+      oneYearAgo.setDate(oneYearAgo.getDate() - 365);
+      const oneYearAgoMs = oneYearAgo.getTime();
+
+      const visits = snapshot.val() || {};
+      const keysToDelete = [];
+
+      Object.entries(visits).forEach(([key, visit]) => {
+        if (visit.timestamp && visit.timestamp < oneYearAgoMs) {
+          keysToDelete.push(key);
+        }
+      });
+
+      if (keysToDelete.length > 0) {
+        const deletePromises = keysToDelete.map(key =>
+          analyticsRef.child(key).remove()
+        );
+
+        await Promise.all(deletePromises);
+        console.log(`Eliminados ${keysToDelete.length} registros de analytics antiguos`);
+
+        // Log de actividad de limpieza
+        const cleanupLogRef = db.ref('cleanupLogs').push();
+        await cleanupLogRef.set({
+          type: 'analyticsCleanup',
+          deletedCount: keysToDelete.length,
+          deletedAt: new Date().toISOString(),
+          cutoffDate: oneYearAgo.toISOString()
+        });
+      }
+
+      return null;
+    } catch (error) {
+      console.error('Error en limpieza de analytics:', error);
+      return null;
+    }
+  });
+
+// Función HTTP manual para limpiar analytics (para testing)
+exports.manualCleanupAnalytics = functions.https.onRequest(async (req, res) => {
+  try {
+    const db = admin.database();
+    const analyticsRef = db.ref('analytics/visits');
+    const snapshot = await analyticsRef.once('value');
+
+    const oneYearAgo = new Date();
+    oneYearAgo.setDate(oneYearAgo.getDate() - 365);
+    const oneYearAgoMs = oneYearAgo.getTime();
+
+    const visits = snapshot.val() || {};
+    const keysToDelete = [];
+
+    Object.entries(visits).forEach(([key, visit]) => {
+      if (visit.timestamp && visit.timestamp < oneYearAgoMs) {
+        keysToDelete.push(key);
+      }
+    });
+
+    if (keysToDelete.length > 0) {
+      const deletePromises = keysToDelete.map(key =>
+        analyticsRef.child(key).remove()
+      );
+
+      await Promise.all(deletePromises);
+    }
+
+    res.json({
+      success: true,
+      deletedCount: keysToDelete.length,
+      cutoffDate: oneYearAgo.toISOString()
+    });
+  } catch (error) {
+    console.error('Error en limpieza manual de analytics:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
