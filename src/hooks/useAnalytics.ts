@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
-import { push, ref } from 'firebase/database';
-import { db } from '../utils/firebase';
+import { push, ref, runTransaction } from 'firebase/database';
+import { db, visitCountRef } from '../utils/firebase';
 
 interface VisitData {
   timestamp: number;
@@ -83,6 +83,11 @@ export function useAnalytics() {
 
         const visitsRef = ref(db, 'analytics/visits');
         await push(visitsRef, visitData);
+        
+        await runTransaction(visitCountRef, (current) => {
+          return (current || 0) + 1;
+        });
+        
         console.log('[Analytics] Visit tracked:', visitData);
       } catch (error) {
         console.error('[Analytics] Error tracking visit:', error);
