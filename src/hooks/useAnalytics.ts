@@ -6,27 +6,45 @@ interface VisitData {
   timestamp: number;
   page: string;
   country: string;
-  countryCode?: string; // Nuevo: Para banderas automáticas
+  countryCode?: string;
   city?: string;
   browser: string;
   os: string;
   device: string;
   referrer: string;
   duration?: number;
+  // Pantalla
   screenWidth?: number;
   screenHeight?: number;
+  viewportWidth?: number;
+  viewportHeight?: number;
+  pixelRatio?: number;
+  colorDepth?: number;
+  orientation?: string;
+  // Localización
   language?: string;
   timezone?: string;
+  // Conexión
   connection?: string;
+  downlink?: number;
+  saveData?: boolean;
+  // Hardware
   memory?: number;
   cores?: number;
-  colorDepth?: number;
   touchPoints?: number;
-  orientation?: string;
+  // Preferencias UX
   darkTheme?: boolean;
   reducedMotion?: boolean;
-  saveData?: boolean;
-  downlink?: number;
+  cookiesEnabled?: boolean;
+  doNotTrack?: boolean;
+  // Detección
+  isBot?: boolean;
+  // Rendimiento
+  loadTime?: number;
+  // Marketing
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
 }
 
 const getGeoInfo = async (): Promise<{ country: string; city: string; countryCode: string }> => {
@@ -45,7 +63,7 @@ const getGeoInfo = async (): Promise<{ country: string; city: string; countryCod
     }
   } catch (e) { /* ignore */ }
 
-  // Intento 2: Backup con freeipapi.com (muy fiable)
+  // Intento 2: Backup con freeipapi.com
   try {
     const response = await fetch('https://freeipapi.com/api/json');
     if (response.ok) {
@@ -59,6 +77,25 @@ const getGeoInfo = async (): Promise<{ country: string; city: string; countryCod
   } catch (e) { /* ignore */ }
 
   return { country: 'Unknown', city: 'Unknown', countryCode: 'UN' };
+};
+
+const getUtmParams = () => {
+  const params = new URLSearchParams(window.location.search);
+  return {
+    utmSource: params.get('utm_source') || undefined,
+    utmMedium: params.get('utm_medium') || undefined,
+    utmCampaign: params.get('utm_campaign') || undefined
+  };
+};
+
+const getLoadTime = (): number | undefined => {
+  try {
+    const perf = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+    if (perf) {
+      return Math.round(perf.loadEventEnd - perf.startTime);
+    }
+  } catch (e) { /* ignore */ }
+  return undefined;
 };
 
 const getDeviceInfo = () => {
@@ -89,25 +126,42 @@ const getDeviceInfo = () => {
   }
 
   const conn = nav.connection || nav.mozConnection || nav.webkitConnection;
+  const utm = getUtmParams();
 
   return { 
     browser, os, device,
+    // Pantalla
     screenWidth: window.screen?.width,
     screenHeight: window.screen?.height,
+    viewportWidth: window.innerWidth,
+    viewportHeight: window.innerHeight,
+    pixelRatio: window.devicePixelRatio ? Math.round(window.devicePixelRatio * 100) / 100 : undefined,
+    colorDepth: window.screen?.colorDepth,
+    orientation: window.screen?.orientation?.type,
+    // Localización
     language: navigator.language,
     timezone: Intl?.DateTimeFormat?.()?.resolvedOptions?.()?.timeZone,
+    // Conexión
     connection: conn?.effectiveType,
     downlink: conn?.downlink,
     saveData: conn?.saveData,
+    // Hardware
     memory: nav.deviceMemory, 
     cores: nav.hardwareConcurrency,
+    touchPoints: nav.maxTouchPoints,
+    // Preferencias UX
     darkTheme: window.matchMedia?.('(prefers-color-scheme: dark)').matches,
-    reducedMotion: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
+    reducedMotion: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches,
+    cookiesEnabled: navigator.cookieEnabled,
+    doNotTrack: navigator.doNotTrack === '1',
+    // Bot
+    isBot: !!nav.webdriver,
+    // UTM
+    ...utm
   };
 };
 
 export function useAnalytics() {
-  const startTime = useRef<number>(Date.now());
   const hasTracked = useRef(false);
 
   useEffect(() => {
@@ -119,27 +173,34 @@ export function useAnalytics() {
         const { country, city, countryCode } = await getGeoInfo();
         const info = getDeviceInfo();
 
+        // Esperar a que la página termine de cargar para capturar el loadTime
+        const loadTime = getLoadTime();
+
         const visitData: VisitData = {
           timestamp: Date.now(),
           page: window.location.pathname || '/',
           country,
           countryCode,
           city,
-          browser: info.browser,
-          os: info.os,
-          device: info.device,
           referrer: document.referrer || 'direct',
+          ...(loadTime && loadTime > 0 && { loadTime }),
           ...info
         };
 
+        // Limpiar campos undefined para no mandar basura a Firebase
+        const cleanData = Object.fromEntries(
+          Object.entries(visitData).filter(([, v]) => v !== undefined && v !== null)
+        );
+
         const visitsRef = ref(db, 'analytics/visits');
-        await push(visitsRef, visitData);
+        await push(visitsRef, cleanData);
         await runTransaction(visitCountRef, (c) => (c || 0) + 1);
       } catch (error) {
         console.error('[Analytics] Error:', error);
       }
     };
 
-    trackVisit();
+    // Esperar un momento breve para que loadTime esté disponible
+    setTimeout(trackVisit, 1500);
   }, []);
 }
