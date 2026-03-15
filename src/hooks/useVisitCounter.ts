@@ -1,22 +1,26 @@
-import { useState, useEffect } from 'react';
-import { get, set, visitCountRef } from '../utils/firebase';
+import { useState, useEffect, useRef } from 'react';
+import { get, set, onValue, visitCountRef } from '../utils/firebase';
 
 export function useVisitCounter() {
   const [visitCount, setVisitCount] = useState<number>(0);
+  const hasIncremented = useRef(false);
 
   useEffect(() => {
-    const updateVisitCount = async () => {
-      try {
-        const snapshot = await get(visitCountRef);
-        const count = snapshot.val() || 0;
-        setVisitCount(count);
-        await set(visitCountRef, count + 1);
-      } catch (error) {
-        console.error('Error al manejar el contador de visitas:', error);
-      }
-    };
+    const unsubscribe = onValue(visitCountRef, async (snapshot) => {
+      const count = snapshot.val() || 0;
+      setVisitCount(count);
 
-    updateVisitCount();
+      if (!hasIncremented.current) {
+        hasIncremented.current = true;
+        try {
+          await set(visitCountRef, count + 1);
+        } catch (error) {
+          console.error('Error al incrementar el contador:', error);
+        }
+      }
+    });
+
+    return () => unsubscribe();
   }, []);
 
   return visitCount;
