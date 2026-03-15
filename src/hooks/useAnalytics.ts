@@ -21,26 +21,54 @@ interface VisitData {
   pixelRatio?: number;
   colorDepth?: number;
   orientation?: string;
+  // Pantalla extra
+  availWidth?: number;
+  availHeight?: number;
+  screenOrientation?: string;
   // Localización
   language?: string;
+  languages?: string[];
+  languageCount?: number;
   timezone?: string;
   // Conexión
   connection?: string;
+  connectionType?: string;
   downlink?: number;
+  downlinkMax?: number;
+  rtt?: number;
   saveData?: boolean;
   // Hardware
   memory?: number;
   cores?: number;
   touchPoints?: number;
+  touchSupport?: boolean;
   // Preferencias UX
   darkTheme?: boolean;
   reducedMotion?: boolean;
+  reducedTransparency?: boolean;
+  prefersContrast?: string;
+  colorGamut?: string;
+  monochrome?: boolean;
+  invertedColors?: boolean;
+  forcedColors?: boolean;
+  // Privacidad y Entorno
   cookiesEnabled?: boolean;
   doNotTrack?: boolean;
+  pdfViewerEnabled?: boolean;
+  webdriver?: boolean;
+  vendor?: string;
+  platform?: string;
+  isSecureContext?: boolean;
+  online?: boolean;
+  historyLength?: number;
+  clipboardEnabled?: boolean;
   // Detección
   isBot?: boolean;
   // Rendimiento
   loadTime?: number;
+  ttfb?: number;
+  firstPaint?: number;
+  domInteractive?: number;
   // Marketing
   utmSource?: string;
   utmMedium?: string;
@@ -98,6 +126,20 @@ const getLoadTime = (): number | undefined => {
   return undefined;
 };
 
+const getPerformanceData = () => {
+  try {
+    const perf = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
+    if (perf) {
+      return {
+        ttfb: Math.round(perf.responseStart - perf.requestStart),
+        firstPaint: Math.round(performance.getEntriesByName('first-contentful-paint')[0]?.startTime || 0),
+        domInteractive: Math.round(perf.domInteractive),
+      };
+    }
+  } catch (e) { /* ignore */ }
+  return {};
+};
+
 const getDeviceInfo = () => {
   const ua = navigator.userAgent;
   const nav = navigator as any;
@@ -128,6 +170,13 @@ const getDeviceInfo = () => {
   const conn = nav.connection || nav.mozConnection || nav.webkitConnection;
   const utm = getUtmParams();
 
+  const getContrastPref = () => {
+    if (window.matchMedia?.('(prefers-contrast: more)').matches) return 'more';
+    if (window.matchMedia?.('(prefers-contrast: less)').matches) return 'less';
+    if (window.matchMedia?.('(prefers-contrast: custom)').matches) return 'custom';
+    return 'no-preference';
+  };
+
   return { 
     browser, os, device,
     // Pantalla
@@ -138,22 +187,48 @@ const getDeviceInfo = () => {
     pixelRatio: window.devicePixelRatio ? Math.round(window.devicePixelRatio * 100) / 100 : undefined,
     colorDepth: window.screen?.colorDepth,
     orientation: window.screen?.orientation?.type,
+    // Pantalla extra
+    availWidth: window.screen?.availWidth,
+    availHeight: window.screen?.availHeight,
+    screenOrientation: window.screen?.orientation?.type,
     // Localización
     language: navigator.language,
+    languages: navigator.languages?.length > 0 ? Array.from(navigator.languages) : undefined,
+    languageCount: navigator.languages?.length,
     timezone: Intl?.DateTimeFormat?.()?.resolvedOptions?.()?.timeZone,
-    // Conexión
-    connection: conn?.effectiveType,
+    // Conexión - detectar WiFi primero (type), luego effectiveType
+    connection: conn?.type === 'wifi' ? 'wifi' : (conn?.effectiveType || 'unknown'),
+    connectionType: conn?.type,
     downlink: conn?.downlink,
+    downlinkMax: conn?.downlinkMax,
+    rtt: conn?.rtt,
     saveData: conn?.saveData,
     // Hardware
     memory: nav.deviceMemory, 
     cores: nav.hardwareConcurrency,
     touchPoints: nav.maxTouchPoints,
+    touchSupport: 'ontouchstart' in window,
     // Preferencias UX
     darkTheme: window.matchMedia?.('(prefers-color-scheme: dark)').matches,
     reducedMotion: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches,
+    reducedTransparency: window.matchMedia?.('(prefers-reduced-transparency: reduce)').matches,
+    prefersContrast: getContrastPref(),
+    colorGamut: window.matchMedia?.('(color-gamut: p3)').matches ? 'p3' : 
+                 window.matchMedia?.('(color-gamut: rec2020)').matches ? 'rec2020' : 'srgb',
+    monochrome: window.matchMedia?.('(monochrome)').matches,
+    invertedColors: window.matchMedia?.('(inverted-colors: inverted)').matches,
+    forcedColors: window.matchMedia?.('(forced-colors: active)').matches,
+    // Privacidad y Entorno
     cookiesEnabled: navigator.cookieEnabled,
     doNotTrack: navigator.doNotTrack === '1',
+    pdfViewerEnabled: nav.pdfViewerEnabled,
+    webdriver: nav.webdriver,
+    vendor: navigator.vendor,
+    platform: navigator.platform,
+    isSecureContext: window.isSecureContext,
+    online: navigator.onLine,
+    historyLength: window.history?.length,
+    clipboardEnabled: !!navigator.clipboard,
     // Bot
     isBot: !!nav.webdriver,
     // UTM
@@ -170,10 +245,13 @@ export function useAnalytics() {
       hasTracked.current = true;
 
       try {
-        const { country, city, countryCode } = await getGeoInfo();
-        const info = getDeviceInfo();
+        const [{ country, city, countryCode }, info, perfData] = await Promise.all([
+          getGeoInfo(),
+          Promise.resolve(getDeviceInfo()),
+          Promise.resolve(getPerformanceData())
+        ]);
 
-        // Esperar a que la página termine de cargar para capturar el loadTime
+        // loadTime ya se captura dentro de getDeviceInfo via performance API
         const loadTime = getLoadTime();
 
         const visitData: VisitData = {
@@ -184,6 +262,7 @@ export function useAnalytics() {
           city,
           referrer: document.referrer || 'direct',
           ...(loadTime && loadTime > 0 && { loadTime }),
+          ...perfData,
           ...info
         };
 
