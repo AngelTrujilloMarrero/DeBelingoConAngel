@@ -2,6 +2,7 @@ import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import Header from './components/Header';
 import VisitCounter from './components/VisitCounter';
 import { useEvents } from './hooks/useEvents';
+import { useAnalytics } from './hooks/useAnalytics';
 import { Loader2 } from 'lucide-react';
 import { EventosPage, MapaPage, EstadisticasPage, RedesPage, FormacionesPage, CarnavalPage } from './pages';
 import MessageBoard from './components/MessageBoard';
@@ -14,6 +15,8 @@ const queryClient = new QueryClient();
 function AppContent() {
   const { events, recentActivity, loading } = useEvents();
   const { pathname } = useLocation();
+  
+  useAnalytics();
 
   useEffect(() => {
     window.scrollTo(0, 0);

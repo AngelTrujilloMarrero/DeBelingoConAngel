@@ -45,6 +45,15 @@
           ".validate": "newData.hasChildren(['text', 'timestamp']) && newData.child('text').isString() && newData.child('text').val().length < 300 && newData.child('timestamp').val() <= now && newData.child('timestamp').val() > (now - 60000)"
         }
       }
+    },
+    "analytics": {
+      ".read": "auth != null && (auth.uid == 'nC4NMCMC7Gha7QH5en25xNQDtLp1' || auth.uid == 'JIdFCV7ppmXAltAajzBdTzI2qYE3')",
+      "visits": {
+        ".write": "true",
+        "$visitId": {
+          ".validate": "newData.hasChildren(['timestamp', 'page', 'country']) && newData.child('timestamp').isNumber() && newData.child('timestamp').val() <= now"
+        }
+      }
     }
   }
 }
