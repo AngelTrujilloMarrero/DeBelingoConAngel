@@ -12,17 +12,23 @@ interface VisitData {
   device: string;
   referrer: string;
   duration?: number;
-  // Parámetros técnicos (sin cookies)
+  // Parámetros técnicos
   screenWidth?: number;
   screenHeight?: number;
   language?: string;
   timezone?: string;
   connection?: string;
-  memory?: number;        // RAM aproximada
-  cores?: number;         // Núcleos CPU
-  colorDepth?: number;    // Bits de color
-  touchPoints?: number;   // Soporte táctil
-  orientation?: string;   // Portrait/Landscape
+  memory?: number;
+  cores?: number;
+  colorDepth?: number;
+  touchPoints?: number;
+  orientation?: string;
+  // Nuevos: Preferencias y UX
+  pdfSupport?: boolean;
+  darkTheme?: boolean;
+  reducedMotion?: boolean;
+  saveData?: boolean;
+  downlink?: number;
 }
 
 const getDeviceInfo = () => {
@@ -60,23 +66,29 @@ const getDeviceInfo = () => {
     device = 'mobile';
   }
 
-  // --- Parámetros adicionales ---
+  // --- Parámetros base ---
   const screenWidth = window.screen?.width ?? undefined;
   const screenHeight = window.screen?.height ?? undefined;
   const language = navigator.language || undefined;
   const timezone = Intl?.DateTimeFormat?.()?.resolvedOptions?.()?.timeZone || undefined;
-  const connection = nav.connection?.effectiveType || nav.mozConnection?.effectiveType || undefined;
   
-  // Nuevos parámetros técnicos
+  // Red y Hardware
+  const conn = nav.connection || nav.mozConnection || nav.webkitConnection;
+  const connection = conn?.effectiveType || undefined;
+  const downlink = conn?.downlink || undefined;
+  const saveData = conn?.saveData || undefined;
   const memory = nav.deviceMemory || undefined; 
   const cores = nav.hardwareConcurrency || undefined;
-  const colorDepth = window.screen?.colorDepth || undefined;
-  const touchPoints = nav.maxTouchPoints || undefined;
-  const orientation = window.screen?.orientation?.type || undefined;
+  
+  // Preferencias UX
+  const darkTheme = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
+  const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  const pdfSupport = nav.pdfViewerEnabled || undefined;
 
   return { 
     browser, os, device, screenWidth, screenHeight, language, 
-    timezone, connection, memory, cores, colorDepth, touchPoints, orientation 
+    timezone, connection, memory, cores, downlink, saveData,
+    darkTheme, reducedMotion, pdfSupport
   };
 };
 
@@ -125,9 +137,11 @@ export function useAnalytics() {
           ...(info.connection && { connection: info.connection }),
           ...(info.memory && { memory: info.memory }),
           ...(info.cores && { cores: info.cores }),
-          ...(info.colorDepth && { colorDepth: info.colorDepth }),
-          ...(info.touchPoints !== undefined && { touchPoints: info.touchPoints }),
-          ...(info.orientation && { orientation: info.orientation }),
+          ...(info.downlink && { downlink: info.downlink }),
+          ...(info.saveData !== undefined && { saveData: info.saveData }),
+          ...(info.darkTheme !== undefined && { darkTheme: info.darkTheme }),
+          ...(info.reducedMotion !== undefined && { reducedMotion: info.reducedMotion }),
+          ...(info.pdfSupport !== undefined && { pdfSupport: info.pdfSupport }),
         };
 
         const visitsRef = ref(db, 'analytics/visits');
@@ -137,7 +151,7 @@ export function useAnalytics() {
           return (current || 0) + 1;
         });
 
-        console.log('[Analytics] Visit tracked (Deep Analysis):', visitData);
+        console.log('[Analytics] Full Depth Tracking:', visitData);
       } catch (error) {
         console.error('[Analytics] Error tracking visit:', error);
       }
