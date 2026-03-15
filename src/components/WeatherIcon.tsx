@@ -19,7 +19,7 @@ const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, time, alert 
     const eventDate = new Date(date);
     const diffTime = eventDate.getTime() - today.getTime();
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-    const shouldFetchWeather = diffDays >= 0 && diffDays <= 5;
+    const shouldFetchWeather = diffDays >= 0 && diffDays <= 14;
 
     const { data: weatherData, isLoading: loading } = useQuery({
         queryKey: ['weather', date, municipio, time],
