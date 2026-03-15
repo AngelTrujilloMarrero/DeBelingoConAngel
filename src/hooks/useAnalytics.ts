@@ -6,13 +6,13 @@ interface VisitData {
   timestamp: number;
   page: string;
   country: string;
+  countryCode?: string; // Nuevo: Para banderas automáticas
   city?: string;
   browser: string;
   os: string;
   device: string;
   referrer: string;
   duration?: number;
-  // Parámetros técnicos
   screenWidth?: number;
   screenHeight?: number;
   language?: string;
@@ -23,19 +23,48 @@ interface VisitData {
   colorDepth?: number;
   touchPoints?: number;
   orientation?: string;
-  // Nuevos: Preferencias y UX
-  pdfSupport?: boolean;
   darkTheme?: boolean;
   reducedMotion?: boolean;
   saveData?: boolean;
   downlink?: number;
 }
 
+const getGeoInfo = async (): Promise<{ country: string; city: string; countryCode: string }> => {
+  // Intento 1: ipapi.co
+  try {
+    const response = await fetch('https://ipapi.co/json/');
+    if (response.ok) {
+      const data = await response.json();
+      if (data.country_name && data.country_name !== 'Unknown') {
+        return {
+          country: data.country_name,
+          countryCode: data.country,
+          city: data.city || 'Unknown'
+        };
+      }
+    }
+  } catch (e) { /* ignore */ }
+
+  // Intento 2: Backup con freeipapi.com (muy fiable)
+  try {
+    const response = await fetch('https://freeipapi.com/api/json');
+    if (response.ok) {
+      const data = await response.json();
+      return {
+        country: data.countryName,
+        countryCode: data.countryCode,
+        city: data.cityName || 'Unknown'
+      };
+    }
+  } catch (e) { /* ignore */ }
+
+  return { country: 'Unknown', city: 'Unknown', countryCode: 'UN' };
+};
+
 const getDeviceInfo = () => {
   const ua = navigator.userAgent;
   const nav = navigator as any;
 
-  // --- Browser ---
   let browser = 'Unknown';
   if (ua.includes('Edg/') || ua.includes('Edge/')) browser = 'Edge';
   else if (ua.includes('OPR/') || ua.includes('Opera')) browser = 'Opera';
@@ -44,7 +73,6 @@ const getDeviceInfo = () => {
   else if (ua.includes('Chrome')) browser = 'Chrome';
   else if (ua.includes('Safari')) browser = 'Safari';
 
-  // --- OS ---
   let os = 'Unknown';
   if (ua.includes('Windows')) os = 'Windows';
   else if (ua.includes('Android')) os = 'Android';
@@ -53,59 +81,29 @@ const getDeviceInfo = () => {
   else if (ua.includes('CrOS')) os = 'Chrome OS';
   else if (ua.includes('Linux')) os = 'Linux';
 
-  // --- Device ---
   let device = 'desktop';
   if (ua.includes('iPad') || (ua.includes('Tablet') && !ua.includes('Mobile'))) {
     device = 'tablet';
-  } else if (
-    ua.includes('Mobile') ||
-    ua.includes('Android') ||
-    ua.includes('iPhone') ||
-    ua.includes('iPod')
-  ) {
+  } else if (ua.includes('Mobile') || ua.includes('Android') || ua.includes('iPhone')) {
     device = 'mobile';
   }
 
-  // --- Parámetros base ---
-  const screenWidth = window.screen?.width ?? undefined;
-  const screenHeight = window.screen?.height ?? undefined;
-  const language = navigator.language || undefined;
-  const timezone = Intl?.DateTimeFormat?.()?.resolvedOptions?.()?.timeZone || undefined;
-  
-  // Red y Hardware
   const conn = nav.connection || nav.mozConnection || nav.webkitConnection;
-  const connection = conn?.effectiveType || undefined;
-  const downlink = conn?.downlink || undefined;
-  const saveData = conn?.saveData || undefined;
-  const memory = nav.deviceMemory || undefined; 
-  const cores = nav.hardwareConcurrency || undefined;
-  
-  // Preferencias UX
-  const darkTheme = window.matchMedia?.('(prefers-color-scheme: dark)').matches;
-  const reducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-  const pdfSupport = nav.pdfViewerEnabled || undefined;
 
   return { 
-    browser, os, device, screenWidth, screenHeight, language, 
-    timezone, connection, memory, cores, downlink, saveData,
-    darkTheme, reducedMotion, pdfSupport
+    browser, os, device,
+    screenWidth: window.screen?.width,
+    screenHeight: window.screen?.height,
+    language: navigator.language,
+    timezone: Intl?.DateTimeFormat?.()?.resolvedOptions?.()?.timeZone,
+    connection: conn?.effectiveType,
+    downlink: conn?.downlink,
+    saveData: conn?.saveData,
+    memory: nav.deviceMemory, 
+    cores: nav.hardwareConcurrency,
+    darkTheme: window.matchMedia?.('(prefers-color-scheme: dark)').matches,
+    reducedMotion: window.matchMedia?.('(prefers-reduced-motion: reduce)').matches
   };
-};
-
-const getGeoInfo = async (): Promise<{ country: string; city: string }> => {
-  try {
-    const response = await fetch('https://ipapi.co/json/');
-    if (response.ok) {
-      const data = await response.json();
-      return {
-        country: data.country_name || 'Unknown',
-        city: data.city || 'Unknown'
-      };
-    }
-  } catch (error) {
-    console.warn('[Analytics] Geo fetch failed:', error);
-  }
-  return { country: 'Unknown', city: 'Unknown' };
 };
 
 export function useAnalytics() {
@@ -118,72 +116,30 @@ export function useAnalytics() {
       hasTracked.current = true;
 
       try {
+        const { country, city, countryCode } = await getGeoInfo();
         const info = getDeviceInfo();
-        const { country, city } = await getGeoInfo();
 
         const visitData: VisitData = {
           timestamp: Date.now(),
           page: window.location.pathname || '/',
           country,
+          countryCode,
           city,
           browser: info.browser,
           os: info.os,
           device: info.device,
           referrer: document.referrer || 'direct',
-          ...(info.screenWidth && { screenWidth: info.screenWidth }),
-          ...(info.screenHeight && { screenHeight: info.screenHeight }),
-          ...(info.language && { language: info.language }),
-          ...(info.timezone && { timezone: info.timezone }),
-          ...(info.connection && { connection: info.connection }),
-          ...(info.memory && { memory: info.memory }),
-          ...(info.cores && { cores: info.cores }),
-          ...(info.downlink && { downlink: info.downlink }),
-          ...(info.saveData !== undefined && { saveData: info.saveData }),
-          ...(info.darkTheme !== undefined && { darkTheme: info.darkTheme }),
-          ...(info.reducedMotion !== undefined && { reducedMotion: info.reducedMotion }),
-          ...(info.pdfSupport !== undefined && { pdfSupport: info.pdfSupport }),
+          ...info
         };
 
         const visitsRef = ref(db, 'analytics/visits');
         await push(visitsRef, visitData);
-
-        await runTransaction(visitCountRef, (current) => {
-          return (current || 0) + 1;
-        });
-
-        console.log('[Analytics] Full Depth Tracking:', visitData);
+        await runTransaction(visitCountRef, (c) => (c || 0) + 1);
       } catch (error) {
-        console.error('[Analytics] Error tracking visit:', error);
+        console.error('[Analytics] Error:', error);
       }
     };
 
     trackVisit();
-
-    const handleBeforeUnload = () => {
-      const duration = Math.round((Date.now() - startTime.current) / 1000);
-      if (duration > 5) {
-        const info = getDeviceInfo();
-        const visitData: VisitData = {
-          timestamp: Date.now(),
-          page: window.location.pathname || '/',
-          country: 'Unknown',
-          city: 'Unknown',
-          browser: info.browser,
-          os: info.os,
-          device: info.device,
-          referrer: document.referrer || 'direct',
-          duration
-        };
-
-        const visitsRef = ref(db, 'analytics/visits');
-        push(visitsRef, visitData).catch(() => {});
-      }
-    };
-
-    window.addEventListener('beforeunload', handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
-    };
   }, []);
 }
