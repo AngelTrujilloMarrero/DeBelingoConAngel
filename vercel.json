@@ -72,6 +72,10 @@
     {
       "path": "/api/cleanup-messages",
       "schedule": "0 0 * * *"
+    },
+    {
+      "path": "/api/cleanup-analytics",
+      "schedule": "0 0 1 * *"
     }
   ]
 }
