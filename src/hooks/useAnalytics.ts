@@ -264,22 +264,24 @@ export function useAnalytics() {
       if (hasTracked.current) return;
       hasTracked.current = true;
 
-      try {
-        const [{ country, city, countryCode }, info, perfData] = await Promise.all([
-          getGeoInfo(),
-          Promise.resolve(getDeviceInfo()),
-          Promise.resolve(getPerformanceData())
-        ]);
+      console.log('[Analytics] Starting visit tracking...');
 
-        // loadTime ya se captura dentro de getDeviceInfo via performance API
+      try {
+        console.log('[Analytics] Fetching geo info...');
+        const geoInfo = await getGeoInfo();
+        console.log('[Analytics] Geo info result:', geoInfo);
+        
+        const info = getDeviceInfo();
+        const perfData = getPerformanceData();
+
         const loadTime = getLoadTime();
 
         const visitData: Record<string, any> = {
           timestamp: Date.now(),
           page: window.location.pathname || '/',
-          country: country || 'Unknown',
-          countryCode: countryCode || 'UN',
-          city: city || 'Unknown',
+          country: geoInfo.country || 'Unknown',
+          countryCode: geoInfo.countryCode || 'UN',
+          city: geoInfo.city || 'Unknown',
           referrer: document.referrer || 'direct',
           ...perfData,
           ...info
@@ -289,29 +291,32 @@ export function useAnalytics() {
           visitData.loadTime = loadTime;
         }
 
-        // Limpiar campos undefined y NaN de forma segura
-        const cleanData = Object.fromEntries(
-          Object.entries(visitData).filter(([, v]) => {
-            if (v === undefined || v === null) return false;
-            if (typeof v === 'number' && Number.isNaN(v)) return false;
-            return true;
-          })
-        );
+        const cleanData: Record<string, any> = {};
+        for (const [k, v] of Object.entries(visitData)) {
+          if (v === undefined || v === null) continue;
+          if (typeof v === 'number' && !Number.isFinite(v)) continue;
+          if (Array.isArray(v)) {
+            cleanData[k] = v.join(', ');
+          } else {
+            cleanData[k] = v;
+          }
+        }
+
+        console.log('[Analytics] Sending visit data:', cleanData);
 
         const visitsRef = ref(db, 'analytics/visits');
         
-        // 1. Registrar la visita detallada primero
         try {
-          await push(visitsRef, cleanData);
+          const result = await push(visitsRef, cleanData);
+          console.log('[Analytics] Visit pushed successfully:', result.key);
         } catch (pushError) {
           console.error('[Analytics] Error registering visit details:', pushError);
-          // Si falla los detalles, no seguimos con el contador para evitar desincronización
           return;
         }
 
-        // 2. Si la visita se guardó, aumentar el contador
         try {
           await runTransaction(visitCountRef, (c) => (c || 0) + 1);
+          console.log('[Analytics] Counter incremented successfully');
         } catch (txnError) {
           console.error('[Analytics] Error in counter transaction:', txnError);
         }
@@ -320,7 +325,6 @@ export function useAnalytics() {
       }
     };
 
-    // Esperar un momento breve para que loadTime esté disponible (reducido para no perder visitas por refresh rápido)
     setTimeout(trackVisit, 200);
   }, []);
 }
