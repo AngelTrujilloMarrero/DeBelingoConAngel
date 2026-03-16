@@ -352,7 +352,7 @@ export function useAnalytics() {
           console.log('[Analytics] Visit pushed successfully:', result.key);
         } catch (pushError) {
           console.error('[Analytics] Error registering visit details:', pushError);
-          return;
+          // No retornamos aquí para permitir que el contador aumente aunque fallen los detalles (útil en redes WiFi/móviles con bloqueos o lag)
         }
 
         try {
