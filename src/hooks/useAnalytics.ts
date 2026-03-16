@@ -316,8 +316,14 @@ export function useAnalytics() {
       }
 
       try {
-        await runTransaction(visitCountRef, (c) => (c || 0) + 1);
-        console.log('[Analytics] Counter incremented successfully');
+        const visitKey = sessionStorage.getItem('hasCountedVisit');
+        if (!visitKey) {
+          await runTransaction(visitCountRef, (c) => (c || 0) + 1);
+          sessionStorage.setItem('hasCountedVisit', 'true');
+          console.log('[Analytics] Counter incremented successfully');
+        } else {
+          console.log('[Analytics] Session already counted, skipping counter increment');
+        }
       } catch (txnError) {
         console.error('[Analytics] Error in counter transaction:', txnError);
       }
