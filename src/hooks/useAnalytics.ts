@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { push, ref, runTransaction, serverTimestamp } from 'firebase/database';
+import { push, ref, runTransaction } from 'firebase/database';
 import { db, visitCountRef } from '../utils/firebase';
 
 interface VisitData {
@@ -275,7 +275,7 @@ export function useAnalytics() {
         const loadTime = getLoadTime();
 
         const visitData: Record<string, any> = {
-          timestamp: serverTimestamp(),
+          timestamp: Date.now(),
           page: window.location.pathname || '/',
           country: country || 'Unknown',
           countryCode: countryCode || 'UN',

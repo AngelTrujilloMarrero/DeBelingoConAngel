@@ -5,7 +5,7 @@
     "visitCount": {
       ".read": true,
       ".write": "true",
-      ".validate": "newData.isNumber() && newData.val() <= 2000000 && (!data.exists() || newData.val() == data.val() + 1)"
+      ".validate": "newData.isNumber() && newData.val() <= 2000000 && newData.val() >= 0"
     },
     "mapUsage": {
       ".read": true,
@@ -51,7 +51,7 @@
       "visits": {
         ".write": "true",
         "$visitId": {
-          ".validate": "newData.hasChildren(['timestamp', 'page', 'country']) && newData.child('timestamp').isNumber() && newData.child('timestamp').val() <= now"
+          ".validate": "newData.hasChildren(['timestamp', 'page', 'country']) && newData.child('timestamp').isNumber() && newData.child('timestamp').val() <= now && newData.child('timestamp').val() > (now - 86400000)"
         }
       }
     }
