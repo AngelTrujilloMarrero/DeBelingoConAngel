@@ -274,34 +274,47 @@ export function useAnalytics() {
         // loadTime ya se captura dentro de getDeviceInfo via performance API
         const loadTime = getLoadTime();
 
-        const visitData: VisitData = {
-          timestamp: serverTimestamp() as unknown as number,
+        const visitData: Record<string, any> = {
+          timestamp: serverTimestamp(),
           page: window.location.pathname || '/',
-          country,
-          countryCode,
-          city,
+          country: country || 'Unknown',
+          countryCode: countryCode || 'UN',
+          city: city || 'Unknown',
           referrer: document.referrer || 'direct',
-          ...(loadTime && loadTime > 0 && { loadTime }),
           ...perfData,
           ...info
         };
 
-        // Limpiar campos undefined y NaN para no mandar basura o crashear Firebase
+        if (loadTime && loadTime > 0) {
+          visitData.loadTime = loadTime;
+        }
+
+        // Limpiar campos undefined y NaN de forma segura
         const cleanData = Object.fromEntries(
-          Object.entries(visitData).filter(([, v]) => v !== undefined && v !== null && !Number.isNaN(v))
+          Object.entries(visitData).filter(([, v]) => {
+            if (v === undefined || v === null) return false;
+            if (typeof v === 'number' && Number.isNaN(v)) return false;
+            return true;
+          })
         );
 
         const visitsRef = ref(db, 'analytics/visits');
         
-        // Ejecutar primero el transaction para asegurar que el contador se mueve sí o sí
+        // 1. Registrar la visita detallada primero
+        try {
+          await push(visitsRef, cleanData);
+        } catch (pushError) {
+          console.error('[Analytics] Error registering visit details:', pushError);
+          // Si falla los detalles, no seguimos con el contador para evitar desincronización
+          return;
+        }
+
+        // 2. Si la visita se guardó, aumentar el contador
         try {
           await runTransaction(visitCountRef, (c) => (c || 0) + 1);
         } catch (txnError) {
-          console.error('[Analytics] Error in transaction:', txnError);
+          console.error('[Analytics] Error in counter transaction:', txnError);
         }
-        
-        // Luego registrar la visita
-        await push(visitsRef, cleanData);
       } catch (error) {
         console.error('[Analytics] Error:', error);
       }
