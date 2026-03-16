@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import { push, ref, runTransaction, update } from 'firebase/database';
 import { db, visitCountRef } from '../utils/firebase';
 
@@ -256,28 +257,91 @@ const getDeviceInfo = () => {
   };
 };
 
-let pageStartTime = 0;
-let visitKey: string | null = null;
-
-const trackDuration = async () => {
-  if (!visitKey || pageStartTime === 0) return;
-  
-  const duration = Date.now() - pageStartTime;
-  
-  try {
-    const visitRef = ref(db, `analytics/visits/${visitKey}`);
-    await update(visitRef, { duration });
-    console.log('[Analytics] Duration tracked:', duration);
-  } catch (e) {
-    console.error('[Analytics] Error updating duration:', e);
-  }
-};
-
 export function useAnalytics() {
-  const hasTracked = useRef(false);
+  const location = useLocation();
+  const currentPath = location.pathname;
+  const lastTrackedPath = useRef<string | null>(null);
+  const visitKeyRef = useRef<string | null>(null);
+  const pageStartTimeRef = useRef<number>(0);
+
+  const trackVisit = useCallback(async (page: string) => {
+    console.log('[Analytics] Tracking visit for page:', page);
+
+    try {
+      console.log('[Analytics] Fetching geo info...');
+      const geoInfo = await getGeoInfo();
+      console.log('[Analytics] Geo info result:', geoInfo);
+      
+      const info = getDeviceInfo();
+      const perfData = getPerformanceData();
+
+      const loadTime = getLoadTime();
+
+      const visitData: Record<string, any> = {
+        timestamp: Date.now(),
+        page: page,
+        country: geoInfo.country || 'Unknown',
+        countryCode: geoInfo.countryCode || 'UN',
+        city: geoInfo.city || 'Unknown',
+        referrer: document.referrer || 'direct',
+        ...perfData,
+        ...info
+      };
+
+      if (loadTime && loadTime > 0) {
+        visitData.loadTime = loadTime;
+      }
+
+      const cleanData: Record<string, any> = {};
+      for (const [k, v] of Object.entries(visitData)) {
+        if (v === undefined || v === null) continue;
+        if (typeof v === 'number' && !Number.isFinite(v)) continue;
+        if (Array.isArray(v)) {
+          cleanData[k] = v.join(', ');
+        } else {
+          cleanData[k] = v;
+        }
+      }
+
+      console.log('[Analytics] Sending visit data:', cleanData);
+
+      const visitsRef = ref(db, 'analytics/visits');
+      
+      try {
+        const result = await push(visitsRef, cleanData);
+        visitKeyRef.current = result.key;
+        console.log('[Analytics] Visit pushed successfully:', result.key);
+      } catch (pushError) {
+        console.error('[Analytics] Error registering visit details:', pushError);
+      }
+
+      try {
+        await runTransaction(visitCountRef, (c) => (c || 0) + 1);
+        console.log('[Analytics] Counter incremented successfully');
+      } catch (txnError) {
+        console.error('[Analytics] Error in counter transaction:', txnError);
+      }
+    } catch (error) {
+      console.error('[Analytics] Error:', error);
+    }
+  }, []);
+
+  const trackDuration = useCallback(async () => {
+    if (!visitKeyRef.current || pageStartTimeRef.current === 0) return;
+    
+    const duration = Date.now() - pageStartTimeRef.current;
+    
+    try {
+      const visitRef = ref(db, `analytics/visits/${visitKeyRef.current}`);
+      await update(visitRef, { duration });
+      console.log('[Analytics] Duration tracked:', duration);
+    } catch (e) {
+      console.error('[Analytics] Error updating duration:', e);
+    }
+  }, []);
 
   useEffect(() => {
-    pageStartTime = Date.now();
+    pageStartTimeRef.current = Date.now();
 
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'hidden') {
@@ -297,75 +361,14 @@ export function useAnalytics() {
       window.removeEventListener('beforeunload', handleBeforeUnload);
       trackDuration();
     };
-  }, []);
+  }, [trackDuration]);
 
   useEffect(() => {
-    const trackVisit = async () => {
-      if (hasTracked.current) return;
-      hasTracked.current = true;
-
-      console.log('[Analytics] Starting visit tracking...');
-
-      try {
-        console.log('[Analytics] Fetching geo info...');
-        const geoInfo = await getGeoInfo();
-        console.log('[Analytics] Geo info result:', geoInfo);
-        
-        const info = getDeviceInfo();
-        const perfData = getPerformanceData();
-
-        const loadTime = getLoadTime();
-
-        const visitData: Record<string, any> = {
-          timestamp: Date.now(),
-          page: window.location.pathname || '/',
-          country: geoInfo.country || 'Unknown',
-          countryCode: geoInfo.countryCode || 'UN',
-          city: geoInfo.city || 'Unknown',
-          referrer: document.referrer || 'direct',
-          ...perfData,
-          ...info
-        };
-
-        if (loadTime && loadTime > 0) {
-          visitData.loadTime = loadTime;
-        }
-
-        const cleanData: Record<string, any> = {};
-        for (const [k, v] of Object.entries(visitData)) {
-          if (v === undefined || v === null) continue;
-          if (typeof v === 'number' && !Number.isFinite(v)) continue;
-          if (Array.isArray(v)) {
-            cleanData[k] = v.join(', ');
-          } else {
-            cleanData[k] = v;
-          }
-        }
-
-        console.log('[Analytics] Sending visit data:', cleanData);
-
-        const visitsRef = ref(db, 'analytics/visits');
-        
-        try {
-          const result = await push(visitsRef, cleanData);
-          visitKey = result.key;
-          console.log('[Analytics] Visit pushed successfully:', result.key);
-        } catch (pushError) {
-          console.error('[Analytics] Error registering visit details:', pushError);
-          // No retornamos aquí para permitir que el contador aumente aunque fallen los detalles (útil en redes WiFi/móviles con bloqueos o lag)
-        }
-
-        try {
-          await runTransaction(visitCountRef, (c) => (c || 0) + 1);
-          console.log('[Analytics] Counter incremented successfully');
-        } catch (txnError) {
-          console.error('[Analytics] Error in counter transaction:', txnError);
-        }
-      } catch (error) {
-        console.error('[Analytics] Error:', error);
-      }
-    };
-
-    setTimeout(trackVisit, 200);
-  }, []);
+    if (lastTrackedPath.current !== currentPath) {
+      lastTrackedPath.current = currentPath;
+      pageStartTimeRef.current = Date.now();
+      visitKeyRef.current = null;
+      trackVisit(currentPath);
+    }
+  }, [currentPath, trackVisit]);
 }
