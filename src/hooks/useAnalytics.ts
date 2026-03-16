@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { push, ref, runTransaction } from 'firebase/database';
+import { push, ref, runTransaction, serverTimestamp } from 'firebase/database';
 import { db, visitCountRef } from '../utils/firebase';
 
 interface VisitData {
@@ -275,7 +275,7 @@ export function useAnalytics() {
         const loadTime = getLoadTime();
 
         const visitData: VisitData = {
-          timestamp: Date.now(),
+          timestamp: serverTimestamp() as unknown as number,
           page: window.location.pathname || '/',
           country,
           countryCode,
@@ -292,8 +292,16 @@ export function useAnalytics() {
         );
 
         const visitsRef = ref(db, 'analytics/visits');
+        
+        // Ejecutar primero el transaction para asegurar que el contador se mueve sí o sí
+        try {
+          await runTransaction(visitCountRef, (c) => (c || 0) + 1);
+        } catch (txnError) {
+          console.error('[Analytics] Error in transaction:', txnError);
+        }
+        
+        // Luego registrar la visita
         await push(visitsRef, cleanData);
-        await runTransaction(visitCountRef, (c) => (c || 0) + 1);
       } catch (error) {
         console.error('[Analytics] Error:', error);
       }
