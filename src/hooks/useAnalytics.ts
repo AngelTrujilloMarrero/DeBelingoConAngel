@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { push, ref, runTransaction } from 'firebase/database';
+import { push, ref, runTransaction, update } from 'firebase/database';
 import { db, visitCountRef } from '../utils/firebase';
 
 interface VisitData {
@@ -256,8 +256,48 @@ const getDeviceInfo = () => {
   };
 };
 
+let pageStartTime = 0;
+let visitKey: string | null = null;
+
+const trackDuration = async () => {
+  if (!visitKey || pageStartTime === 0) return;
+  
+  const duration = Date.now() - pageStartTime;
+  
+  try {
+    const visitRef = ref(db, `analytics/visits/${visitKey}`);
+    await update(visitRef, { duration });
+    console.log('[Analytics] Duration tracked:', duration);
+  } catch (e) {
+    console.error('[Analytics] Error updating duration:', e);
+  }
+};
+
 export function useAnalytics() {
   const hasTracked = useRef(false);
+
+  useEffect(() => {
+    pageStartTime = Date.now();
+
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'hidden') {
+        trackDuration();
+      }
+    };
+
+    const handleBeforeUnload = () => {
+      trackDuration();
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      trackDuration();
+    };
+  }, []);
 
   useEffect(() => {
     const trackVisit = async () => {
@@ -308,6 +348,7 @@ export function useAnalytics() {
         
         try {
           const result = await push(visitsRef, cleanData);
+          visitKey = result.key;
           console.log('[Analytics] Visit pushed successfully:', result.key);
         } catch (pushError) {
           console.error('[Analytics] Error registering visit details:', pushError);
