@@ -76,35 +76,55 @@ interface VisitData {
 }
 
 const getGeoInfo = async (): Promise<{ country: string; city: string; countryCode: string }> => {
+  // Intentar caché
+  try {
+    const cached = sessionStorage.getItem('geoInfo');
+    if (cached) return JSON.parse(cached);
+  } catch (e) { /* ignore */ }
+
+  const fallback = { country: 'Unknown', city: 'Unknown', countryCode: 'UN' };
+
   // Intento 1: ipapi.co
   try {
-    const response = await fetch('https://ipapi.co/json/');
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
+    const response = await fetch('https://ipapi.co/json/', { signal: controller.signal });
+    clearTimeout(timeoutId);
+    
     if (response.ok) {
       const data = await response.json();
       if (data.country_name && data.country_name !== 'Unknown') {
-        return {
+        const result = {
           country: data.country_name,
           countryCode: data.country,
           city: data.city || 'Unknown'
         };
+        sessionStorage.setItem('geoInfo', JSON.stringify(result));
+        return result;
       }
     }
   } catch (e) { /* ignore */ }
 
   // Intento 2: Backup con freeipapi.com
   try {
-    const response = await fetch('https://freeipapi.com/api/json');
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
+    const response = await fetch('https://freeipapi.com/api/json', { signal: controller.signal });
+    clearTimeout(timeoutId);
+    
     if (response.ok) {
       const data = await response.json();
-      return {
+      const result = {
         country: data.countryName,
         countryCode: data.countryCode,
         city: data.cityName || 'Unknown'
       };
+      sessionStorage.setItem('geoInfo', JSON.stringify(result));
+      return result;
     }
   } catch (e) { /* ignore */ }
 
-  return { country: 'Unknown', city: 'Unknown', countryCode: 'UN' };
+  return fallback;
 };
 
 const getUtmParams = () => {
@@ -131,9 +151,9 @@ const getPerformanceData = () => {
     const perf = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming;
     if (perf) {
       return {
-        ttfb: Math.round(perf.responseStart - perf.requestStart),
+        ttfb: perf.responseStart && perf.requestStart ? Math.round(perf.responseStart - perf.requestStart) : 0,
         firstPaint: Math.round(performance.getEntriesByName('first-contentful-paint')[0]?.startTime || 0),
-        domInteractive: Math.round(perf.domInteractive),
+        domInteractive: perf.domInteractive ? Math.round(perf.domInteractive) : 0,
       };
     }
   } catch (e) { /* ignore */ }
@@ -266,9 +286,9 @@ export function useAnalytics() {
           ...info
         };
 
-        // Limpiar campos undefined para no mandar basura a Firebase
+        // Limpiar campos undefined y NaN para no mandar basura o crashear Firebase
         const cleanData = Object.fromEntries(
-          Object.entries(visitData).filter(([, v]) => v !== undefined && v !== null)
+          Object.entries(visitData).filter(([, v]) => v !== undefined && v !== null && !Number.isNaN(v))
         );
 
         const visitsRef = ref(db, 'analytics/visits');
@@ -279,7 +299,7 @@ export function useAnalytics() {
       }
     };
 
-    // Esperar un momento breve para que loadTime esté disponible
-    setTimeout(trackVisit, 1500);
+    // Esperar un momento breve para que loadTime esté disponible (reducido para no perder visitas por refresh rápido)
+    setTimeout(trackVisit, 200);
   }, []);
 }
