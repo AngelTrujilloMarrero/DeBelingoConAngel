@@ -12,13 +12,24 @@ export default defineConfig({
   build: {
     rollupOptions: {
       output: {
-        manualChunks: {
-          // Separar libraries pesadas
-          'vendor-chart': ['chart.js', 'react-chartjs-2', 'chartjs-plugin-datalabels'],
-          'vendor-leaflet': ['leaflet', 'react-leaflet', 'leaflet.markercluster', 'react-leaflet-cluster'],
-          'vendor-react': ['react', 'react-dom', 'react-router-dom'],
-          'vendor-radix': ['@radix-ui/react-dialog', '@radix-ui/react-dropdown-menu', '@radix-ui/react-tabs'],
-          'vendor-utils': ['date-fns', 'clsx', 'tailwind-merge'],
+        manualChunks(id: string) {
+          if (id.includes('node_modules')) {
+            if (id.includes('chart.js') || id.includes('react-chartjs-2') || id.includes('chartjs-plugin-datalabels')) {
+              return 'vendor-chart';
+            }
+            if (id.includes('leaflet') || id.includes('react-leaflet') || id.includes('leaflet.markercluster') || id.includes('react-leaflet-cluster')) {
+              return 'vendor-leaflet';
+            }
+            if (id.includes('react') || id.includes('react-dom') || id.includes('react-router-dom')) {
+              return 'vendor-react';
+            }
+            if (id.includes('@radix-ui')) {
+              return 'vendor-radix';
+            }
+            if (id.includes('date-fns') || id.includes('clsx') || id.includes('tailwind-merge')) {
+              return 'vendor-utils';
+            }
+          }
         },
       },
     },
