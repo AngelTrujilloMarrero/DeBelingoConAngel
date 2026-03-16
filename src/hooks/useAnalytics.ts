@@ -189,34 +189,6 @@ const getDeviceInfo = () => {
   }
 
   const conn = nav.connection || nav.mozConnection || nav.webkitConnection;
-  
-  const getConnectionType = () => {
-    if (!conn) return 'unknown';
-    
-    // Intentar primero type (wifi, cellular, ethernet)
-    if (conn.type && conn.type !== 'unknown') return conn.type;
-    
-    // Si type no está disponible, usar effectiveType
-    if (conn.effectiveType && conn.effectiveType !== 'unknown') {
-      // effectiveType puede ser 'slow-2g', '2g', '3g', '4g'
-      // Mapear a tipos más simples
-      if (conn.effectiveType === '4g') return '4g';
-      if (conn.effectiveType === '3g') return '3g';
-      if (conn.effectiveType === '2g') return '2g';
-      if (conn.effectiveType === 'slow-2g') return '2g';
-    }
-    
-    // Si tenemos downlink, podemos inferir
-    if (conn.downlink) {
-      if (conn.downlink >= 10) return 'wifi'; // Alta velocidad típicamente WiFi o fibra
-      if (conn.downlink >= 4) return '4g';
-      if (conn.downlink >= 1) return '3g';
-    }
-    
-    return 'unknown';
-  };
-
-  const connectionType = getConnectionType();
   const utm = getUtmParams();
 
   const getContrastPref = () => {
@@ -245,9 +217,9 @@ const getDeviceInfo = () => {
     languages: navigator.languages?.length > 0 ? Array.from(navigator.languages) : undefined,
     languageCount: navigator.languages?.length,
     timezone: Intl?.DateTimeFormat?.()?.resolvedOptions?.()?.timeZone,
-    // Conexión - usar función mejorada de detección
-    connection: connectionType,
-    connectionType: conn?.type || connectionType,
+    // Conexión - detectar WiFi primero (type), luego effectiveType
+    connection: conn?.type === 'wifi' ? 'wifi' : (conn?.effectiveType || 'unknown'),
+    connectionType: conn?.type,
     downlink: conn?.downlink,
     downlinkMax: conn?.downlinkMax,
     rtt: conn?.rtt,
