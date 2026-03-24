@@ -130,7 +130,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
         <div className="text-center mt-1">
           <span className="text-xs text-blue-100/70 flex items-center justify-center gap-1">
             <Clock className="w-3 h-3" />
-            {lastUpdate}
+            {lastUpdate} (Actualización)
           </span>
         </div>
       </div>
