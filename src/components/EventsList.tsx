@@ -7,7 +7,7 @@ import { Event, RecentActivityItem } from '../types';
 
 let orchestraArchive: any[] = [];
 let archiveMap: Record<string, any> = {};
-import { groupEventsByDay, sortEventsByDateTime, formatDayName, getLastUpdateDate } from '../utils/helpers';
+import { groupEventsByDay, sortEventsByDateTime, formatDayName, getLastUpdateDate, getLastUpdateInfo } from '../utils/helpers';
 import WeatherIcon from './WeatherIcon';
 import TITSALogo from './TITSALogo';
 import { useAemetAlerts, AemetAlert } from '../hooks/useAemetAlerts';
@@ -77,11 +77,12 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
     return () => unsubscribe();
   }, []);
 
-  const { eventsByDay, sortedEvents, lastUpdate } = useMemo(() => {
+  const { eventsByDay, sortedEvents, lastUpdate, updateInfo } = useMemo(() => {
     const grouped = groupEventsByDay(events);
     const sorted = sortEventsByDateTime(events);
     const update = getLastUpdateDate(sorted, recentActivity);
-    return { eventsByDay: grouped, sortedEvents: sorted, lastUpdate: update };
+    const info = getLastUpdateInfo(sorted, recentActivity);
+    return { eventsByDay: grouped, sortedEvents: sorted, lastUpdate: update, updateInfo: info };
   }, [events, recentActivity]);
 
   const toggleEvent = (id: string) => {
@@ -127,11 +128,16 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
           Próximas Verbenas
           <Music2 className="w-5 h-5 md:w-8 md:h-8" />
         </h2>
-        <div className="text-center mt-1">
-          <span className="text-xs text-blue-100/70 flex items-center justify-center gap-1">
+        <div className="flex items-center justify-center mt-1.5 gap-2 flex-wrap">
+          <span className="text-xs text-blue-100/70 flex items-center gap-1">
             <Clock className="w-3 h-3" />
-            {lastUpdate} (Actualización)
+            {lastUpdate}
           </span>
+          {updateInfo.relativeLabel && (
+            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border tracking-wide ${updateInfo.badgeClasses}`}>
+              Actualización — {updateInfo.relativeLabel}
+            </span>
+          )}
         </div>
       </div>
 

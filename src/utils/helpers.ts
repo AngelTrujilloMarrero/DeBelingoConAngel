@@ -33,6 +33,58 @@ export function getLastUpdateDate(events: Event[], recentActivity: RecentActivit
     : 'N/A';
 }
 
+export interface UpdateInfo {
+  formatted: string;
+  relativeLabel: string;
+  /** Tailwind text color class */
+  textColor: string;
+  /** Tailwind bg + border classes for a pill/badge */
+  badgeClasses: string;
+}
+
+export function getLastUpdateInfo(events: Event[], recentActivity: RecentActivityItem[] = []): UpdateInfo {
+  let lastUpdateDate: Date | null = null;
+
+  events.forEach(event => {
+    const fechaEditado = new Date(event.FechaEditado || event.FechaAgregado || '');
+    if (fechaEditado.toString() !== 'Invalid Date' && (!lastUpdateDate || fechaEditado > lastUpdateDate)) {
+      lastUpdateDate = fechaEditado;
+    }
+  });
+
+  recentActivity.forEach(item => {
+    const fecha = new Date(item.event.FechaEditado || item.event.FechaAgregado || '');
+    if (fecha.toString() !== 'Invalid Date' && (!lastUpdateDate || fecha > lastUpdateDate)) {
+      lastUpdateDate = fecha;
+    }
+  });
+
+  const formatted = lastUpdateDate
+    ? `${lastUpdateDate.toLocaleDateString('es-ES')} a las ${lastUpdateDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}H`
+    : 'N/A';
+
+  if (!lastUpdateDate) {
+    return { formatted, relativeLabel: '', textColor: 'text-gray-400', badgeClasses: 'bg-gray-500/20 text-gray-300 border-gray-500/30' };
+  }
+
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const updateDayStart = new Date(lastUpdateDate.getFullYear(), lastUpdateDate.getMonth(), lastUpdateDate.getDate());
+  const diffDays = Math.floor((todayStart.getTime() - updateDayStart.getTime()) / (1000 * 60 * 60 * 24));
+
+  if (diffDays === 0) {
+    return { formatted, relativeLabel: 'Hoy', textColor: 'text-emerald-300', badgeClasses: 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40' };
+  } else if (diffDays === 1) {
+    return { formatted, relativeLabel: 'Ayer', textColor: 'text-amber-300', badgeClasses: 'bg-amber-500/20 text-amber-300 border-amber-500/40' };
+  } else if (diffDays <= 3) {
+    return { formatted, relativeLabel: `Hace ${diffDays} días`, textColor: 'text-orange-300', badgeClasses: 'bg-orange-500/20 text-orange-300 border-orange-500/40' };
+  } else if (diffDays <= 7) {
+    return { formatted, relativeLabel: `Hace ${diffDays} días`, textColor: 'text-red-300', badgeClasses: 'bg-red-500/20 text-red-300 border-red-500/40' };
+  } else {
+    return { formatted, relativeLabel: `Hace ${diffDays} días`, textColor: 'text-red-400', badgeClasses: 'bg-red-600/20 text-red-400 border-red-600/40' };
+  }
+}
+
 
 export function groupEventsByDay(events: Event[]): { [key: string]: Event[] } {
   const eventsByDay: { [key: string]: Event[] } = {};
