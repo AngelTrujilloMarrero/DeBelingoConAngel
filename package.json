@@ -78,7 +78,7 @@
     "react-resizable-panels": "^3.0.6",
     "react-router-dom": "^7.13.2",
     "react-server-dom-webpack": "19.2.3",
-    "recharts": "^3.8.0",
+    "recharts": "^3.8.1",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.5.0",
     "tailwindcss-animate": "^1.0.7",
@@ -103,6 +103,6 @@
     "tailwindcss": "4.1.17",
     "typescript": "^6.0.2",
     "typescript-eslint": "^8.57.2",
-    "vite": "^8.0.2"
+    "vite": "^8.0.3"
   }
 }
