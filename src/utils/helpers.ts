@@ -42,6 +42,12 @@ export interface UpdateInfo {
   badgeClasses: string;
 }
 
+function getCanaryTime(): Date {
+  const now = new Date();
+  const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
+  return new Date(utc);
+}
+
 export function getLastUpdateInfo(events: Event[], recentActivity: RecentActivityItem[] = []): UpdateInfo {
   let lastUpdateDate: Date | null = null;
 
@@ -67,9 +73,9 @@ export function getLastUpdateInfo(events: Event[], recentActivity: RecentActivit
     return { formatted, relativeLabel: '', textColor: 'text-gray-400', badgeClasses: 'bg-gray-500/20 text-gray-300 border-gray-500/30' };
   }
 
-  const now = new Date();
-  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-  const updateDayStart = new Date(lastUpdateDate.getFullYear(), lastUpdateDate.getMonth(), lastUpdateDate.getDate());
+  const now = getCanaryTime();
+  const todayStart = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+  const updateDayStart = new Date(Date.UTC(lastUpdateDate.getFullYear(), lastUpdateDate.getMonth(), lastUpdateDate.getDate()));
   const diffDays = Math.floor((todayStart.getTime() - updateDayStart.getTime()) / (1000 * 60 * 60 * 24));
 
   if (diffDays === 0) {
