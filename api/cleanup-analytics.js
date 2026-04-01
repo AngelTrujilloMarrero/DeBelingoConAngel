@@ -35,6 +35,7 @@ export default async function handler(req, res) {
         const app = getFirebaseApp();
         const db = app.database();
         const analyticsRef = db.ref('analytics/visits');
+        const statsRef = db.ref('Estadisticas');
 
         const snapshot = await Promise.race([
             analyticsRef.once('value'),
@@ -42,6 +43,32 @@ export default async function handler(req, res) {
         ]);
 
         const data = snapshot.val() || {};
+        
+        // Determinar el mes anterior
+        const now = new Date();
+        const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+        const lastMonthName = `${String(lastMonth.getMonth() + 1).padStart(2, '0')}-${lastMonth.getFullYear()}`;
+        
+        // Calcular el rango de timestamps del mes anterior
+        const startOfLastMonth = lastMonth.getTime();
+        const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+        
+        // Filtrar visitas del mes anterior y contar
+        const monthKeys = Object.entries(data)
+            .filter(([_, value]) => value.timestamp && value.timestamp >= startOfLastMonth && value.timestamp < endOfLastMonth)
+            .map(([key]) => key);
+        
+        const totalVisits = monthKeys.length;
+        
+        // Guardar estadísticas del mes anterior antes de borrar
+        if (totalVisits > 0) {
+            await statsRef.child(lastMonthName).set({
+                visitas: totalVisits,
+                mes: lastMonthName,
+                guardadoEl: new Date().toISOString()
+            });
+            console.log(`Guardadas ${totalVisits} visitas en Estadisticas/${lastMonthName}`);
+        }
         
         // El usuario quiere que el 1 de cada mes se borren los datos.
         // Si ejecutamos esto el día 1, borramos todo lo anterior al inicio de hoy.
@@ -62,6 +89,7 @@ export default async function handler(req, res) {
         return res.status(200).json({
             success: true,
             deletedCount: keysToDelete.length,
+            savedStats: { mes: lastMonthName, visitas: totalVisits },
             cutoffDate: thresholdDate.toISOString()
         });
     } catch (error) {
