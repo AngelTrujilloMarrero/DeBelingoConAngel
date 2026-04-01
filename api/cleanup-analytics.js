@@ -42,12 +42,15 @@ export default async function handler(req, res) {
         ]);
 
         const data = snapshot.val() || {};
+        
+        // El usuario quiere que el 1 de cada mes se borren los datos.
+        // Si ejecutamos esto el día 1, borramos todo lo anterior al inicio de hoy.
         const thresholdDate = new Date();
-        thresholdDate.setDate(thresholdDate.getDate() - 365);
+        thresholdDate.setHours(0, 0, 0, 0);
         const thresholdMs = thresholdDate.getTime();
 
         const keysToDelete = Object.entries(data)
-            .filter(([_, value]) => value.timestamp && value.timestamp < thresholdMs)
+            .filter(([_, value]) => !value.timestamp || value.timestamp < thresholdMs)
             .map(([key]) => key);
 
         if (keysToDelete.length > 0) {
