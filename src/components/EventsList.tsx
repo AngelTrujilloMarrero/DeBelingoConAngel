@@ -1,12 +1,9 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Calendar, Clock, MapPin, Music2, Download, Navigation, Plus, Edit, Trash2, Info, ExternalLink, ChevronDown, Facebook, Instagram, Globe, Phone, Bus, RotateCcw } from 'lucide-react';
+import { Calendar, Clock, MapPin, Music2, Download, Navigation, Plus, Edit, Trash2, Info, ExternalLink, ChevronDown, Facebook, Instagram, Globe, Phone, Bus, RotateCcw, Loader2 } from 'lucide-react';
 import { onValue, orchestrasRef } from '../utils/firebase';
 import { orchestraDetails } from '../data/orchestras';
 import { getCachedOrchestraArchive } from '../utils/dataLoaders';
 import { Event, RecentActivityItem } from '../types';
-
-let orchestraArchive: any[] = [];
-let archiveMap: Record<string, any> = {};
 import { groupEventsByDay, sortEventsByDateTime, formatDayName, getLastUpdateDate, getLastUpdateInfo } from '../utils/helpers';
 import WeatherIcon from './WeatherIcon';
 import TITSALogo from './TITSALogo';
@@ -25,6 +22,9 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
   const [endDate, setEndDate] = useState('');
   const [expandedEventIds, setExpandedEventIds] = useState<string[]>([]);
   const [dbOrchestras, setDbOrchestras] = useState<Record<string, any>>({});
+  const [orchestraArchive, setOrchestraArchive] = useState<any[]>([]);
+  const [archiveMap, setArchiveMap] = useState<Record<string, any>>({});
+  const [isLoadingOrchestras, setIsLoadingOrchestras] = useState(true);
   const [visibleMovimientos, setVisibleMovimientos] = useState(5);
   const { alerts: aemetAlerts, getAlertForEvent } = useAemetAlerts();
 
@@ -50,31 +50,39 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
   }, [aemetAlerts, events, getAlertForEvent]);
 
   useEffect(() => {
-    // Load orchestra archive lazily
-    const loadArchive = async () => {
+    const loadAndSubscribe = async () => {
       if (!orchestraArchive.length) {
         const archive = await getCachedOrchestraArchive();
-        orchestraArchive = (archive as any).orchestras || [];
-        orchestraArchive.forEach((o: any) => archiveMap[o.name] = o);
+        const archiveData = (archive as any).orchestras || [];
+        const newMap: Record<string, any> = {};
+        archiveData.forEach((o: any) => newMap[o.name] = o);
+        setOrchestraArchive(archiveData);
+        setArchiveMap(newMap);
       }
-    };
 
-    loadArchive();
-
-    const unsubscribe = onValue(orchestrasRef, (snapshot) => {
-      const data = snapshot.val() || {};
-
-      // Merge Archive (Base) + Firebase (Overrides)
-      const merged = { ...archiveMap };
-      Object.values(data).forEach((info: any) => {
-        if (info && info.name) {
-          merged[info.name] = info;
-        }
+      const unsubscribe = onValue(orchestrasRef, (snapshot) => {
+        const data = snapshot.val() || {};
+        const merged = { ...archiveMap };
+        Object.values(data).forEach((info: any) => {
+          if (info && info.name) {
+            merged[info.name] = info;
+          }
+        });
+        setDbOrchestras(merged);
       });
 
-      setDbOrchestras(merged);
+      setIsLoadingOrchestras(false);
+      return unsubscribe;
+    };
+
+    let unsubscribe: (() => void) | undefined;
+    loadAndSubscribe().then(unsub => {
+      unsubscribe = unsub;
     });
-    return () => unsubscribe();
+
+    return () => {
+      if (unsubscribe) unsubscribe();
+    };
   }, []);
 
   const { eventsByDay, sortedEvents, lastUpdate, updateInfo } = useMemo(() => {
@@ -94,10 +102,11 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
 
   const getOrchestraInfo = useMemo(() => (name: string) => {
     const cleanName = name.trim();
+    const archiveInfo = archiveMap[cleanName] || {};
     const dbInfo = dbOrchestras[cleanName] || {};
     const fileInfo = orchestraDetails[cleanName] || {};
-    return { ...fileInfo, ...dbInfo };
-  }, [dbOrchestras]);
+    return { ...fileInfo, ...archiveInfo, ...dbInfo };
+  }, [archiveMap, dbOrchestras]);
 
   const handleExportClick = () => {
     if (showDatePickers && startDate && endDate) {
