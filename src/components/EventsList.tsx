@@ -4,7 +4,7 @@ import { onValue, orchestrasRef } from '../utils/firebase';
 import { orchestraDetails } from '../data/orchestras';
 import { getCachedOrchestraArchive } from '../utils/dataLoaders';
 import { Event, RecentActivityItem } from '../types';
-import { groupEventsByDay, sortEventsByDateTime, formatDayName, getLastUpdateDate, getLastUpdateInfo } from '../utils/helpers';
+import { groupEventsByDay, sortEventsByDateTime, formatDayName, getLastUpdateDate, getLastUpdateInfo, getRandomGif, getRandomEmoji, DailyGif } from '../utils/helpers';
 import WeatherIcon from './WeatherIcon';
 import TITSALogo from './TITSALogo';
 import { useAemetAlerts, AemetAlert } from '../hooks/useAemetAlerts';
@@ -48,6 +48,8 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
     console.log(`[EventsList] 🔄 Recalculated alerts map: ${Object.keys(map).length} events with alerts`);
     return map;
   }, [aemetAlerts, events, getAlertForEvent]);
+
+  const [dailyGif, setDailyGif] = useState<DailyGif>(() => getRandomGif());
 
   useEffect(() => {
     const loadAndSubscribe = async () => {
@@ -145,6 +147,30 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
           {updateInfo.relativeLabel && (
             <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border tracking-wide ${updateInfo.badgeClasses}`}>
               Actualización — {updateInfo.relativeLabel}
+            </span>
+          )}
+          {dailyGif.gifUrl ? (
+            <a
+              href={dailyGif.gifUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center hover:scale-110 transition-transform"
+              title={`Gif del día: ${dailyGif.title}`}
+            >
+              <img
+                src={dailyGif.gifUrl}
+                alt="Gif del día"
+                className="h-7 w-auto max-w-[60px] md:h-8 md:max-w-[80px] rounded-md object-contain"
+                style={{ maxHeight: '28px', maxWidth: '60px' }}
+                loading="lazy"
+              />
+            </a>
+          ) : (
+            <span
+              className="inline-flex items-center justify-center text-lg md:text-xl hover:scale-125 transition-transform cursor-pointer animate-bounce-slow"
+              title={`Emoji del día: ${dailyGif.title}`}
+            >
+              {dailyGif.emoji}
             </span>
           )}
         </div>
