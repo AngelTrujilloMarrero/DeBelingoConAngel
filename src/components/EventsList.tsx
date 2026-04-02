@@ -145,36 +145,10 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
             {lastUpdate}
           </span>
           {updateInfo.relativeLabel && (
-            <div className="inline-flex flex-col items-center gap-0 group cursor-pointer" title={`Actualización — ${updateInfo.relativeLabel}`}>
-              <div className="bg-white rounded-lg px-3 py-1 shadow-md border-2 border-gray-300 relative">
-                <span className="text-[10px] font-bold text-gray-800">Actualización</span>
-                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-gray-300 transform rotate-45"></div>
-              </div>
-              <span className="text-lg -mt-1">🧑‍🎨</span>
-            </div>
-          )}
-          {dailyGif.gifUrl ? (
-            <a
-              href={dailyGif.gifUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center hover:scale-110 transition-transform"
-              title={`Gif del día: ${dailyGif.title}`}
-            >
-              <img
-                src={dailyGif.gifUrl}
-                alt="Gif del día"
-                className="h-7 w-[45px] md:h-8 md:w-[54px] rounded-md object-contain"
-                style={{ height: '28px', width: '45px' }}
-                loading="lazy"
-              />
-            </a>
-          ) : (
-            <span
-              className="inline-flex items-center justify-center text-lg md:text-xl hover:scale-125 transition-transform cursor-pointer animate-bounce-slow"
-              title={`Emoji del día: ${dailyGif.title}`}
-            >
-              {dailyGif.emoji}
+            <span className="inline-flex items-center gap-0.5 group cursor-pointer" title={`Actualización — ${updateInfo.relativeLabel}`}>
+              <span className="text-[9px] font-bold text-yellow-300 drop-shadow-md">Actualización</span>
+              <span className="text-[9px] font-bold text-yellow-300/80">—</span>
+              <span className="text-[9px] font-bold text-yellow-300 drop-shadow-md">{updateInfo.relativeLabel}</span>
             </span>
           )}
         </div>
