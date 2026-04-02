@@ -145,21 +145,15 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
             {lastUpdate}
           </span>
           {updateInfo.relativeLabel && (
-            <a
-              href="https://media.giphy.com/media/3o7btPCcdNniyf0ArS/giphy.gif"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center hover:scale-110 transition-transform"
-              title={`Actualización — ${updateInfo.relativeLabel}`}
-            >
-              <img
-                src="https://media.giphy.com/media/3o7btPCcdNniyf0ArS/giphy.gif"
-                alt="Actualización"
-                className="h-7 w-[42px] md:h-8 md:w-[48px] rounded-md object-contain"
-                style={{ height: '28px', width: '42px' }}
-                loading="lazy"
-              />
-            </a>
+            <div className="inline-flex items-center gap-0.5 group cursor-pointer" title={`Actualización — ${updateInfo.relativeLabel}`}>
+              <span className="text-xl animate-bounce-slow">🧑‍🎨</span>
+              <div className="relative">
+                <div className="bg-yellow-400 text-gray-900 px-2 py-0.5 rounded-md text-[9px] font-bold border-2 border-yellow-600 shadow-sm whitespace-nowrap">
+                  {updateInfo.relativeLabel}
+                </div>
+                <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-yellow-600 transform rotate-45"></div>
+              </div>
+            </div>
           )}
           {dailyGif.gifUrl ? (
             <a
