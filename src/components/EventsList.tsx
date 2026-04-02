@@ -145,9 +145,21 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
             {lastUpdate}
           </span>
           {updateInfo.relativeLabel && (
-            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold border tracking-wide ${updateInfo.badgeClasses}`}>
-              Actualización — {updateInfo.relativeLabel}
-            </span>
+            <a
+              href="https://media.giphy.com/media/3o7btPCcdNniyf0ArS/giphy.gif"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center hover:scale-110 transition-transform"
+              title={`Actualización — ${updateInfo.relativeLabel}`}
+            >
+              <img
+                src="https://media.giphy.com/media/3o7btPCcdNniyf0ArS/giphy.gif"
+                alt="Actualización"
+                className="h-7 w-[42px] md:h-8 md:w-[48px] rounded-md object-contain"
+                style={{ height: '28px', width: '42px' }}
+                loading="lazy"
+              />
+            </a>
           )}
           {dailyGif.gifUrl ? (
             <a
@@ -160,8 +172,8 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
               <img
                 src={dailyGif.gifUrl}
                 alt="Gif del día"
-                className="h-7 w-auto max-w-[60px] md:h-8 md:max-w-[80px] rounded-md object-contain"
-                style={{ maxHeight: '28px', maxWidth: '60px' }}
+                className="h-7 w-[45px] md:h-8 md:w-[54px] rounded-md object-contain"
+                style={{ height: '28px', width: '45px' }}
                 loading="lazy"
               />
             </a>
