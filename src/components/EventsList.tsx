@@ -145,8 +145,8 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
             {lastUpdate}
           </span>
           {updateInfo.relativeLabel && (
-            <span className={`inline-flex items-center gap-0.5 animate-pulse cursor-pointer ${updateInfo.badgeClasses}`} title={`Actualización — ${updateInfo.relativeLabel}`}>
-              <span className="font-bold">Actualización</span>
+            <span className={`inline-flex items-center gap-0.5 animate-pulse cursor-pointer text-xs ${updateInfo.badgeClasses}`} title={`Actualización — ${updateInfo.relativeLabel}`}>
+              ¡<span className="font-bold">Actualización</span>
               <span>—</span>
               <span className="font-bold">{updateInfo.relativeLabel}</span>
               <span className="animate-bounce">!</span>
