@@ -4,7 +4,7 @@ import { onValue, orchestrasRef } from '../utils/firebase';
 import { orchestraDetails } from '../data/orchestras';
 import { getCachedOrchestraArchive } from '../utils/dataLoaders';
 import { Event, RecentActivityItem } from '../types';
-import { groupEventsByDay, sortEventsByDateTime, formatDayName, getLastUpdateDate, getLastUpdateInfo, getRandomGif, getRandomEmoji, DailyGif } from '../utils/helpers';
+import { groupEventsByDay, sortEventsByDateTime, formatDayName, getLastUpdateDate, getLastUpdateInfo } from '../utils/helpers';
 import WeatherIcon from './WeatherIcon';
 import TITSALogo from './TITSALogo';
 import { useAemetAlerts, AemetAlert } from '../hooks/useAemetAlerts';
@@ -28,14 +28,6 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
   const [visibleMovimientos, setVisibleMovimientos] = useState(5);
   const { alerts: aemetAlerts, getAlertForEvent } = useAemetAlerts();
 
-  // Log para confirmar que EventsList detecta cuando las alertas cambian
-  useEffect(() => {
-    if (aemetAlerts.length > 0) {
-      console.log(`[EventsList] ✅ AEMET alerts received in component: ${aemetAlerts.length} alerts. Component will re-render.`);
-    }
-  }, [aemetAlerts]);
-
-  // Memoizar las alertas por evento para que se recalculen cuando cambian las alertas
   const alertsByEvent = useMemo(() => {
     if (aemetAlerts.length === 0) return {};
     const map: Record<string, AemetAlert[]> = {};
@@ -45,11 +37,8 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
         map[event.id] = alerts;
       }
     });
-    console.log(`[EventsList] 🔄 Recalculated alerts map: ${Object.keys(map).length} events with alerts`);
     return map;
   }, [aemetAlerts, events, getAlertForEvent]);
-
-  const [dailyGif, setDailyGif] = useState<DailyGif>(() => getRandomGif());
 
   useEffect(() => {
     const loadAndSubscribe = async () => {
