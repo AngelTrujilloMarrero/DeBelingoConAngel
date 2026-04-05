@@ -437,6 +437,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                               artist_rem: { label: 'Artista quitado', color: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30', icon: '➖' },
                               artista: { label: 'Artista', color: 'bg-blue-500/20 text-blue-300 border-blue-500/30', icon: '🎤' },
                               dj: { label: 'DJ', color: 'bg-purple-500/20 text-purple-300 border-purple-500/30', icon: '🎧' },
+                              programa: { label: 'Programa', color: 'bg-indigo-500/20 text-indigo-300 border-indigo-500/30', icon: '📋' },
                             };
                             const info = labels[cambio] || { label: 'Cambio', color: 'bg-gray-500/20 text-gray-300 border-gray-500/30', icon: '✏️' };
                             return (
