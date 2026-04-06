@@ -27,7 +27,7 @@
         },
         {
           "key": "Access-Control-Allow-Credentials",
-          "value": "true"
+          "value": "false"
         },
         {
           "key": "Content-Security-Policy",
