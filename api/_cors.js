@@ -1,6 +1,7 @@
 export const allowedOrigins = [
   'https://debelingoconangel.web.app',
   'https://de-belingo-con-angel.vercel.app',
+  'https://admindebelingo.web.app',
   'http://localhost:5173',
   'http://localhost:3000',
   'http://localhost:4173'
