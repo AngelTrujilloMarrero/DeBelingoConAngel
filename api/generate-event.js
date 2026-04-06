@@ -96,7 +96,7 @@ Ayúdame a completar el evento de forma coherente con los datos históricos y la
                 'X-Title': 'De Belingo Admin AI',
             },
             body: JSON.stringify({
-                model: 'google/gemini-2.0-flash-lite-preview-02-05:free',
+                model: 'google/gemma-2-9b-it:free',
                 messages: [
                     { role: 'system', content: systemPrompt },
                     { role: 'user', content: userPrompt }
