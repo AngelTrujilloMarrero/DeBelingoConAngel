@@ -70,7 +70,9 @@ Formato de respuesta esperado:
         let historialText = '';
         if (historial && historial.length > 0) {
           historialText = `CONTEXTO HISTÓRICO (Eventos pasados similares):
-${historial.map(h => `- ${h.fecha}: ${h.orquesta} en ${h.lugar} (${h.municipio}). Tipo: ${h.tipo}. Programa: ${h.programa || '-'}`).join('\n')}
+${historial.map(h => `- ${h.fecha}: ${h.orquesta} en ${h.lugar} (${h.municipio}). Tipo: ${h.tipo}. Hora: ${h.hora || 'Desconocida'}. Programa: ${h.programa || '-'}`).join('\n')}
+
+IMPORTANTE: Si en el CONTEXTO HISTÓRICO aparece un Tipo de evento o una Hora específicos para este lugar, DEBES usar exactamente esos datos para tu sugerencia.
 `;
         }
 
