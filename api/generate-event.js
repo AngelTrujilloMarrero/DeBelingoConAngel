@@ -40,9 +40,9 @@ export default async function handler(req, res) {
             return res.status(429).json({ error: 'Rate limit exceeded for admin AI services.' });
         }
 
-        const apiKey = process.env.API_OPENROUTER;
+        const apiKey = process.env.API_TOLETE;
         if (!apiKey) {
-            return res.status(500).json({ error: 'OpenRouter API key not configured' });
+            return res.status(500).json({ error: 'Mistral API key not configured' });
         }
 
         const systemPrompt = `Eres un experto en fiestas populares y eventos tradicionales de Tenerife. 
@@ -56,14 +56,14 @@ REGLAS ESTRICTAS:
 5. El horario suele ser nocturno para verbenas (22:00, 23:00) o tarde para romerías (12:00, 16:00).
 6. DEBES RESPONDER ÚNICAMENTE CON UN OBJETO JSON VÁLIDO.
 
-Formato de respuesta esperado:
+Formato de respuesta esperado (DEBE SER JSON PURO, SIN MARKDOWN):
 {
   "orquestas": ["Sugerencia 1", "Sugerencia 2"],
   "lugares": ["Lugar típico 1", "Lugar típico 2"],
   "tipos": ["Tipo 1", "Tipo 2"],
   "hora": "HH:MM",
   "programa": "Breve descripción",
-  "explicacion": "Breve razonamiento de las sugerencias (puedes mencionar si te basas en el historial)"
+  "explicacion": "Razonamiento"
 }
 `;
 
@@ -72,42 +72,40 @@ Formato de respuesta esperado:
           historialText = `CONTEXTO HISTÓRICO (Eventos pasados similares):
 ${historial.map(h => `- ${h.fecha}: ${h.orquesta} en ${h.lugar} (${h.municipio}). Tipo: ${h.tipo}. Hora: ${h.hora || 'Desconocida'}. Programa: ${h.programa || '-'}`).join('\n')}
 
-IMPORTANTE: Si en el CONTEXTO HISTÓRICO aparece un Tipo de evento o una Hora específicos para este lugar, DEBES usar exactamente esos datos para tu sugerencia.
+IMPORTANTE: Si en el CONTEXTO HISTÓRICO aparece un Tipo de evento o una Hora específicos, ÚSALOS.
 `;
         }
 
         const userPrompt = `${historialText}
 
-Basado EN EL HISTORIAL SUPERIOR y en esta información parcial, sugiere el resto para completar el evento:
+Basado EN EL HISTORIAL y en esta información parcial, completa el evento:
 Fecha: ${fecha || 'No especificada'}
-Municipio: ${municipio || 'No especificado'}
+Municipio: ${municipio || 'No especificada'}
 Lugar: ${lugar || 'No especificado'}
 Orquesta: ${orquesta || 'No especificada'}
-Acción: ${accion || 'sugerir'}
 
-Ayúdame a completar el evento de forma coherente con los datos históricos y las tradiciones de Tenerife.`;
+Responde SOLO en JSON.`;
 
-        const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${apiKey}`,
-                'HTTP-Referer': 'https://debelingoconangel.vercel.app',
-                'X-Title': 'De Belingo Admin AI',
             },
             body: JSON.stringify({
-                model: 'meta-llama/llama-3.1-8b-instruct:free',
+                model: 'mistral-small-latest',
+                response_format: { type: 'json_object' },
                 messages: [
                     { role: 'system', content: systemPrompt },
                     { role: 'user', content: userPrompt }
                 ],
-                temperature: 0.7
+                temperature: 0.5
             }),
         });
 
         if (!response.ok) {
             const error = await response.json();
-            return res.status(response.status).json({ error: error.error?.message || 'Error calling OpenRouter' });
+            return res.status(response.status).json({ error: error.message || 'Error calling Mistral' });
         }
 
         const data = await response.json();
