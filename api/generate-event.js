@@ -26,7 +26,7 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { fecha, lugar, municipio, orquesta, accion } = req.body;
+        const { fecha, lugar, municipio, orquesta, accion, historial } = req.body;
 
         // Security check
         const authResult = await verifySecurity(req);
@@ -51,9 +51,10 @@ Tu tarea es sugerir detalles para completar un nuevo evento en el panel de admin
 REGLAS ESTRICTAS:
 1. Solo puedes sugerir municipios de esta lista: ${MUNICIPIOS.join(', ')}.
 2. Solo puedes sugerir tipos de evento de esta lista: ${TIPOS_EVENTO.join(', ')}.
-3. Las orquestas deben ser típicas de las verbenas de Tenerife (ej: Los Sabandeños. Los Chasneros, El Combo Dominicano, Pepe Benavente, etc.).
-4. El horario suele ser nocturno para verbenas (22:00, 23:00) o tarde para romerías (12:00, 16:00).
-5. DEBES RESPONDER ÚNICAMENTE CON UN OBJETO JSON VÁLIDO.
+3. Las orquestas DEBEN ser reales y basarse en los datos históricos proporcionados si existen.
+4. Si hay historial, PRIORIZA que las sugerencias coincidan con lo que ocurrió otros años en estas mismas fechas/lugares.
+5. El horario suele ser nocturno para verbenas (22:00, 23:00) o tarde para romerías (12:00, 16:00).
+6. DEBES RESPONDER ÚNICAMENTE CON UN OBJETO JSON VÁLIDO.
 
 Formato de respuesta esperado:
 {
@@ -62,18 +63,27 @@ Formato de respuesta esperado:
   "tipos": ["Tipo 1", "Tipo 2"],
   "hora": "HH:MM",
   "programa": "Breve descripción",
-  "explicacion": "Breve razonamiento de las sugerencias"
+  "explicacion": "Breve razonamiento de las sugerencias (puedes mencionar si te basas en el historial)"
 }
 `;
 
-        const userPrompt = `Basado en esta información parcial, sugiere el resto:
+        let historialText = '';
+        if (historial && historial.length > 0) {
+          historialText = `CONTEXTO HISTÓRICO (Eventos pasados similares):
+${historial.map(h => `- ${h.fecha}: ${h.orquesta} en ${h.lugar} (${h.municipio}). Tipo: ${h.tipo}. Programa: ${h.programa || '-'}`).join('\n')}
+`;
+        }
+
+        const userPrompt = `${historialText}
+
+Basado EN EL HISTORIAL SUPERIOR y en esta información parcial, sugiere el resto para completar el evento:
 Fecha: ${fecha || 'No especificada'}
 Municipio: ${municipio || 'No especificado'}
 Lugar: ${lugar || 'No especificado'}
 Orquesta: ${orquesta || 'No especificada'}
 Acción: ${accion || 'sugerir'}
 
-Ayúdame a completar el evento de forma coherente con las tradiciones de Tenerife.`;
+Ayúdame a completar el evento de forma coherente con los datos históricos y las tradiciones de Tenerife.`;
 
         const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
             method: 'POST',
