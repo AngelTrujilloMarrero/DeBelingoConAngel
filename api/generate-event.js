@@ -101,8 +101,7 @@ Ayúdame a completar el evento de forma coherente con los datos históricos y la
                     { role: 'system', content: systemPrompt },
                     { role: 'user', content: userPrompt }
                 ],
-                temperature: 0.7,
-                response_format: { type: 'json_object' }
+                temperature: 0.7
             }),
         });
 
@@ -115,7 +114,8 @@ Ayúdame a completar el evento de forma coherente con los datos históricos y la
         const content = data.choices[0].message.content;
 
         try {
-            const suggestions = JSON.parse(content);
+            const cleanContent = content.replace(/```json/g, '').replace(/```/g, '').trim();
+            const suggestions = JSON.parse(cleanContent);
             return res.status(200).json(suggestions);
         } catch (parseError) {
             console.error('Error parsing AI response:', content);
