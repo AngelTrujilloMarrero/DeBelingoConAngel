@@ -14,17 +14,11 @@ export const allowedOrigins = [
  * @returns {boolean} - Returns true if the request was an OPTIONS preflight (and handled), false otherwise.
  */
 export function applySecurityHeaders(req, res) {
-  const origin = req.headers.origin;
-
-  // CORS (Permisivo para pruebas)
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Credentials', false);
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader(
-    'Access-Control-Allow-Headers',
-    'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization, x-debelingo-secret, x-turnstile-token, x-app-internal-key, Origin'
-  );
-
+  // Handle Preflight
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return true;
+  }
 
   // Security Headers
   res.setHeader('X-Content-Type-Options', 'nosniff');
