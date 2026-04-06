@@ -16,15 +16,8 @@ export const allowedOrigins = [
 export function applySecurityHeaders(req, res) {
   const origin = req.headers.origin;
 
-  // CORS
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-  } else {
-    // Default safe fallback if origin is not matched but we want to fail safely
-    // or we can choose not to set it, blocking the request effectively for browsers.
-    // For now, let's default to the production domain to be safe.
-    res.setHeader('Access-Control-Allow-Origin', 'https://debelingoconangel.web.app');
-  }
+  // CORS (Permisivo para pruebas)
+  res.setHeader('Access-Control-Allow-Origin', '*');
 
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
