@@ -27,7 +27,7 @@
         },
         {
           "key": "Access-Control-Allow-Credentials",
-          "value": "false"
+          "value": "true"
         },
         {
           "key": "Content-Security-Policy",
@@ -52,18 +52,7 @@
       ]
     }
   ],
-  "redirects": [
-    {
-      "source": "/",
-      "destination": "https://debelingoconangel.web.app",
-      "permanent": true
-    },
-    {
-      "source": "/((?!api/).*)",
-      "destination": "https://debelingoconangel.web.app/$1",
-      "permanent": true
-    }
-  ],
+  "redirects": [],
   "crons": [
     {
       "path": "/api/cleanup-deletions",
