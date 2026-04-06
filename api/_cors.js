@@ -8,16 +8,21 @@ export const allowedOrigins = [
 ];
 
 /**
- * Applies standard security headers and CORS policy to the response.
- * @param {Object} req - The request object
- * @param {Object} res - The response object
  * @returns {boolean} - Returns true if the request was an OPTIONS preflight (and handled), false otherwise.
  */
 export function applySecurityHeaders(req, res) {
-  // CORS Directo
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+
+  const origin = req.headers.origin;
+  
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else {
+    // Si queremos habilitarlo para todos (no recomendado en prod si requiere credenciales)
+    // res.setHeader('Access-Control-Allow-Origin', '*'); 
+  }
+  
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization, x-app-internal-key, Origin');
+  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization, x-app-internal-key, x-debelingo-secret, Origin');
   res.setHeader('Access-Control-Allow-Credentials', 'true');
 
   // Handle Preflight
