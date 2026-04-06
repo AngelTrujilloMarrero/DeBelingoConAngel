@@ -14,6 +14,12 @@ export const allowedOrigins = [
  * @returns {boolean} - Returns true if the request was an OPTIONS preflight (and handled), false otherwise.
  */
 export function applySecurityHeaders(req, res) {
+  // CORS Directo
+  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization, x-app-internal-key, Origin');
+  res.setHeader('Access-Control-Allow-Credentials', 'true');
+
   // Handle Preflight
   if (req.method === 'OPTIONS') {
     res.status(200).end();
