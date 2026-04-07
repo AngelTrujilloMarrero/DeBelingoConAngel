@@ -146,19 +146,19 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
           Próximas Verbenas
           <Music2 className="w-5 h-5 md:w-8 md:h-8" />
         </h2>
-        <div className="flex items-center justify-center mt-2 px-3 gap-2 flex-wrap">
+        <div className="flex items-center justify-center mt-2 px-2 gap-1.5 flex-nowrap">
           {/* Bloque de Actualización - Centrado */}
-          <div className="flex items-center bg-black/30 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/10 shadow-lg group/update">
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1.5 text-blue-100/90 text-[10px] md:text-xs font-bold whitespace-nowrap">
-                <Clock className="w-3.5 h-3.5 text-blue-400" />
+          <div className="flex items-center bg-black/40 backdrop-blur-sm px-2.5 py-1.5 rounded-full border border-white/10 shadow-lg group/update">
+            <div className="flex items-center gap-1.5">
+              <div className="flex items-center gap-1 text-blue-100/90 text-[8.5px] md:text-xs font-bold whitespace-nowrap">
+                <Clock className="w-3 h-3 md:w-3.5 md:h-3.5 text-blue-400" />
                 <span>ACTUALIZADO: {lastUpdate}</span>
               </div>
               
               {updateInfo.relativeLabel && (
                 <>
-                  <div className="w-px h-3 bg-white/20 mx-0.5" />
-                  <div className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] md:text-xs font-black uppercase tracking-wider animate-pulse ${updateInfo.badgeClasses}`}>
+                  <div className="w-px h-3 bg-white/20" />
+                  <div className={`flex items-center px-1.5 py-0.5 rounded-md text-[8.5px] md:text-xs font-black uppercase tracking-wider animate-pulse ${updateInfo.badgeClasses}`}>
                     {updateInfo.relativeLabel}
                   </div>
                 </>
@@ -168,14 +168,14 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
 
           {/* Bloque del Muro - Pegado al lado */}
           {lastMessageDays !== null && (
-            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/30 border backdrop-blur-sm transition-all duration-300 shadow-lg hover:scale-105 active:scale-95 ${
-              lastMessageDays === 0 ? 'text-emerald-400 border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.1)]' :
+            <div className={`flex items-center gap-1 px-2 py-1.5 rounded-full bg-black/40 border backdrop-blur-sm transition-all duration-300 shadow-lg shrink-0 ${
+              lastMessageDays === 0 ? 'text-emerald-400 border-emerald-500/30' :
               lastMessageDays === 1 ? 'text-amber-400 border-amber-500/30' :
               lastMessageDays <= 3 ? 'text-orange-400 border-orange-500/30' :
               'text-red-400 border-red-500/30'
             }`} title={`Último mensaje en el muro: ${lastMessageDays === 0 ? 'hoy' : (lastMessageDays === 1 ? 'ayer' : `hace ${lastMessageDays} días`)}`}>
-              <Mail className="w-3.5 h-3.5" />
-              <span className="text-[10px] md:text-xs font-black uppercase tracking-tighter">
+              <Mail className="w-3 h-3 md:w-3.5 md:h-3.5" />
+              <span className="text-[8.5px] md:text-xs font-black uppercase tracking-tighter whitespace-nowrap">
                 {lastMessageDays === 0 ? 'Muro: Hoy' : `Muro: ${lastMessageDays}d`}
               </span>
             </div>
