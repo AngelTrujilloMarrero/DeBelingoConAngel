@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Calendar, Clock, MapPin, Music2, Download, Navigation, Plus, Edit, Trash2, Info, ExternalLink, ChevronDown, Facebook, Instagram, Globe, Phone, Bus, RotateCcw, Loader2 } from 'lucide-react';
-import { onValue, orchestrasRef } from '../utils/firebase';
+import { Calendar, Clock, MapPin, Music2, Download, Navigation, Plus, Edit, Trash2, Info, ExternalLink, ChevronDown, Facebook, Instagram, Globe, Phone, Bus, RotateCcw, Loader2, Mail } from 'lucide-react';
+import { onValue, orchestrasRef, messagesRef, query, limitToLast } from '../utils/firebase';
 import { orchestraDetails } from '../data/orchestras';
 import { getCachedOrchestraArchive } from '../utils/dataLoaders';
 import { Event, RecentActivityItem } from '../types';
@@ -26,7 +26,25 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
   const [archiveMap, setArchiveMap] = useState<Record<string, any>>({});
   const [isLoadingOrchestras, setIsLoadingOrchestras] = useState(true);
   const [visibleMovimientos, setVisibleMovimientos] = useState(5);
+  const [lastMessageDays, setLastMessageDays] = useState<number | null>(null);
   const { alerts: aemetAlerts, getAlertForEvent } = useAemetAlerts();
+
+  useEffect(() => {
+    const q = query(messagesRef, limitToLast(1));
+    const unsubscribe = onValue(q, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        const lastMsg: any = Object.values(data)[0];
+        if (lastMsg && lastMsg.timestamp) {
+          const now = Date.now();
+          const diffMs = now - lastMsg.timestamp;
+          const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+          setLastMessageDays(diffDays);
+        }
+      }
+    });
+    return () => unsubscribe();
+  }, []);
 
   const alertsByEvent = useMemo(() => {
     if (aemetAlerts.length === 0) return {};
@@ -128,18 +146,39 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
           Próximas Verbenas
           <Music2 className="w-5 h-5 md:w-8 md:h-8" />
         </h2>
-        <div className="flex items-center justify-center mt-1.5 gap-2 flex-wrap">
-          <span className="text-xs text-blue-100/70 flex items-center gap-1">
-            <Clock className="w-3 h-3" />
-            {lastUpdate}
-          </span>
-          {updateInfo.relativeLabel && (
-            <span className={`inline-flex items-center gap-0.5 animate-pulse cursor-pointer text-xs ${updateInfo.badgeClasses}`} title={`Actualización — ${updateInfo.relativeLabel}`}>
-              ¡<span className="font-bold">Actualización</span>
-              <span>—</span>
-              <span className="font-bold">{updateInfo.relativeLabel}</span>
-              <span className="animate-bounce">!</span>
-            </span>
+        <div className="flex items-center justify-center mt-2 px-3 gap-2 flex-wrap">
+          {/* Bloque de Actualización - Centrado */}
+          <div className="flex items-center bg-black/30 backdrop-blur-sm px-4 py-1.5 rounded-full border border-white/10 shadow-lg group/update">
+            <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 text-blue-100/90 text-[10px] md:text-xs font-bold whitespace-nowrap">
+                <Clock className="w-3.5 h-3.5 text-blue-400" />
+                <span>ACTUALIZADO: {lastUpdate}</span>
+              </div>
+              
+              {updateInfo.relativeLabel && (
+                <>
+                  <div className="w-px h-3 bg-white/20 mx-0.5" />
+                  <div className={`flex items-center gap-1 px-2 py-0.5 rounded-md text-[9px] md:text-xs font-black uppercase tracking-wider animate-pulse ${updateInfo.badgeClasses}`}>
+                    {updateInfo.relativeLabel}
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
+          {/* Bloque del Muro - Pegado al lado */}
+          {lastMessageDays !== null && (
+            <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-black/30 border backdrop-blur-sm transition-all duration-300 shadow-lg hover:scale-105 active:scale-95 ${
+              lastMessageDays === 0 ? 'text-emerald-400 border-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.1)]' :
+              lastMessageDays === 1 ? 'text-amber-400 border-amber-500/30' :
+              lastMessageDays <= 3 ? 'text-orange-400 border-orange-500/30' :
+              'text-red-400 border-red-500/30'
+            }`} title={`Último mensaje en el muro: ${lastMessageDays === 0 ? 'hoy' : (lastMessageDays === 1 ? 'ayer' : `hace ${lastMessageDays} días`)}`}>
+              <Mail className="w-3.5 h-3.5" />
+              <span className="text-[10px] md:text-xs font-black uppercase tracking-tighter">
+                {lastMessageDays === 0 ? 'Muro: Hoy' : `Muro: ${lastMessageDays}d`}
+              </span>
+            </div>
           )}
         </div>
       </div>

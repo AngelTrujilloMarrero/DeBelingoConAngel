@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, onValue, set, get, runTransaction } from 'firebase/database';
+import { getDatabase, ref, onValue, set, get, runTransaction, query, limitToLast } from 'firebase/database';
 
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
@@ -58,5 +58,6 @@ export const exportUsageRef = ref(db, 'exportUsage');
 export const socialFollowersRef = ref(db, 'socialFollowers');
 export const orchestrasRef = ref(db, 'orchestras');
 export const mapUsageRef = ref(db, 'mapUsage');
+export const messagesRef = ref(db, 'guestbook/messages');
 
-export { onValue, set, get, runTransaction, ref };
+export { onValue, set, get, runTransaction, ref, query, limitToLast };
