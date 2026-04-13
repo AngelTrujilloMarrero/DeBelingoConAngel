@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from 'react';
 import { Event } from '../types';
 import { orchestraDetails } from '../data/orchestras';
-import { Instagram, Facebook, Globe, Mail, Phone, Search, Music, Users, ExternalLink } from 'lucide-react';
+import { Globe, Mail, Phone, Search, Music, Users, ExternalLink } from 'lucide-react';
 import { onValue, orchestrasRef } from '../utils/firebase';
 import { scrapeProfileImage } from '../utils/socialScraper';
 import OrquestaAnalysis from '../components/OrquestaAnalysis';
@@ -322,7 +322,7 @@ const FormacionesPage: React.FC<FormacionesPageProps> = ({ events }) => {
                                             className="p-2 bg-[#1877F2]/10 text-[#1877F2] rounded-lg hover:bg-[#1877F2] hover:text-white transition-all duration-300 transform hover:scale-110"
                                             title="Facebook"
                                         >
-                                            <Facebook className="w-5 h-5" />
+                                            <Globe className="w-5 h-5" />
                                         </a>
                                     )}
 
@@ -334,7 +334,7 @@ const FormacionesPage: React.FC<FormacionesPageProps> = ({ events }) => {
                                             className="p-2 bg-[#E4405F]/10 text-[#E4405F] rounded-lg hover:bg-[#E4405F] hover:text-white transition-all duration-300 transform hover:scale-110"
                                             title="Instagram"
                                         >
-                                            <Instagram className="w-5 h-5" />
+                                            <Globe className="w-5 h-5" />
                                         </a>
                                     )}
 

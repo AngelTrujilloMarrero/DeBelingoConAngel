@@ -1,5 +1,5 @@
 import React from 'react';
-import { MessageCircle, Instagram, Heart, BookOpen, Scroll, Music2 } from 'lucide-react';
+import { MessageCircle, Heart, BookOpen, Scroll, Music2, Globe } from 'lucide-react';
 import { socialFollowersRef, onValue, set, get } from '../utils/firebase';
 
 interface SocialLink {
@@ -91,7 +91,7 @@ const SocialMedia: React.FC = () => {
     {
       name: 'Instagram',
       url: 'https://www.instagram.com/debelingoconangel/',
-      icon: Instagram,
+      icon: Globe,
       color: 'from-pink-500 to-purple-600',
       hoverColor: 'hover:from-pink-600 hover:to-purple-700'
     },
