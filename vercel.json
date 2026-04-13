@@ -2,8 +2,8 @@
   "version": 2,
   "framework": null,
   "installCommand": "pnpm install",
-  "buildCommand": "pnpm run build",
-  "outputDirectory": "dist",
+  "buildCommand": "mkdir -p empty_dist && echo 'API Backend Only' > empty_dist/index.txt",
+  "outputDirectory": "empty_dist",
   "outputDirectory": "empty_dist",
   "functions": {
     "api/**/*.js": {
