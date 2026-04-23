@@ -48,8 +48,8 @@ jobs:
       - name: Commit and push changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: auto-update historical stats and event archives for the new year [skip ci]"
-          file_pattern: 'src/data/historicalStats.json public/events-archive/*'
+          commit_message: "chore: auto-update historical stats, event archives and orchestra archive for the new year [skip ci]"
+          file_pattern: 'src/data/historicalStats.json src/data/orchestraArchive.json public/events-archive/*'
 
       - name: Build and Deploy to Firebase
         run: |
