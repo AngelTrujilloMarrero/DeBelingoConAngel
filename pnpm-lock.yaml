@@ -144,8 +144,8 @@ importers:
         specifier: ^1.5.3
         version: 1.5.3(leaflet@1.9.4)
       lucide-react:
-        specifier: ^1.8.0
-        version: 1.8.0(react@19.2.5)
+        specifier: ^1.9.0
+        version: 1.9.0(react@19.2.5)
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
@@ -164,6 +164,9 @@ importers:
       react-hook-form:
         specifier: ^7.73.1
         version: 7.73.1(react@19.2.5)
+      react-icons:
+        specifier: ^5.6.0
+        version: 5.6.0(react@19.2.5)
       react-leaflet:
         specifier: ^5.0.0
         version: 5.0.0(leaflet@1.9.4)(react-dom@19.2.5(react@19.2.5))(react@19.2.5)
@@ -2878,8 +2881,8 @@ packages:
   lru-memoizer@2.3.0:
     resolution: {integrity: sha512-GXn7gyHAMhO13WSKrIiNfztwxodVsP8IoZ3XfrJV4yH2x0/OeTO/FIaAHTY5YekdGgW94njfuKmyyt1E0mR6Ug==}
 
-  lucide-react@1.8.0:
-    resolution: {integrity: sha512-WuvlsjngSk7TnTBJ1hsCy3ql9V9VOdcPkd3PKcSmM34vJD8KG6molxz7m7zbYFgICwsanQWmJ13JlYs4Zp7Arw==}
+  lucide-react@1.9.0:
+    resolution: {integrity: sha512-6qVAmbgCjcJz7sAGSPSSJ++RAwjlK2XCbRrZKv63Ciko1KT8jX0//CXxgI3jg2HlJu8tADqdYlNDebmYjeoruA==}
     peerDependencies:
       react: ^16.5.1 || ^17.0.0 || ^18.0.0 || ^19.0.0
 
@@ -3042,6 +3045,11 @@ packages:
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18 || ^19
+
+  react-icons@5.6.0:
+    resolution: {integrity: sha512-RH93p5ki6LfOiIt0UtDyNg/cee+HLVR6cHHtW3wALfo+eOHTp8RnU2kRkI6E+H19zMIs03DyxUG/GfZMOGvmiA==}
+    peerDependencies:
+      react: '*'
 
   react-is@18.3.1:
     resolution: {integrity: sha512-/LLMVyas0ljjAtoYiPqYiL8VWXzUUdThrmU5+n20DZv+a+ClRoevUzw5JxU+Ieh5/c87ytoTBV9G1FiKfNJdmg==}
@@ -6373,7 +6381,7 @@ snapshots:
       lodash.clonedeep: 4.5.0
       lru-cache: 6.0.0
 
-  lucide-react@1.8.0(react@19.2.5):
+  lucide-react@1.9.0(react@19.2.5):
     dependencies:
       react: 19.2.5
 
@@ -6522,6 +6530,10 @@ snapshots:
       scheduler: 0.27.0
 
   react-hook-form@7.73.1(react@19.2.5):
+    dependencies:
+      react: 19.2.5
+
+  react-icons@5.6.0(react@19.2.5):
     dependencies:
       react: 19.2.5
 

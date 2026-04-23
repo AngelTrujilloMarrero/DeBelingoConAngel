@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { Calendar, Clock, MapPin, Music2, Download, Navigation, Plus, Edit, Trash2, Info, ExternalLink, ChevronDown, Globe, Phone, Bus, RotateCcw, Loader2, Mail } from 'lucide-react';
+import { FaFacebook, FaInstagram } from 'react-icons/fa';
 import { onValue, orchestrasRef, messagesRef, query, limitToLast } from '../utils/firebase';
 import { orchestraDetails } from '../data/orchestras';
 import { getCachedOrchestraArchive } from '../utils/dataLoaders';
@@ -301,12 +302,12 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                                         <div className="flex gap-2">
                                           {info.facebook && (
                                             <a href={info.facebook} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors">
-                                              <Globe className="w-4 h-4" />
+                                              <FaFacebook className="w-4 h-4" />
                                             </a>
                                           )}
                                           {info.instagram && (
                                             <a href={info.instagram} target="_blank" rel="noopener noreferrer" className="text-pink-400 hover:text-pink-300 transition-colors">
-                                              <Globe className="w-4 h-4" />
+                                              <FaInstagram className="w-4 h-4" />
                                             </a>
                                           )}
                                           {info.phone && (
