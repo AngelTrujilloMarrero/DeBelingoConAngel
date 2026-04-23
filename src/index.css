@@ -7,8 +7,14 @@
 
 @layer base {
   :root {
-    scroll-behavior: smooth;
-    scroll-padding-top: 7rem;
+    scroll-behavior: auto; /* Disable smooth scroll on mobile to prevent artifacts */
+    @media (min-width: 768px) {
+      scroll-behavior: smooth;
+    }
+    scroll-padding-top: 1rem;
+    @media (min-width: 768px) {
+      scroll-padding-top: 7rem;
+    }
     /* Adjusted for the new compact header */
     --radius: 0.5rem;
     --sidebar-background: 0 0% 98%;
@@ -41,18 +47,35 @@
     font-feature-settings: "rlig" 1, "calt" 1;
     overflow-x: hidden;
     min-height: 100vh;
+    background-color: #001f3f; /* Solid fallback for mobile */
   }
 
-  body::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(to bottom, #001f3f, #111);
-    z-index: -10;
-    pointer-events: none;
+  @media (min-width: 768px) {
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to bottom, #001f3f, #111);
+      z-index: -10;
+      pointer-events: none;
+    }
+  }
+}
+
+/* Global mobile stability fix: disable heavy CSS features on small screens 
+   to prevent GPU rendering artifacts and crashes (auto-reloads) */
+@media (max-width: 767px) {
+  * {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+    box-shadow: none !important;
+    text-shadow: none !important;
+    animation: none !important;
+    transition: none !important;
+    will-change: auto !important;
   }
 }
 

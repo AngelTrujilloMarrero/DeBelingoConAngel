@@ -30,14 +30,14 @@ const Header: React.FC = () => {
   };
 
   const headerClasses = isScrolled 
-    ? 'py-1 backdrop-blur-md bg-[#001f3f]/90' 
+    ? 'py-1 bg-[#001f3f]' 
     : 'py-1.5 lg:py-3';
 
   return (
     <header
       ref={headerRef}
       onMouseMove={handleMouseMove}
-      className={`sticky top-0 z-50 text-white shadow-xl flex flex-col justify-center items-center cursor-default group transition-all duration-500 ease-in-out bg-[#001f3f] ${headerClasses}`}
+      className={`relative md:sticky top-0 z-50 text-white shadow-xl flex flex-col justify-center items-center cursor-default group transition-none md:transition-all md:duration-500 ease-in-out bg-[#001f3f] ${headerClasses}`}
       style={{ overflow: 'visible' }}
     >
       {/* Background Layers */}

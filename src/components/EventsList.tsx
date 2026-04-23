@@ -138,9 +138,9 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
   };
 
   return (
-    <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white shadow-2xl overflow-hidden">
+    <div className="bg-gray-900 md:bg-gradient-to-br md:from-gray-900 md:via-gray-800 md:to-gray-900 text-white shadow-2xl overflow-hidden">
       {/* Header */}
-      <div className="bg-gradient-to-r from-blue-600 to-purple-600 pt-3 pb-2 md:py-2">
+      <div className="bg-blue-600 md:bg-gradient-to-r md:from-blue-600 md:to-purple-600 pt-3 pb-2 md:py-2">
         <h2 className="text-xl md:text-3xl font-bold text-center flex items-center justify-center gap-2 md:gap-3">
           <Calendar className="w-5 h-5 md:w-8 md:h-8" />
           Próximas Verbenas
@@ -148,7 +148,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
         </h2>
         <div className="flex items-center justify-center mt-2 px-2 gap-1.5 flex-nowrap">
           {/* Bloque de Actualización - Centrado */}
-          <div className="flex items-center bg-black/40 backdrop-blur-sm px-2.5 py-1.5 rounded-full border border-white/10 shadow-lg group/update">
+          <div className="flex items-center bg-black/60 px-2.5 py-1.5 rounded-full border border-white/10 shadow-lg group/update">
             <div className="flex items-center gap-1.5">
               <div className="flex items-center gap-1 text-blue-100/90 text-[8.5px] md:text-xs font-bold whitespace-nowrap">
                 <Clock className="w-3 h-3 md:w-3.5 md:h-3.5 text-blue-400" />
@@ -168,7 +168,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
 
           {/* Bloque del Muro - Pegado al lado */}
           {lastMessageDays !== null && (
-            <div className={`flex items-center gap-1 px-2 py-1.5 rounded-full bg-black/40 border backdrop-blur-sm transition-all duration-300 shadow-lg shrink-0 ${
+            <div className={`flex items-center gap-1 px-2 py-1.5 rounded-full bg-black/60 border transition-all duration-300 shadow-lg shrink-0 ${
               lastMessageDays === 0 ? 'text-emerald-400 border-emerald-500/30' :
               lastMessageDays === 1 ? 'text-amber-400 border-amber-500/30' :
               lastMessageDays <= 3 ? 'text-orange-400 border-orange-500/30' :
@@ -195,8 +195,8 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
 
             return (
               <div key={dayKey} className={`space-y-4 ${dayKey !== Object.keys(eventsByDay).sort()[0] ? 'mt-8 pt-4 border-t border-gray-700/30' : ''}`}>
-                <div className="py-3 bg-gradient-to-r from-transparent via-yellow-400/15 to-transparent border-y border-yellow-400/20">
-                  <h3 className="text-xl md:text-2xl font-bold text-yellow-400 flex items-center justify-center gap-3 drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+                <div className="py-3 bg-gray-800/50 md:bg-gradient-to-r md:from-transparent md:via-yellow-400/15 md:to-transparent border-y border-yellow-400/20">
+                  <h3 className="text-xl md:text-2xl font-bold text-yellow-400 flex items-center justify-center gap-3">
                     <Calendar className="w-6 h-6 text-yellow-500" />
                     <span className="tracking-wide uppercase">{dayName}</span>
                     <Calendar className="w-6 h-6 text-yellow-500" />
@@ -208,7 +208,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                     <div
                       key={event.id}
                       onDoubleClick={() => toggleEvent(event.id)}
-                      className="bg-gradient-to-r from-gray-800/50 to-gray-700/50 rounded-lg p-4 border border-gray-600/30 hover:border-blue-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20 cursor-pointer select-none group"
+                      className="bg-gray-800/80 md:bg-gradient-to-r md:from-gray-800/50 md:to-gray-700/50 rounded-lg p-4 border border-gray-600/30 hover:border-blue-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20 cursor-pointer select-none group"
                     >
                       <div className="flex flex-wrap items-center gap-4 text-center md:text-left min-w-0 overflow-hidden">
                         <div className="flex items-center gap-2 text-blue-300 font-bold">
@@ -240,7 +240,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                             href={generateTransitLink(event)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center px-3 py-1.5 bg-gradient-to-r from-green-500/20 to-green-600/20 text-green-300 rounded-lg text-sm font-medium border border-green-500/30 hover:from-green-500/30 hover:to-green-600/30 hover:border-green-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-green-500/20"
+                             className="flex items-center px-3 py-1.5 bg-green-900/40 md:bg-gradient-to-r md:from-green-500/20 md:to-green-600/20 text-green-300 rounded-lg text-sm font-medium border border-green-500/30 hover:from-green-500/30 hover:to-green-600/30 hover:border-green-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-green-500/20"
                             title={`Cómo llegar en guagua a ${event.municipio}`}
                           >
                             <TITSALogo />

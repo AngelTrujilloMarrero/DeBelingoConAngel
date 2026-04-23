@@ -37,7 +37,7 @@ function AppContent() {
   console.log('App rendering, pathname:', pathname);
   return (
     <TurnstileProvider>
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+      <div className="min-h-screen bg-[#111] md:bg-gradient-to-br md:from-gray-900 md:via-gray-800 md:to-gray-900">
         {/* Header - Siempre visible */}
         <Header />
 
