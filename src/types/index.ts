@@ -14,6 +14,7 @@ export interface Event {
   cancelTimestamp?: string;
   programa?: string;
   cambios?: string[];
+  motivoEliminacion?: string;
 }
 
 export interface OrquestaCount {

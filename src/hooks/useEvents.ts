@@ -249,7 +249,8 @@ export function useEvents() {
                   type: 'delete',
                   event: {
                     ...deletion.eventData,
-                    FechaEditado: deletion.deletedAt
+                    FechaEditado: deletion.deletedAt,
+                    motivoEliminacion: (deletion as any).reason
                   }
                 });
               }

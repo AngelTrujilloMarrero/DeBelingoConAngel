@@ -452,6 +452,15 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                         <span className="text-gray-400 italic">{item.event.tipo}</span>
                       </div>
 
+                      {item.type === 'delete' && (
+                        <div className="mt-1.5 flex items-center gap-1.5">
+                          <span className="text-[10px] font-bold uppercase tracking-tight text-red-400/80">Motivo:</span>
+                          <span className="text-xs text-gray-400 italic">
+                            {item.event.motivoEliminacion || 'Sin especificar'}
+                          </span>
+                        </div>
+                      )}
+
                       {item.type === 'edit' && item.event.cambios && item.event.cambios.length > 0 && (
                         <div className="flex flex-wrap items-center justify-start gap-1 mt-2">
                           <span className="text-blue-400/80 text-[10px] font-bold uppercase tracking-tight mr-1">Cambios:</span>
