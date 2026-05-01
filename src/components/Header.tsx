@@ -121,8 +121,8 @@ const Header: React.FC<HeaderProps> = ({ searchTerm, setSearchTerm }) => {
         </div>
 
         {/* Navigation + Search Button - ALWAYS VISIBLE */}
-        <div className={`w-full flex justify-between items-center gap-1 transition-all duration-500 ${isScrolled ? 'py-1 scale-100' : 'py-1'}`}>
-          <div className="flex-1 min-w-0 flex justify-center">
+        <div className={`w-full flex justify-center items-center gap-2 transition-all duration-500 ${isScrolled ? 'py-1 scale-100' : 'py-1'}`}>
+          <div className="flex-shrink-0">
             <Navigation />
           </div>
           {isEventosPage && (
