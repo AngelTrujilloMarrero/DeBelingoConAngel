@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import { Search, X, ArrowLeft } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import Navigation from './Navigation';
 
 interface HeaderProps {
@@ -12,6 +13,8 @@ const Header: React.FC<HeaderProps> = ({ searchTerm, setSearchTerm }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { pathname } = useLocation();
+  const isEventosPage = pathname === '/';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -56,7 +59,7 @@ const Header: React.FC<HeaderProps> = ({ searchTerm, setSearchTerm }) => {
     <header
       ref={headerRef}
       onMouseMove={handleMouseMove}
-      className={`relative md:sticky top-0 z-50 text-white shadow-xl flex flex-col justify-center items-center cursor-default group transition-none md:transition-all md:duration-500 ease-in-out bg-[#001f3f] ${headerClasses}`}
+      className={`sticky top-0 z-50 text-white shadow-xl flex flex-col justify-center items-center cursor-default group transition-none md:transition-all md:duration-500 ease-in-out bg-[#001f3f] ${headerClasses}`}
       style={{ overflow: 'visible' }}
     >
       {/* Background Layers */}
@@ -83,45 +86,41 @@ const Header: React.FC<HeaderProps> = ({ searchTerm, setSearchTerm }) => {
       <div className={`relative container mx-auto px-4 text-center flex flex-col items-center justify-center z-10 transition-all duration-500 ease-in-out ${isScrolled ? 'gap-0 py-1' : 'py-1 lg:py-2 gap-1'}`}
         style={{ overflow: 'visible' }}
       >
-        {/* Search Overlay/Input */}
-        <div 
-          className={`absolute inset-0 z-20 flex items-center justify-center transition-all duration-300 ${
-            isSearchOpen ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none'
-          }`}
-        >
-          <div className="w-full max-w-2xl px-4 flex items-center gap-3">
-            <button 
-              onClick={clearSearch}
-              className="p-2 hover:bg-white/10 rounded-full transition-colors"
-            >
-              <ArrowLeft className="w-6 h-6 text-white/70" />
-            </button>
-            <div className="flex-1 relative">
-              <input
-                ref={inputRef}
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Busca por municipio, orquesta o lugar..."
-                className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-full py-2 px-6 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
-                onKeyDown={(e) => e.key === 'Escape' && clearSearch()}
-              />
-              {searchTerm && (
-                <button 
-                  onClick={() => setSearchTerm('')}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-white/10 rounded-full transition-colors"
-                >
-                  <X className="w-4 h-4 text-white/50" />
-                </button>
-              )}
+        {/* Search Overlay/Input - Shown when search is open */}
+        {isSearchOpen && (
+          <div className="absolute inset-0 z-20 flex items-center justify-center">
+            <div className="w-full max-w-2xl px-4 flex items-center gap-3">
+              <button 
+                onClick={clearSearch}
+                className="p-2 hover:bg-white/10 rounded-full transition-colors"
+              >
+                <ArrowLeft className="w-6 h-6 text-white/70" />
+              </button>
+              <div className="flex-1 relative">
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Busca por municipio, orquesta o lugar..."
+                  className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-full py-2 px-6 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
+                  onKeyDown={(e) => e.key === 'Escape' && clearSearch()}
+                />
+                {searchTerm && (
+                  <button 
+                    onClick={() => setSearchTerm('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-white/10 rounded-full transition-colors"
+                  >
+                    <X className="w-4 h-4 text-white/50" />
+                  </button>
+                )}
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
-        {/* Group Title - Hidden when searching on mobile */}
-        <div className={`w-full flex flex-col items-center transition-all duration-500 ease-in-out ${
-          isScrolled || isSearchOpen ? 'max-h-0 opacity-0 pointer-events-none mb-0 overflow-hidden' : 'max-h-24 opacity-100 mb-0 overflow-visible'
-        }`}>
+        {/* Group Title */}
+        <div className={`w-full flex flex-col items-center transition-all duration-500 ease-in-out ${isScrolled ? 'max-h-0 opacity-0 pointer-events-none mb-0 overflow-hidden' : 'max-h-16 opacity-100 mb-0 overflow-visible'}`}>
           {/* Visible on mobile - small */}
           <div className="block md:hidden transition-all duration-500">
             <h1 className="text-xs font-bold font-orbitron tracking-widest transform scale-x-110 origin-center inline-block group/text cursor-pointer transition-transform duration-300 py-0.5">
@@ -154,12 +153,18 @@ const Header: React.FC<HeaderProps> = ({ searchTerm, setSearchTerm }) => {
           </div>
         </div>
 
-        {/* Navigation & Search Icon */}
-        <div className={`w-full flex justify-center items-center transition-all duration-500 ${isScrolled ? 'py-1 scale-100' : 'py-1'} ${isSearchOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-          <Navigation 
-            onSearchClick={() => setIsSearchOpen(true)}
-            searchTerm={searchTerm}
-          />
+        {/* Navigation + Search Button - ALWAYS VISIBLE */}
+        <div className={`w-full flex justify-center items-center gap-2 transition-all duration-500 ${isScrolled ? 'py-1 scale-100' : 'py-1'} ${isSearchOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
+          <Navigation />
+          {isEventosPage && (
+            <button 
+              onClick={() => setIsSearchOpen(true)}
+              className={`flex-shrink-0 p-2.5 rounded-full transition-all duration-300 hover:bg-white/20 ${searchTerm ? 'text-blue-400 bg-blue-500/20 ring-2 ring-blue-400/30' : 'text-white/80 hover:text-white'}`}
+              aria-label="Buscar eventos"
+            >
+              <Search className="w-5 h-5" />
+            </button>
+          )}
         </div>
       </div>
     </header>
