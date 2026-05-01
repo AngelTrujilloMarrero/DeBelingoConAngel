@@ -14,7 +14,7 @@ const Header: React.FC<HeaderProps> = ({ searchTerm, setSearchTerm }) => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const { pathname } = useLocation();
-  const isEventosPage = pathname === '/';
+  const isEventosPage = pathname === '/' || pathname === '';
 
   useEffect(() => {
     const handleScroll = () => {
@@ -59,7 +59,7 @@ const Header: React.FC<HeaderProps> = ({ searchTerm, setSearchTerm }) => {
     <header
       ref={headerRef}
       onMouseMove={handleMouseMove}
-      className={`sticky top-0 z-50 text-white shadow-xl flex flex-col justify-center items-center cursor-default group transition-none md:transition-all md:duration-500 ease-in-out bg-[#001f3f] ${headerClasses}`}
+      className={`sticky top-0 z-50 text-white shadow-xl flex flex-col justify-center items-center cursor-default group transition-all duration-500 ease-in-out bg-[#001f3f] ${headerClasses}`}
       style={{ overflow: 'visible' }}
     >
       {/* Background Layers */}
@@ -86,39 +86,6 @@ const Header: React.FC<HeaderProps> = ({ searchTerm, setSearchTerm }) => {
       <div className={`relative container mx-auto px-4 text-center flex flex-col items-center justify-center z-10 transition-all duration-500 ease-in-out ${isScrolled ? 'gap-0 py-1' : 'py-1 lg:py-2 gap-1'}`}
         style={{ overflow: 'visible' }}
       >
-        {/* Search Overlay/Input - Shown when search is open */}
-        {isSearchOpen && (
-          <div className="absolute inset-0 z-20 flex items-center justify-center">
-            <div className="w-full max-w-2xl px-4 flex items-center gap-3">
-              <button 
-                onClick={clearSearch}
-                className="p-2 hover:bg-white/10 rounded-full transition-colors"
-              >
-                <ArrowLeft className="w-6 h-6 text-white/70" />
-              </button>
-              <div className="flex-1 relative">
-                <input
-                  ref={inputRef}
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Busca por municipio, orquesta o lugar..."
-                  className="w-full bg-white/10 backdrop-blur-md border border-white/20 rounded-full py-2 px-6 text-white placeholder:text-white/40 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all"
-                  onKeyDown={(e) => e.key === 'Escape' && clearSearch()}
-                />
-                {searchTerm && (
-                  <button 
-                    onClick={() => setSearchTerm('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-white/10 rounded-full transition-colors"
-                  >
-                    <X className="w-4 h-4 text-white/50" />
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Group Title */}
         <div className={`w-full flex flex-col items-center transition-all duration-500 ease-in-out ${isScrolled ? 'max-h-0 opacity-0 pointer-events-none mb-0 overflow-hidden' : 'max-h-16 opacity-100 mb-0 overflow-visible'}`}>
           {/* Visible on mobile - small */}
@@ -154,17 +121,48 @@ const Header: React.FC<HeaderProps> = ({ searchTerm, setSearchTerm }) => {
         </div>
 
         {/* Navigation + Search Button - ALWAYS VISIBLE */}
-        <div className={`w-full flex justify-center items-center gap-2 transition-all duration-500 ${isScrolled ? 'py-1 scale-100' : 'py-1'} ${isSearchOpen ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}>
-          <Navigation />
+        <div className={`w-full flex justify-between items-center gap-1 transition-all duration-500 ${isScrolled ? 'py-1 scale-100' : 'py-1'}`}>
+          <div className="flex-1 min-w-0 flex justify-center">
+            <Navigation />
+          </div>
           {isEventosPage && (
             <button 
-              onClick={() => setIsSearchOpen(true)}
-              className={`flex-shrink-0 p-2.5 rounded-full transition-all duration-300 hover:bg-white/20 ${searchTerm ? 'text-blue-400 bg-blue-500/20 ring-2 ring-blue-400/30' : 'text-white/80 hover:text-white'}`}
+              onClick={() => setIsSearchOpen(!isSearchOpen)}
+              className={`flex-shrink-0 p-1.5 sm:p-2.5 rounded-full transition-all duration-300 hover:bg-white/20 ${isSearchOpen || searchTerm ? 'text-blue-400 bg-blue-500/20 ring-1 ring-blue-400/30' : 'text-white/80 hover:text-white'}`}
               aria-label="Buscar eventos"
             >
-              <Search className="w-5 h-5" />
+              {isSearchOpen ? <X className="w-3.5 h-3.5 sm:w-5 sm:h-5" /> : <Search className="w-3.5 h-3.5 sm:w-5 sm:h-5" />}
             </button>
           )}
+        </div>
+
+        {/* Search Bar - Slides down below navigation */}
+        <div 
+          className={`w-full transition-all duration-300 ease-in-out overflow-hidden flex items-center justify-center ${
+            isSearchOpen ? 'max-h-20 opacity-100 mt-2' : 'max-h-0 opacity-0 mt-0 pointer-events-none'
+          }`}
+        >
+          <div className="w-full max-w-2xl px-2 pb-2 flex items-center gap-2">
+            <div className="flex-1 relative">
+              <input
+                ref={inputRef}
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Busca por municipio, orquesta o lugar..."
+                className="w-full bg-black/40 backdrop-blur-md border border-white/20 rounded-full py-2.5 px-6 text-white text-sm placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all shadow-inner"
+                onKeyDown={(e) => e.key === 'Escape' && clearSearch()}
+              />
+              {searchTerm && (
+                <button 
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 hover:bg-white/10 rounded-full transition-colors"
+                >
+                  <X className="w-4 h-4 text-white/70" />
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </header>
