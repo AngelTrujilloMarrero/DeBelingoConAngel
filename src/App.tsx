@@ -12,6 +12,9 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const queryClient = new QueryClient();
 
+import { matchSorter } from 'match-sorter';
+import { normalizeSearchText } from './lib/utils';
+
 function AppContent() {
   const { events, recentActivity, loading } = useEvents();
   const { pathname } = useLocation();
@@ -37,17 +40,18 @@ function AppContent() {
     );
   }
 
-  // Filter events based on searchTerm
-  const filteredEvents = events.filter(event => {
-    if (!searchTerm) return true;
-    const searchLower = searchTerm.toLowerCase();
-    return (
-      event.municipio.toLowerCase().includes(searchLower) ||
-      event.orquesta.toLowerCase().includes(searchLower) ||
-      (event.lugar && event.lugar.toLowerCase().includes(searchLower)) ||
-      event.tipo.toLowerCase().includes(searchLower)
-    );
-  });
+  // Improved filtering using match-sorter and normalization (like in Admin project)
+  const filteredEvents = searchTerm 
+    ? matchSorter(events, normalizeSearchText(searchTerm), {
+        keys: [
+          (item) => normalizeSearchText(item.municipio),
+          (item) => normalizeSearchText(item.orquesta),
+          (item) => normalizeSearchText(item.lugar || ''),
+          (item) => normalizeSearchText(item.tipo)
+        ],
+        threshold: matchSorter.rankings.CONTAINS
+      })
+    : events;
 
   console.log('App rendering, pathname:', pathname);
   return (
