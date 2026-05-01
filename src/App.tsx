@@ -6,7 +6,7 @@ import { useAnalytics } from './hooks/useAnalytics';
 import { Loader2 } from 'lucide-react';
 import { EventosPage, MapaPage, EstadisticasPage, RedesPage, FormacionesPage, CarnavalPage } from './pages';
 import MessageBoard from './components/MessageBoard';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { TurnstileProvider } from './components/TurnstileProvider';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
@@ -16,10 +16,13 @@ function AppContent() {
   const { events, recentActivity, loading } = useEvents();
   const { pathname } = useLocation();
   
+  const [searchTerm, setSearchTerm] = useState('');
+
   useAnalytics();
 
   useEffect(() => {
     window.scrollTo(0, 0);
+    setSearchTerm(''); // Limpiar búsqueda al cambiar de página
   }, [pathname]);
 
   if (loading) {
@@ -34,17 +37,29 @@ function AppContent() {
     );
   }
 
+  // Filter events based on searchTerm
+  const filteredEvents = events.filter(event => {
+    if (!searchTerm) return true;
+    const searchLower = searchTerm.toLowerCase();
+    return (
+      event.municipio.toLowerCase().includes(searchLower) ||
+      event.orquesta.toLowerCase().includes(searchLower) ||
+      (event.lugar && event.lugar.toLowerCase().includes(searchLower)) ||
+      event.tipo.toLowerCase().includes(searchLower)
+    );
+  });
+
   console.log('App rendering, pathname:', pathname);
   return (
     <TurnstileProvider>
       <div className="min-h-screen bg-[#111] md:bg-gradient-to-br md:from-gray-900 md:via-gray-800 md:to-gray-900">
         {/* Header - Siempre visible */}
-        <Header />
+        <Header searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
         {/* Main Content - Cambia según la ruta */}
         <div className="w-full">
           <Routes>
-            <Route path="/" element={<EventosPage events={events} recentActivity={recentActivity} />} />
+            <Route path="/" element={<EventosPage events={filteredEvents} recentActivity={recentActivity} searchTerm={searchTerm} />} />
             <Route path="/mapa" element={<MapaPage events={events} />} />
             <Route path="/estadisticas" element={<EstadisticasPage events={events} />} />
             <Route path="/formaciones" element={<FormacionesPage events={events} />} />
@@ -53,8 +68,8 @@ function AppContent() {
           </Routes>
         </div>
 
-        {/* Message Board - Only on main page */}
-        {pathname === '/' && <MessageBoard />}
+        {/* Message Board - Only on main page and when not searching or on mobile */}
+        {pathname === '/' && !searchTerm && <MessageBoard />}
 
         {/* Footer - Siempre visible */}
         <footer className="bg-gray-900 text-white py-12 relative overflow-hidden">

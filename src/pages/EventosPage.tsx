@@ -15,9 +15,10 @@ import {
 interface EventosPageProps {
     events: AppEvent[];
     recentActivity: RecentActivityItem[];
+    searchTerm?: string;
 }
 
-const EventosPage: React.FC<EventosPageProps> = ({ events, recentActivity }) => {
+const EventosPage: React.FC<EventosPageProps> = ({ events, recentActivity, searchTerm }) => {
     const [festivalSelectionVisible, setFestivalSelectionVisible] = useState(false);
     const [selectedFestival, setSelectedFestival] = useState('');
     const { generatedImage, setGeneratedImage, exportByDateToImage, exportFestivalToImage, getUniqueFestivals } = useEventExport(events);
@@ -142,6 +143,7 @@ const EventosPage: React.FC<EventosPageProps> = ({ events, recentActivity }) => 
                 recentActivity={recentActivity}
                 onExportWeek={exportByDateToImage}
                 onExportFestival={showFestivalSelection}
+                searchTerm={searchTerm}
             />
 
             {/* Festival Selection Modal */}

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { Calendar, Clock, MapPin, Music2, Download, Navigation, Plus, Edit, Trash2, Info, ExternalLink, ChevronDown, Globe, Phone, Bus, RotateCcw, Loader2, Mail } from 'lucide-react';
+import { Calendar, Clock, MapPin, Music2, Download, Navigation, Plus, Edit, Trash2, Info, ExternalLink, ChevronDown, Globe, Phone, Bus, RotateCcw, Loader2, Mail, Search } from 'lucide-react';
 import { FaFacebook, FaInstagram } from 'react-icons/fa';
 import { onValue, orchestrasRef, messagesRef, query, limitToLast } from '../utils/firebase';
 import { orchestraDetails } from '../data/orchestras';
@@ -15,9 +15,10 @@ interface EventsListProps {
   recentActivity?: RecentActivityItem[];
   onExportWeek: (startDate?: string, endDate?: string) => void;
   onExportFestival: () => void;
+  searchTerm?: string;
 }
 
-const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExportWeek, onExportFestival }) => {
+const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExportWeek, onExportFestival, searchTerm }) => {
   const [showDatePickers, setShowDatePickers] = useState(false);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -186,7 +187,24 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
 
       {/* Events List */}
       <div className="p-6 space-y-6">
-        {Object.entries(eventsByDay)
+        {events.length === 0 && searchTerm ? (
+          <div className="py-20 text-center space-y-4 animate-in fade-in zoom-in duration-500">
+            <div className="bg-gray-800/50 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 border border-gray-700">
+              <Search className="w-10 h-10 text-gray-500" />
+            </div>
+            <h3 className="text-xl font-bold text-white">No se encontraron verbenas</h3>
+            <p className="text-gray-400 max-w-xs mx-auto">
+              No hay resultados para "<span className="text-blue-400 font-semibold">{searchTerm}</span>". 
+              Prueba con otro municipio u orquesta.
+            </p>
+          </div>
+        ) : Object.entries(eventsByDay).length === 0 ? (
+           <div className="py-20 text-center space-y-4">
+            <Loader2 className="w-12 h-12 text-blue-500 animate-spin mx-auto" />
+            <p className="text-gray-400">Cargando eventos...</p>
+          </div>
+        ) : (
+          Object.entries(eventsByDay)
           .sort(([dayKeyA], [dayKeyB]) => new Date(dayKeyA).getTime() - new Date(dayKeyB).getTime())
           .map(([dayKey, dayEvents]) => {
             const dayDate = new Date(dayKey);
@@ -357,7 +375,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                 </div>
               </div>
             );
-          })}
+          }))}
       </div >
 
       {/* Footer / Últimos Movimientos */}
