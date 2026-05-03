@@ -114,7 +114,7 @@ const SocialMedia: React.FC = () => {
   return (
     <div className="space-y-8">
             <p className="bg-purple-900/30 border-l-4 border-purple-500 p-4 italic text-white">
-              <strong className="text-purple-300">Nota importante:</strong> A partir del 2 de marzo de 2026, se cierran todas las redes sociales (Instagram, TikTok, WhatsApp, Facebook, Telegram). Todo tiene su final. La única fuente de información será esta web para seguir compartiendo las mejores verbenas de Tenerife.
+              <strong className="text-purple-300">Nota importante:</strong> A partir del 2 de marzo de 2026, nos despedimos de las redes sociales tradicionales (Instagram, TikTok, WhatsApp, Facebook). Todo tiene su final. La única fuente de información ahora es esta web y nuestro <strong>Canal Automatizado de Telegram</strong> para seguir compartiendo las mejores verbenas de Tenerife.
             </p>
       <div className="biography-section relative overflow-hidden rounded-2xl shadow-2xl">
         {/* Fondo estilo papiro con colores de la página (grises oscuros, púrpuras) */}
@@ -226,8 +226,12 @@ const SocialMedia: React.FC = () => {
               En diciembre de 2024 nace esta web, para tratar de mitigar los problemas de las redes sociales de la actualización de los bailes en tiempo y forma.
             </p>
 
+            <p>
+              Y ahora, en <strong className="text-purple-300">mayo de 2026</strong>, damos un nuevo paso hacia adelante inaugurando nuestro propio <strong>Canal Oficial de Telegram</strong>. Este canal está totalmente automatizado y conectado en tiempo real con la web, garantizando que recibas resúmenes semanales, avisos diarios y alertas inmediatas de cancelaciones directamente en tu móvil, sin intermediarios.
+            </p>
+
             <p className="bg-purple-900/30 border-l-4 border-purple-500 p-4 italic">
-              <strong className="text-purple-300">Nota importante:</strong> A partir del 23 de enero de 2026, se cierran las cuentas de Facebook y Telegram por diferencias con estas plataformas. Seguimos activos en Instagram,TikTok y WhatsApp para seguir compartiendo las mejores verbenas de Tenerife.
+              <strong className="text-purple-300">Nota importante:</strong> A partir del 2 de marzo de 2026, decidimos prescindir de las redes sociales tradicionales. Todo tiene su final, y consideramos que la mejor forma de informarte sin depender de los algoritmos de terceros es a través de esta misma web y de nuestro nuevo canal automatizado de Telegram.
             </p>
 
             <p className="text-center font-semibold text-lg md:text-xl mt-6 md:mt-8 text-purple-200">
