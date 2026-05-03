@@ -67,6 +67,14 @@
     {
       "path": "/api/cleanup-analytics",
       "schedule": "0 0 1 * *"
+    },
+    {
+      "path": "/api/telegram-send-weekly",
+      "schedule": "0 20 * * 0"
+    },
+    {
+      "path": "/api/telegram-send-reminder",
+      "schedule": "0 20 * * 4"
     }
   ]
 }

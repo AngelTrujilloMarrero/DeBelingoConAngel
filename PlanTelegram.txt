@@ -1,0 +1,222 @@
+# Plan: Canal de Telegram para Verbenas de Tenerife
+
+## Objetivo
+Publicar automáticamente información sobre eventos en un canal de Telegram, sin pedir cookies a los usuarios.
+
+---
+
+## Configuración Actual del Proyecto
+
+- **Web**: https://debelingoconangel.web.app
+- **Stack**: React + Vite + Firebase + Vercel
+- **Backend**: Vercel Serverless Functions + Firebase Realtime Database
+- **Detección de cambios**: Ya implementada en `recentActivity` (add/edit/delete/reagregado)
+
+---
+
+## Arquitectura
+
+```
+┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
+│  Usuario        │     │  Vercel API     │     │  Firebase RTDB  │
+│  (se une al canal)│   │  (funciones)    │     │  (eventos)      │
+└─────────────────┘     └────────┬─────────┘     └─────────────────┘
+                                 │
+                                 ▼
+                        ┌──────────────────┐
+                        │  Telegram API   │
+                        │  (enviar a canal)│
+                        └──────────────────┘
+```
+
+---
+
+## Calendario de Publicación
+
+| Día | Cuándo | Qué se publica |
+|-----|--------|----------------|
+| Domingo | 20:00 (cron) | Lista completa de la semana siguiente |
+| Lunes | Inmediato | Nuevos eventos y modificaciones del día |
+| Martes | Inmediato | Nuevos eventos y modificaciones del día |
+| Miércoles | Inmediato | Nuevos eventos y modificaciones del día |
+| Jueves | 20:00 (cron) | Recordatorio de la semana |
+| Viernes | Inmediato | Nuevos eventos y modificaciones del día |
+| Sábado | Inmediato | Nuevos eventos y modificaciones del día |
+| **Cualquier día** | **Inmediato** | **Cancelaciones (siempre)** |
+
+---
+
+## Tipos de Eventos a Publicar
+
+| Tipo | Origen | Cuándo enviar |
+|------|--------|---------------|
+| add | recentActivity.type === 'add' | Según calendario |
+| edit | recentActivity.type === 'edit' | Según calendario |
+| delete (cancelación) | recentActivity.type === 'delete' | **Inmediato** |
+| reagregado | recentActivity.type === 'reagregado' | Según calendario |
+
+---
+
+## Formato de Mensaje
+
+### Lista semanal (domingo/jueves)
+```
+🎵 VERBENAS DE TENERIFE - SEMANA DEL 7 AL 13 DE JULIO
+
+━━━━━━━━━━ LUNES 7 ━━━━━━━━━━
+
+🎵 21:00 | San Benito
+📍 Plaza del Pueblo, La Orotava
+🎻 Orquesta Los Diablos
+
+🎵 22:30 | San Juan
+📍 Plaza Mayor, Puerto de la Cruz
+🎻 Orquesta Excelente
+
+━━━━━━━━━━ MARTES 8 ━━━━━━━━━━
+...
+
+━━━━━━━━━━ ✦ ━━━━━━━━━━━
+
+🔗 debelingoconangel.web.app
+```
+
+### Cambio inmediato (cancelación)
+```
+⚠️ CANCELACIÓN - INMEDIATO
+
+❌ Verbena cancelada en Granadilla
+📅 Domingo 6 de julio
+🎻 Orquesta Paradise
+
+Motivo: [motivo de la cancelación]
+
+━━━━━━━━━━ ✦ ━━━━━━━━━━━
+```
+
+### Nuevo evento modificado
+```
+➕ NUEVA VERBENA
+
+🎵 Verbena de San Benito
+📍 Plaza del Pueblo, La Orotava
+📅 Sábado 12 de julio · 21:00
+🎻 Orquesta Los Diablos
+
+━━━━━━━━━━ ✦ ━━━━━━━━━━━
+```
+
+---
+
+## Archivos a Crear
+
+| Archivo | Descripción | Trigger |
+|---------|-------------|---------|
+| `src/utils/telegram.js` | Helper para enviar mensajes a Telegram | - |
+| `api/telegram-send-weekly.js` | Envía lista semanal | Cron (domingo 20:00) |
+| `api/telegram-send-reminder.js` | Envía recordatorio semanal | Cron (jueves 20:00) |
+| `api/telegram-notify-change.js` | Envía cambio inmediato (cancelación/nuevo) | Manual (URL) |
+
+---
+
+## Variables de Entorno (Vercel)
+
+| Variable | Descripción | Dónde obtenerla |
+|----------|-------------|-----------------|
+| `TELEGRAM_BOT_TOKEN` | Token del bot | @BotFather |
+| `TELEGRAM_CHAT_ID` | ID del canal | @userinfobot o crear canal |
+
+---
+
+## Pasos para Implementar
+
+### 1. Crear el bot en Telegram
+- Abrir @BotFather
+- /newbot
+- Elegir nombre (ej: DeBelingoConAngel Bot)
+- Obtener el token
+
+### 2. Crear el canal
+- Telegram → Nueva imagen (canal)
+- Nombre: "Verbenas Tenerife" (o similar)
+- Añadir bot como administrador:
+  - Settings del canal → Administradores → Añadir bot
+  - Dar permiso "Post messages"
+
+### 3. Obtener Chat ID del canal
+- El link del canal será: t.me/[nombre]
+- El Chat ID suele ser: @[nombre] o -100xxxxxxxxxx
+- Para obtenerlo: añadir el bot @userinfobot al canal y usar /getgroupid
+
+### 4. Configurar Vercel
+- Project Settings → Environment Variables
+- Añadir TELEGRAM_BOT_TOKEN
+- Añadir TELEGRAM_CHAT_ID
+
+### 5. Crear las API functions
+- Implementar src/utils/telegram.js
+- Implementar api/telegram-send-weekly.js
+- Implementar api/telegram-send-reminder.js
+- Implementar api/telegram-notify-change.js
+
+### 6. Configurar Crons en vercel.json
+```json
+{
+  "crons": [
+    {
+      "path": "/api/telegram-send-weekly",
+      "schedule": "0 20 * * 0"
+    },
+    {
+      "path": "/api/telegram-send-reminder",
+      "schedule": "0 20 * * 4"
+    }
+  ]
+}
+```
+
+---
+
+## Sistema de Envío Inmediato
+
+
+
+### Opción B: Automático
+Un cron que cada hora revise si hay cambios no enviados:
+- Guardar "último cambio enviado" en Firebase
+- Comparar con recentActivity actual
+- Enviar si hay nuevos
+
+
+
+---
+
+## Coste Estimado
+
+- **Vercel**: Plan gratuito (suficiente)
+  - 1,000,000 invocaciones/mes
+  - ~60-100 invocaciones/mes para este uso
+- **Firebase**: Plan gratuito (suficiente)
+  - 100GB almacenamiento, 10K reads/mes para la web
+- **Telegram**: Completamente gratis
+
+---
+
+## Notas Importantes
+
+1. **No es cookie**: El canal de Telegram no usa cookies, los usuarios se unen voluntariamente
+2. **GDPR**: No se recogen datos personales, solo el nombre de usuario de Telegram
+3. **Los suscriptores controlan**: Los usuarios pueden abandonar el canal en cualquier momento
+4. **Solo eventos de la semana**: No publicar histórico, solo la semana actual/siguiente
+5. **Cancelaciones siempre inmediatas**: Sistema de alertas para cancelaciones
+
+---
+
+## Estado Actual del Proyecto
+
+- ✅ Detección de cambios implementada (recentActivity)
+- ✅ Tipos de cambio: add, edit, delete, reagregado
+- ✅ Timestamps en eventos (FechaAgregado, FechaEditado)
+- ⏳ Canal de Telegram por crear
+- ⏳ API functions por crear
+- ⏳ Crons por configurar
