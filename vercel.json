@@ -54,26 +54,30 @@
       ]
     }
   ],
-  "redirects": [],
+  "rewrites": [
+    { "source": "/api/telegram-send-weekly", "destination": "/api/telegram?action=weekly" },
+    { "source": "/api/telegram-send-reminder", "destination": "/api/telegram?action=reminder" },
+    { "source": "/api/telegram-notify-change", "destination": "/api/telegram" },
+    { "source": "/api/cleanup-deletions", "destination": "/api/cleanup" },
+    { "source": "/api/cleanup-messages", "destination": "/api/cleanup" },
+    { "source": "/api/cleanup-analytics", "destination": "/api/cleanup" },
+    { "source": "/api/cleanup-trashed", "destination": "/api/cleanup" },
+    { "source": "/api/upload-imgur", "destination": "/api/upload?provider=imgur" },
+    { "source": "/api/upload-imgbb", "destination": "/api/upload?provider=imgbb" },
+    { "source": "/api/mistral", "destination": "/api/ai" },
+    { "source": "/api/openrouter", "destination": "/api/ai" }
+  ],
   "crons": [
     {
-      "path": "/api/cleanup-deletions",
+      "path": "/api/cleanup",
       "schedule": "0 0 * * *"
     },
     {
-      "path": "/api/cleanup-messages",
-      "schedule": "0 0 * * *"
-    },
-    {
-      "path": "/api/cleanup-analytics",
-      "schedule": "0 0 1 * *"
-    },
-    {
-      "path": "/api/telegram-send-weekly",
+      "path": "/api/telegram?action=weekly",
       "schedule": "0 20 * * 0"
     },
     {
-      "path": "/api/telegram-send-reminder",
+      "path": "/api/telegram?action=reminder",
       "schedule": "0 20 * * 4"
     }
   ]

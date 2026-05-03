@@ -1,6 +1,6 @@
 import admin from 'firebase-admin';
 
-const APP_NAME = 'telegram_bot_app';
+const APP_NAME = 'debelingo_api_app';
 
 export function getFirebaseApp() {
     const existingApp = admin.apps.find(app => app.name === APP_NAME);
@@ -30,14 +30,12 @@ export function getFirebaseApp() {
     }, APP_NAME);
 }
 
+export function getDb() {
+    return getFirebaseApp().database();
+}
+
 export async function getEvents() {
-    const app = getFirebaseApp();
-    const db = app.database();
-    const snapshot = await db.ref('events').once('value');
+    const snapshot = await getDb().ref('events').once('value');
     const data = snapshot.val() || {};
-    
-    return Object.entries(data).map(([key, value]) => ({
-        id: key,
-        ...value
-    }));
+    return Object.entries(data).map(([key, value]) => ({ id: key, ...value }));
 }
