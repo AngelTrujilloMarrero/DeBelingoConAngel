@@ -74,11 +74,11 @@
     },
     {
       "path": "/api/telegram?action=weekly",
-      "schedule": "0 20 * * 0"
+      "schedule": "15 19 * * 0"
     },
     {
       "path": "/api/telegram?action=reminder",
-      "schedule": "0 20 * * 4"
+      "schedule": "15 19 * * 4"
     }
   ]
 }
