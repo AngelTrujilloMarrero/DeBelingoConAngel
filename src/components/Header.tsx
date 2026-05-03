@@ -87,7 +87,7 @@ const Header: React.FC<HeaderProps> = ({ searchTerm, setSearchTerm }) => {
         style={{ overflow: 'visible' }}
       >
         {/* Group Title */}
-        <div className={`w-full flex flex-col items-center transition-all duration-500 ease-in-out ${isScrolled ? 'max-h-0 opacity-0 pointer-events-none mb-0 overflow-hidden' : 'max-h-16 opacity-100 mb-0 overflow-visible'}`}>
+        <div className={`w-full flex flex-col items-center transition-all duration-500 ease-in-out ${isScrolled ? 'max-h-0 opacity-0 pointer-events-none mb-0 overflow-hidden' : 'max-h-24 opacity-100 mb-0 overflow-visible'}`}>
           {/* Visible on mobile - small */}
           <div className="block md:hidden transition-all duration-500">
             <h1 className="text-xs font-bold font-orbitron tracking-widest transform scale-x-110 origin-center inline-block group/text cursor-pointer transition-transform duration-300 py-0.5">
@@ -117,7 +117,7 @@ const Header: React.FC<HeaderProps> = ({ searchTerm, setSearchTerm }) => {
           </div>
           
           {/* Telegram Badge */}
-          <div className="mt-1.5 md:mt-1 opacity-90 hover:opacity-100 transition-opacity">
+          <div className="mt-1.5 md:mt-2 md:mb-3 opacity-90 hover:opacity-100 transition-opacity">
             <a href="https://t.me/debelingoconangel" target="_blank" rel="noopener noreferrer" 
                className="inline-flex items-center gap-1.5 px-3 py-0.5 md:py-1 rounded-full bg-[#2AABEE]/20 border border-[#2AABEE]/40 text-[#e0f4ff] text-[9px] md:text-xs font-medium hover:bg-[#2AABEE]/40 hover:scale-105 transition-all shadow-[0_0_15px_rgba(42,171,238,0.3)]">
               <Send className="w-3 h-3" />
