@@ -95,7 +95,11 @@ async function handleReminder(req, res) {
 async function handleDaily(req, res) {
     const events = await getEvents();
     const now = new Date();
-    const twentyFourHoursAgo = new Date(now.getTime() - (24 * 60 * 60 * 1000));
+    
+    // Si es Lunes (1) o Viernes (5), ampliamos a 48h para cubrir el día anterior sin cron (Domingo/Jueves)
+    const dayOfWeek = now.getDay();
+    const windowHours = (dayOfWeek === 1 || dayOfWeek === 5) ? 48 : 24;
+    const sinceTime = new Date(now.getTime() - (windowHours * 60 * 60 * 1000));
 
     const modifiedEvents = events.filter(e => {
         if (e.cancelado) return false;
@@ -107,10 +111,10 @@ async function handleDaily(req, res) {
         const agregado = e.FechaAgregado ? new Date(e.FechaAgregado) : null;
         const editado = e.FechaEditado ? new Date(e.FechaEditado) : null;
         
-        return (agregado && agregado >= twentyFourHoursAgo) || (editado && editado >= twentyFourHoursAgo);
+        return (agregado && agregado >= sinceTime) || (editado && editado >= sinceTime);
     });
 
-    if (modifiedEvents.length === 0) return res.status(200).json({ success: true, message: 'No events modified today.' });
+    if (modifiedEvents.length === 0) return res.status(200).json({ success: true, message: `No events modified in the last ${windowHours} hours.` });
 
     modifiedEvents.sort((a, b) => new Date(a.day) - new Date(b.day) || a.hora.localeCompare(b.hora));
 

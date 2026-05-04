@@ -4,7 +4,6 @@
   "installCommand": "pnpm install",
   "buildCommand": "mkdir -p empty_dist && echo 'API Backend Only' > empty_dist/index.txt",
   "outputDirectory": "empty_dist",
-  "outputDirectory": "empty_dist",
   "functions": {
     "api/**/*.js": {
       "memory": 1024,
@@ -57,6 +56,7 @@
   "rewrites": [
     { "source": "/api/telegram-send-weekly", "destination": "/api/telegram?action=weekly" },
     { "source": "/api/telegram-send-reminder", "destination": "/api/telegram?action=reminder" },
+    { "source": "/api/telegram-daily", "destination": "/api/telegram?action=daily" },
     { "source": "/api/telegram-notify-change", "destination": "/api/telegram" },
     { "source": "/api/cleanup-deletions", "destination": "/api/cleanup" },
     { "source": "/api/cleanup-messages", "destination": "/api/cleanup" },
@@ -73,16 +73,16 @@
       "schedule": "0 0 1 * *"
     },
     {
-      "path": "/api/telegram?action=weekly",
-      "schedule": "15 19 * * 0"
+      "path": "/api/telegram-send-weekly",
+      "schedule": "15 18 * * 0"
     },
     {
-      "path": "/api/telegram?action=reminder",
-      "schedule": "15 19 * * 4"
+      "path": "/api/telegram-send-reminder",
+      "schedule": "15 18 * * 4"
     },
     {
-      "path": "/api/telegram?action=daily",
-      "schedule": "15 19 * * 1,2,3,5,6"
+      "path": "/api/telegram-daily",
+      "schedule": "15 18 * * 1,2,3,5,6"
     }
   ]
 }
