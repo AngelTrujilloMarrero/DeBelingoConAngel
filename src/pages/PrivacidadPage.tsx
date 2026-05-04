@@ -45,37 +45,21 @@ const PrivacidadPage: React.FC = () => {
           </section>
 
           <section className="bg-gray-800/50 border border-gray-700/50 rounded-2xl p-6">
-            <h2 className="text-xl font-semibold text-white mb-3">4. Integración con TikTok</h2>
-            <p>
-              Esta web puede mostrar contenido embebido de TikTok (vídeos, perfiles). Al cargar contenido de TikTok, dicha plataforma puede recopilar datos según su propia{' '}
-              <a
-                href="https://www.tiktok.com/legal/privacy-policy"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-400 underline hover:text-blue-300 transition-colors"
-              >
-                Política de Privacidad
-              </a>
-              . De Belingo Con Ángel no es responsable de los datos que TikTok pueda recopilar.
-            </p>
-          </section>
-
-          <section className="bg-gray-800/50 border border-gray-700/50 rounded-2xl p-6">
-            <h2 className="text-xl font-semibold text-white mb-3">5. Cookies</h2>
+            <h2 className="text-xl font-semibold text-white mb-3">4. Cookies</h2>
             <p>
               La web utiliza cookies técnicas mínimas necesarias para el funcionamiento del sistema de verificación (Cloudflare Turnstile) y para el contador de visitas. No se utilizan cookies publicitarias ni de seguimiento de terceros.
             </p>
           </section>
 
           <section className="bg-gray-800/50 border border-gray-700/50 rounded-2xl p-6">
-            <h2 className="text-xl font-semibold text-white mb-3">6. Tus derechos</h2>
+            <h2 className="text-xl font-semibold text-white mb-3">5. Tus derechos</h2>
             <p>
-              De acuerdo con el RGPD, tienes derecho a acceder, rectificar o eliminar cualquier dato personal que pueda estar asociado a tu actividad en esta web. Para ejercer estos derechos, contacta con nosotros a través de nuestras redes sociales.
+              De acuerdo con el RGPD, tienes derecho a acceder, rectificar o eliminar cualquier dato personal que pueda estar asociado a tu actividad en esta web. Para ejercer estos derechos, contacta con nosotros a través del correo  atrujimar@gmail.com.
             </p>
           </section>
 
           <section className="bg-gray-800/50 border border-gray-700/50 rounded-2xl p-6">
-            <h2 className="text-xl font-semibold text-white mb-3">7. Cambios en esta política</h2>
+            <h2 className="text-xl font-semibold text-white mb-3">6. Cambios en esta política</h2>
             <p>
               Nos reservamos el derecho de actualizar esta política en cualquier momento. Los cambios serán publicados en esta misma página con la fecha de actualización correspondiente.
             </p>
