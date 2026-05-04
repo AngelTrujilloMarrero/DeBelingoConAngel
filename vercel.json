@@ -56,7 +56,6 @@
   "rewrites": [
     { "source": "/api/telegram-send-weekly", "destination": "/api/telegram?action=weekly" },
     { "source": "/api/telegram-send-reminder", "destination": "/api/telegram?action=reminder" },
-    { "source": "/api/telegram-daily", "destination": "/api/telegram?action=daily" },
     { "source": "/api/telegram-notify-change", "destination": "/api/telegram" },
     { "source": "/api/cleanup-deletions", "destination": "/api/cleanup" },
     { "source": "/api/cleanup-messages", "destination": "/api/cleanup" },
@@ -82,7 +81,7 @@
     },
     {
       "path": "/api/telegram-daily",
-      "schedule": "0 20 * * 1,2,3,5,6"
+      "schedule": "5 20 * * 1,2,3,5,6"
     }
   ]
 }
