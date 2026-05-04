@@ -6,15 +6,63 @@ const daysOfWeekNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', '
 const months = ['ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO', 'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE'];
 const monthsNames = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 
-function formatEvent(event) {
-    let text = `🎵 <b>${event.hora} | ${event.tipo}</b>\n`;
+function getEventActivityType(event, sinceTime) {
+    if (event.reAgregado) return 'reagregado';
+    
+    const agregado = event.FechaAgregado ? new Date(event.FechaAgregado) : null;
+    const editado = event.FechaEditado ? new Date(event.FechaEditado) : null;
+    
+    // Si se añadió en el periodo de reporte
+    if (agregado && agregado >= sinceTime) {
+        // Si no hay edición o la edición fue inmediata tras añadirlo
+        if (!editado || Math.abs(editado.getTime() - agregado.getTime()) < 5000) {
+            return 'add';
+        }
+    }
+    
+    return 'edit';
+}
+
+function formatEvent(event, sinceTime) {
+    const type = getEventActivityType(event, sinceTime);
+    const typeLabels = {
+        add: { label: 'NUEVO', icon: '➕' },
+        edit: { label: 'MODIFICADO', icon: '✏️' },
+        reagregado: { label: 'RE-AGREGADO', icon: '🔄' }
+    };
+    const info = typeLabels[type] || typeLabels.edit;
+
+    let text = `${info.icon} <b>${info.label}</b>\n`;
     
     let locationParts = [];
     if (event.lugar) locationParts.push(event.lugar);
     if (event.municipio) locationParts.push(event.municipio);
     if (locationParts.length > 0) text += `📍 ${locationParts.join(', ')}\n`;
     
+    text += `🎵 <b>${event.hora} | ${event.tipo}</b>\n`;
     if (event.orquesta) text += `🎻 ${event.orquesta}\n`;
+    
+    const eventDate = new Date(event.day);
+    text += `📅 ${eventDate.toLocaleDateString('es-ES')}\n`;
+
+    if (type === 'edit' && event.cambios && event.cambios.length > 0) {
+        const changeLabels = {
+            hora: '🕐 Hora',
+            dia: '📅 Día',
+            orquestas: '🎵 Formación',
+            orquesta_add: '➕ Nueva orquesta',
+            orquesta_rem: '➖ Orquesta quitada',
+            lugar: '📍 Lugar',
+            municipio: '🏘️ Municipio',
+            tipo: '🏷️ Tipo',
+            programa: '📋 Programa'
+        };
+        const changes = event.cambios
+            .map(c => changeLabels[c] || `✏️ ${c}`)
+            .join(', ');
+        text += `📝 <i>Cambios: ${changes}</i>\n`;
+    }
+    
     return text;
 }
 
@@ -51,7 +99,7 @@ async function handleWeekly(req, res) {
     Object.keys(grouped).sort().forEach(d => {
         const dateObj = new Date(d);
         message += `━━━━━━━━━━ <b>${daysOfWeek[dateObj.getDay()]} ${dateObj.getDate()}</b> ━━━━━━━━━━\n\n`;
-        grouped[d].forEach(e => message += formatEvent(e) + '\n');
+        grouped[d].forEach(e => message += formatEvent(e, null) + '\n'); // Pass null for window check as it's a weekly summary
     });
     message += `━━━━━━━━━━ ✦ ━━━━━━━━━━━\n\n🔗 <a href="https://debelingoconangel.web.app">debelingoconangel.web.app</a>`;
     
@@ -85,7 +133,7 @@ async function handleReminder(req, res) {
     Object.keys(grouped).sort().forEach(d => {
         const dateObj = new Date(d);
         message += `━━━━━━━━━━ <b>${daysOfWeek[dateObj.getDay()]} ${dateObj.getDate()}</b> ━━━━━━━━━━\n\n`;
-        grouped[d].forEach(e => message += formatEvent(e) + '\n');
+        grouped[d].forEach(e => message += formatEvent(e, null) + '\n');
     });
     message += `━━━━━━━━━━ ✦ ━━━━━━━━━━━\n\n🔗 <a href="https://debelingoconangel.web.app">debelingoconangel.web.app</a>`;
     
@@ -96,7 +144,6 @@ async function handleDaily(req, res) {
     const events = await getEvents();
     const now = new Date();
     
-    // Si es Lunes (1) o Viernes (5), ampliamos a 48h para cubrir el día anterior sin cron (Domingo/Jueves)
     const dayOfWeek = now.getDay();
     const windowHours = (dayOfWeek === 1 || dayOfWeek === 5) ? 48 : 24;
     const sinceTime = new Date(now.getTime() - (windowHours * 60 * 60 * 1000));
@@ -129,7 +176,7 @@ async function handleDaily(req, res) {
     Object.keys(grouped).sort().forEach(d => {
         const dateObj = new Date(d);
         message += `━━━━━━━━━━ <b>${daysOfWeek[dateObj.getDay()]} ${dateObj.getDate()}</b> ━━━━━━━━━━\n\n`;
-        grouped[d].forEach(e => message += formatEvent(e) + '\n');
+        grouped[d].forEach(e => message += formatEvent(e, sinceTime) + '\n');
     });
     message += `━━━━━━━━━━ ✦ ━━━━━━━━━━━\n\n🔗 <a href="https://debelingoconangel.web.app">debelingoconangel.web.app</a>`;
     
