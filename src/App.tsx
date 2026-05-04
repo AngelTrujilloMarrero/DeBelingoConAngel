@@ -4,7 +4,7 @@ import VisitCounter from './components/VisitCounter';
 import { useEvents } from './hooks/useEvents';
 import { useAnalytics } from './hooks/useAnalytics';
 import { Loader2 } from 'lucide-react';
-import { EventosPage, MapaPage, EstadisticasPage, RedesPage, FormacionesPage, CarnavalPage } from './pages';
+import { EventosPage, MapaPage, EstadisticasPage, RedesPage, FormacionesPage, CarnavalPage, PrivacidadPage, TerminosPage } from './pages';
 import MessageBoard from './components/MessageBoard';
 import { useEffect, useState } from 'react';
 import { TurnstileProvider } from './components/TurnstileProvider';
@@ -68,6 +68,8 @@ function AppContent() {
             <Route path="/estadisticas" element={<EstadisticasPage events={events} />} />
             <Route path="/formaciones" element={<FormacionesPage events={events} />} />
             <Route path="/redes" element={<RedesPage />} />
+            <Route path="/privacidad" element={<PrivacidadPage />} />
+            <Route path="/terminos" element={<TerminosPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>
@@ -90,7 +92,16 @@ function AppContent() {
             <p className="text-gray-400 text-sm mt-3 tracking-wide">
               Desarrollado con 💙 para la comunidad de Tenerife
             </p>
-            <div className="mt-8">
+            <div className="mt-6 flex items-center justify-center gap-6 text-xs text-gray-500">
+              <a href="/privacidad" className="hover:text-gray-300 transition-colors underline underline-offset-2">
+                Política de Privacidad
+              </a>
+              <span>·</span>
+              <a href="/terminos" className="hover:text-gray-300 transition-colors underline underline-offset-2">
+                Términos de Uso
+              </a>
+            </div>
+            <div className="mt-6">
               <VisitCounter />
             </div>
           </div>

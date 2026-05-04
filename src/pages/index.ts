@@ -5,3 +5,5 @@ export { default as EstadisticasPage } from './EstadisticasPage';
 export { default as RedesPage } from './RedesPage';
 export { default as FormacionesPage } from './FormacionesPage';
 export { default as CarnavalPage } from './CarnavalPage';
+export { default as PrivacidadPage } from './PrivacidadPage';
+export { default as TerminosPage } from './TerminosPage';
