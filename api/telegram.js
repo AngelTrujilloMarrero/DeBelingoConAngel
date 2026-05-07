@@ -24,15 +24,19 @@ function getEventActivityType(event, sinceTime) {
 }
 
 function formatEvent(event, sinceTime) {
-    const type = getEventActivityType(event, sinceTime);
-    const typeLabels = {
-        add: { label: 'NUEVO', icon: '➕' },
-        edit: { label: 'MODIFICADO', icon: '✏️' },
-        reagregado: { label: 'RE-AGREGADO', icon: '🔄' }
-    };
-    const info = typeLabels[type] || typeLabels.edit;
-
-    let text = `${info.icon} <b>${info.label}</b>\n`;
+    const isAgendaMode = !sinceTime;
+    let text = '';
+    
+    if (!isAgendaMode) {
+        const type = getEventActivityType(event, sinceTime);
+        const typeLabels = {
+            add: { label: 'NUEVO', icon: '➕' },
+            edit: { label: 'MODIFICADO', icon: '✏️' },
+            reagregado: { label: 'RE-AGREGADO', icon: '🔄' }
+        };
+        const info = typeLabels[type] || typeLabels.edit;
+        text += `${info.icon} <b>${info.label}</b>\n`;
+    }
     
     let locationParts = [];
     if (event.lugar) locationParts.push(event.lugar);
@@ -45,22 +49,25 @@ function formatEvent(event, sinceTime) {
     const eventDate = new Date(event.day);
     text += `📅 ${eventDate.toLocaleDateString('es-ES')}\n`;
 
-    if (type === 'edit' && event.cambios && event.cambios.length > 0) {
-        const changeLabels = {
-            hora: '🕐 Hora',
-            dia: '📅 Día',
-            orquestas: '🎵 Formación',
-            orquesta_add: '➕ Nueva orquesta',
-            orquesta_rem: '➖ Orquesta quitada',
-            lugar: '📍 Lugar',
-            municipio: '🏘️ Municipio',
-            tipo: '🏷️ Tipo',
-            programa: '📋 Programa'
-        };
-        const changes = event.cambios
-            .map(c => changeLabels[c] || `✏️ ${c}`)
-            .join(', ');
-        text += `📝 <i>Cambios: ${changes}</i>\n`;
+    if (!isAgendaMode) {
+        const type = getEventActivityType(event, sinceTime);
+        if (type === 'edit' && event.cambios && event.cambios.length > 0) {
+            const changeLabels = {
+                hora: '🕐 Hora',
+                dia: '📅 Día',
+                orquestas: '🎵 Formación',
+                orquesta_add: '➕ Nueva orquesta',
+                orquesta_rem: '➖ Orquesta quitada',
+                lugar: '📍 Lugar',
+                municipio: '🏘️ Municipio',
+                tipo: '🏷️ Tipo',
+                programa: '📋 Programa'
+            };
+            const changes = event.cambios
+                .map(c => changeLabels[c] || `✏️ ${c}`)
+                .join(', ');
+            text += `📝 <i>Cambios: ${changes}</i>\n`;
+        }
     }
     
     return text;
