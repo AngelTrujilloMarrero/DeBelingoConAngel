@@ -152,6 +152,7 @@ async function handleDaily(req, res) {
     const now = new Date();
     
     const dayOfWeek = now.getDay();
+    // Lunes (1) y Viernes (5) usamos ventana de 48h porque Domingo y Jueves no hay reporte diario (se publica la agenda completa)
     const windowHours = (dayOfWeek === 1 || dayOfWeek === 5) ? 48 : 24;
     const sinceTime = new Date(now.getTime() - (windowHours * 60 * 60 * 1000));
 
