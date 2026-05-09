@@ -205,6 +205,7 @@ export function ImageUpload({
           accept={acceptedTypes.join(',')}
           onChange={handleFileInput}
           disabled={disabled || isUploading}
+          aria-label="Seleccionar imagen para subir"
           className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
         />
 

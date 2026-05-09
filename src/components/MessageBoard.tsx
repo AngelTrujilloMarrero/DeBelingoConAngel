@@ -294,7 +294,7 @@ const MessageBoard: React.FC = () => {
                                 <span className="w-8 h-px bg-blue-400/30"></span>
                                 Mensajes Recientes
                             </h4>
-                            <div className="max-h-[300px] min-h-[150px] overflow-y-auto pr-2 custom-scrollbar space-y-3">
+                            <div className="max-h-[300px] min-h-[150px] overflow-y-auto pr-2 custom-scrollbar space-y-3" aria-live="polite" aria-atomic="false">
                                 {loading ? (
                                     <div className="flex flex-col items-center justify-center h-48 space-y-4">
                                         <RefreshCw className="w-10 h-10 text-blue-500 animate-spin" />
@@ -443,7 +443,7 @@ const MessageBoard: React.FC = () => {
                                             onChange={(e) => setNewMessage(e.target.value.substring(0, 300))}
                                             disabled={dailyLimitReached || sending}
                                             placeholder={dailyLimitReached ? "Límite alcanzado, borra mensajes para publicar..." : "Cuéntanos algo..."}
-                                            className="w-full bg-gray-900/60 border border-gray-600/50 rounded-2xl p-5 text-sm focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all outline-none resize-none min-h-[160px] text-white placeholder:text-gray-600 shadow-inner"
+                                            className="w-full bg-gray-900/60 border border-gray-600/50 rounded-2xl p-5 text-sm focus:ring-4 focus:ring-blue-500/50 focus:border-blue-500 transition-all outline-none resize-none min-h-[160px] text-white placeholder:text-gray-600 shadow-inner"
                                         />
                                         
                                         {/* Image Upload */}
@@ -474,8 +474,9 @@ const MessageBoard: React.FC = () => {
                                                     value={userCaptcha}
                                                     onChange={(e) => setUserCaptcha(e.target.value)}
                                                     placeholder="?"
+                                                    aria-label={`Responde: cuanto es ${captcha.num1} + ${captcha.num2}`}
                                                     disabled={dailyLimitReached || sending}
-                                                    className="w-24 bg-gray-900/80 border border-gray-600/50 rounded-xl py-3 text-center text-lg font-bold focus:ring-4 focus:ring-blue-500/20 outline-none text-white shadow-inner"
+                                                    className="w-24 bg-gray-900/80 border border-gray-600/50 rounded-xl py-3 text-center text-lg font-bold focus:ring-4 focus:ring-blue-500/50 outline-none text-white shadow-inner"
                                                 />
                                             </div>
                                         </div>

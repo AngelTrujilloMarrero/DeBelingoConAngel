@@ -77,6 +77,7 @@ const ReplyForm: React.FC<ReplyFormProps> = ({ messageId, messageAuthor, onSubmi
         </div>
         <button
           onClick={onCancel}
+          aria-label="Cerrar formulario de respuesta"
           className="text-gray-400 hover:text-white transition-colors"
         >
           <X className="w-4 h-4" />
@@ -90,6 +91,7 @@ const ReplyForm: React.FC<ReplyFormProps> = ({ messageId, messageAuthor, onSubmi
           value={replyText}
           onChange={(e) => setReplyText(e.target.value)}
           placeholder="Escribe tu respuesta..."
+          aria-label="Escribe tu respuesta"
           className="w-full px-3 py-2 bg-gray-900/50 border border-gray-700 rounded-lg text-white placeholder-gray-400 resize-none focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           rows={3}
           maxLength={300}
@@ -132,6 +134,7 @@ const ReplyForm: React.FC<ReplyFormProps> = ({ messageId, messageAuthor, onSubmi
               value={userCaptcha}
               onChange={(e) => setUserCaptcha(e.target.value)}
               placeholder="?"
+              aria-label={`Responde: cuanto es ${captcha.num1} + ${captcha.num2}`}
               className="w-12 px-2 py-1 bg-gray-800 border border-gray-700 rounded text-white text-center focus:outline-none focus:ring-1 focus:ring-blue-500"
               disabled={sending}
             />

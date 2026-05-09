@@ -195,6 +195,7 @@ const ComparativaDetailedAnalysis: React.FC<ComparativaDetailedAnalysisProps> = 
                     </div>
                     <button
                         onClick={onClose}
+                        aria-label={`Cerrar comparativa de ${orquesta}`}
                         className="p-2 rounded-full bg-gray-800 text-gray-400 hover:bg-gray-700 hover:text-white transition-all duration-200"
                     >
                         <X className="w-5 h-5" />

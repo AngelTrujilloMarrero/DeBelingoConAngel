@@ -72,6 +72,7 @@ const TaxiInfo: React.FC = () => {
                     <input
                         type="text"
                         placeholder="Busca tu municipio..."
+                        aria-label="Buscar municipio para encontrar taxis"
                         className="w-full pl-10 pr-4 py-3 bg-gray-800/50 border border-gray-700 rounded-xl text-white placeholder-gray-500 focus:ring-2 focus:ring-yellow-500 focus:border-transparent transition-all"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}

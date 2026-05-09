@@ -85,15 +85,15 @@ const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, time, alert 
 
     const getIcon = (code: number) => {
         const isNight = isDay === 0;
-        if (code === 0) return isNight ? <Moon className="w-5 h-5 text-blue-200" /> : <Sun className="w-5 h-5 text-yellow-400" />;
-        if (code >= 1 && code <= 3) return isNight ? <CloudMoon className="w-5 h-5 text-gray-300" /> : <CloudSun className="w-5 h-5 text-gray-300" />;
-        if (code === 45 || code === 48) return <CloudFog className="w-5 h-5 text-gray-400" />;
-        if (code >= 51 && code <= 55) return <CloudDrizzle className="w-5 h-5 text-blue-300" />;
-        if (code >= 61 && code <= 65) return <CloudRain className="w-5 h-5 text-blue-400" />;
-        if (code >= 71 && code <= 77) return <Snowflake className="w-5 h-5 text-blue-100" />;
-        if (code >= 80 && code <= 82) return <CloudRain className="w-5 h-5 text-blue-500" />;
-        if (code >= 95) return <CloudLightning className="w-5 h-5 text-purple-400" />;
-        return <Cloud className="w-5 h-5 text-gray-400" />;
+        if (code === 0) return isNight ? <Moon className="w-5 h-5 text-blue-200" aria-hidden="true" /> : <Sun className="w-5 h-5 text-yellow-400" aria-hidden="true" />;
+        if (code >= 1 && code <= 3) return isNight ? <CloudMoon className="w-5 h-5 text-gray-300" aria-hidden="true" /> : <CloudSun className="w-5 h-5 text-gray-300" aria-hidden="true" />;
+        if (code === 45 || code === 48) return <CloudFog className="w-5 h-5 text-gray-400" aria-hidden="true" />;
+        if (code >= 51 && code <= 55) return <CloudDrizzle className="w-5 h-5 text-blue-300" aria-hidden="true" />;
+        if (code >= 61 && code <= 65) return <CloudRain className="w-5 h-5 text-blue-400" aria-hidden="true" />;
+        if (code >= 71 && code <= 77) return <Snowflake className="w-5 h-5 text-blue-100" aria-hidden="true" />;
+        if (code >= 80 && code <= 82) return <CloudRain className="w-5 h-5 text-blue-500" aria-hidden="true" />;
+        if (code >= 95) return <CloudLightning className="w-5 h-5 text-purple-400" aria-hidden="true" />;
+        return <Cloud className="w-5 h-5 text-gray-400" aria-hidden="true" />;
     };
 
     const getDescription = (code: number) => {
@@ -164,7 +164,7 @@ const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, time, alert 
                         onClick={(e) => e.stopPropagation()}
                         title={`Ver alerta ${alert[0].level} en web de AEMET`}
                     >
-                        <AlertTriangle className="w-5 h-5 animate-pulse" />
+                        <AlertTriangle className="w-5 h-5 animate-pulse" aria-hidden="true" />
                     </a>
                     {alert.map((a, idx) => (
                         <span key={idx} className={`${getAlertColor(a.level || '')}`}>

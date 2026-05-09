@@ -391,7 +391,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
 
         {/* AI Response Integrated */}
         {aiMessage && (
-          <div className="animate-fadeInUp bg-yellow-400 border-4 border-black p-5 rounded-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] relative group">
+          <div className="animate-fadeInUp bg-yellow-400 border-4 border-black p-5 rounded-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] relative group" aria-live="polite">
             <div className="flex items-start gap-4">
               <div className="bg-black p-3 rounded-lg flex-shrink-0 rotate-2 group-hover:rotate-0 transition-transform">
                 <Sparkles className="w-6 h-6 text-yellow-400 animate-pulse" />

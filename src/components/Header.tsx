@@ -90,7 +90,7 @@ const Header: React.FC<HeaderProps> = ({ searchTerm, setSearchTerm }) => {
         <div className={`w-full flex flex-col items-center transition-all duration-500 ease-in-out ${isScrolled ? 'max-h-0 opacity-0 pointer-events-none mb-0 overflow-hidden' : 'max-h-24 opacity-100 mb-0 overflow-visible'}`}>
           {/* Visible on mobile - small */}
           <div className="block md:hidden transition-all duration-500">
-            <h1 className="text-xs font-bold font-orbitron tracking-widest transform scale-x-110 origin-center inline-block group/text cursor-pointer transition-transform duration-300 py-0.5">
+            <span aria-hidden="true" className="text-xs font-bold font-orbitron tracking-widest transform scale-x-110 origin-center inline-block group/text cursor-pointer transition-transform duration-300 py-0.5">
               {"DE BELINGO CON ÁNGEL".split('').map((char, i) => (
                 <span
                   key={`char-${i}`}
@@ -99,7 +99,7 @@ const Header: React.FC<HeaderProps> = ({ searchTerm, setSearchTerm }) => {
                   {char === ' ' ? '\u00A0' : char}
                 </span>
               ))}
-            </h1>
+            </span>
           </div>
           {/* Visible on desktop */}
           <div className="hidden md:block transition-all duration-500">
@@ -156,12 +156,14 @@ const Header: React.FC<HeaderProps> = ({ searchTerm, setSearchTerm }) => {
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 placeholder="Busca por municipio, orquesta o lugar..."
+                aria-label="Buscar eventos por municipio, orquesta o lugar"
                 className="w-full bg-black/40 backdrop-blur-md border border-white/20 rounded-full py-2.5 px-6 text-white text-sm placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-blue-500/50 transition-all shadow-inner"
                 onKeyDown={(e) => e.key === 'Escape' && clearSearch()}
               />
               {searchTerm && (
                 <button 
                   onClick={() => setSearchTerm('')}
+                  aria-label="Limpiar búsqueda"
                   className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 hover:bg-white/10 rounded-full transition-colors"
                 >
                   <X className="w-4 h-4 text-white/70" />

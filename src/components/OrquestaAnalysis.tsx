@@ -184,6 +184,7 @@ const OrquestaAnalysis: React.FC<OrquestaAnalysisProps> = ({
             {/* Botón cerrar */}
             <button
                 onClick={onClose}
+                aria-label={`Cerrar análisis de ${orquesta}`}
                 className="absolute top-3 right-3 p-2 rounded-full bg-gray-700 hover:bg-red-600 transition-colors duration-300"
             >
                 <X className="w-5 h-5 text-white" />

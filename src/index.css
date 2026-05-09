@@ -65,6 +65,16 @@
   }
 }
 
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
 /* Global mobile stability fix: disable heavy CSS features on small screens 
    to prevent GPU rendering artifacts and crashes (auto-reloads) */
 @media (max-width: 767px) {

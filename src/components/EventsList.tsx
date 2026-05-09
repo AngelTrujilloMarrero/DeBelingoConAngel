@@ -144,9 +144,9 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
       {/* Header */}
       <div className="bg-blue-600 md:bg-gradient-to-r md:from-blue-600 md:to-purple-600 pt-3 pb-2 md:py-2">
         <h2 className="text-xl md:text-3xl font-bold text-center flex items-center justify-center gap-2 md:gap-3">
-          <Calendar className="w-5 h-5 md:w-8 md:h-8" />
-          Próximas Verbenas
-          <Music2 className="w-5 h-5 md:w-8 md:h-8" />
+                        <Calendar className="w-5 h-5 md:w-8 md:h-8" aria-hidden="true" />
+                          Próximas Verbenas
+                          <Music2 className="w-5 h-5 md:w-8 md:h-8" aria-hidden="true" />
         </h2>
         <div className="flex items-center justify-center mt-2 px-2 gap-1.5 flex-nowrap">
           {/* Bloque de Actualización - Centrado */}
@@ -216,9 +216,9 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
               <div key={dayKey} className={`space-y-4 ${dayKey !== Object.keys(eventsByDay).sort()[0] ? 'mt-8 pt-4 border-t border-gray-700/30' : ''}`}>
                 <div className="py-3 bg-gray-800/50 md:bg-gradient-to-r md:from-transparent md:via-yellow-400/15 md:to-transparent border-y border-yellow-400/20">
                   <h3 className="text-xl md:text-2xl font-bold text-yellow-400 flex items-center justify-center gap-3">
-                    <Calendar className="w-6 h-6 text-yellow-500" />
+                    <Calendar className="w-6 h-6 text-yellow-500" aria-hidden="true" />
                     <span className="tracking-wide uppercase">{dayName}</span>
-                    <Calendar className="w-6 h-6 text-yellow-500" />
+                    <Calendar className="w-6 h-6 text-yellow-500" aria-hidden="true" />
                   </h3>
                 </div>
 
@@ -231,7 +231,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                     >
                       <div className="flex flex-wrap items-center gap-4 text-center md:text-left min-w-0 overflow-hidden">
                         <div className="flex items-center gap-2 text-blue-300 font-bold">
-                          <Clock className="w-5 h-5" />
+                          <Clock className="w-5 h-5" aria-hidden="true" />
                           <span className="text-lg">{event.hora}H</span>
                         </div>
 
@@ -242,7 +242,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                         )}
 
                         <div className="flex items-center gap-2 text-gray-300">
-                          <MapPin className="w-5 h-5" />
+                          <MapPin className="w-5 h-5" aria-hidden="true" />
                           <span>
                             {event.lugar ? `${event.lugar}, ` : ''}{event.municipio}
                           </span>
@@ -266,8 +266,8 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                           </a>
                           <button
                             onClick={() => toggleEvent(event.id)}
+                            aria-label={expandedEventIds.includes(event.id) ? "Ocultar detalles de la formación" : "Ver detalles de la formación"}
                             className="p-1.5 text-gray-400 hover:text-white transition-colors"
-                            title="Ver detalles de la formación"
                           >
                             <ChevronDown className={`w-5 h-5 transition-transform duration-300 ${expandedEventIds.includes(event.id) ? 'rotate-180' : ''}`} />
                           </button>
@@ -319,22 +319,22 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                                         <span className="font-bold text-white">{cleanName}</span>
                                         <div className="flex gap-2">
                                           {info.facebook && (
-                                            <a href={info.facebook} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors">
+                                            <a href={info.facebook} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors" aria-label={`Facebook de ${cleanName}`}>
                                               <FaFacebook className="w-4 h-4" />
                                             </a>
                                           )}
                                           {info.instagram && (
-                                            <a href={info.instagram} target="_blank" rel="noopener noreferrer" className="text-pink-400 hover:text-pink-300 transition-colors">
+                                            <a href={info.instagram} target="_blank" rel="noopener noreferrer" className="text-pink-400 hover:text-pink-300 transition-colors" aria-label={`Instagram de ${cleanName}`}>
                                               <FaInstagram className="w-4 h-4" />
                                             </a>
                                           )}
                                           {info.phone && (
-                                            <a href={`tel:${info.phone}`} className="text-green-400 hover:text-green-300 transition-colors">
+                                            <a href={`tel:${info.phone}`} className="text-green-400 hover:text-green-300 transition-colors" aria-label={`Teléfono de ${cleanName}`}>
                                               <Phone className="w-4 h-4" />
                                             </a>
                                           )}
                                           {(info.website || info.Otros) && (
-                                            <a href={info.website || info.Otros} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 transition-colors">
+                                            <a href={info.website || info.Otros} target="_blank" rel="noopener noreferrer" className="text-purple-400 hover:text-purple-300 transition-colors" aria-label={`Sitio web de ${cleanName}`}>
                                               <Globe className="w-4 h-4" />
                                             </a>
                                           )}

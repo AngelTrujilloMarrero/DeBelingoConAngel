@@ -234,7 +234,8 @@ const FormacionesPage: React.FC<FormacionesPageProps> = ({ events }) => {
                             placeholder="Buscar orquesta..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="bg-transparent border-none outline-none text-white w-full placeholder-gray-500"
+                            aria-label="Buscar orquesta por nombre"
+                            className="bg-transparent border-none outline-none focus:ring-2 focus:ring-blue-500/50 focus:rounded-full text-white w-full placeholder-gray-500"
                         />
                     </div>
                 </div>

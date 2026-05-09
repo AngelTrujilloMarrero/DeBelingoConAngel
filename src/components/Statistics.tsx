@@ -448,6 +448,7 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
                   </h3>
                   <button
                     onClick={() => setExpandedMonths({})}
+                    aria-label="Cerrar detalles del mes"
                     className="p-2 hover:bg-white/10 rounded-full transition-colors text-gray-400 hover:text-white"
                   >
                     <ChevronDown className="w-6 h-6 rotate-180" />
@@ -702,6 +703,7 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
                       </h3>
                       <button
                         onClick={() => setExpandedCompMonth(null)}
+                        aria-label="Cerrar comparativa del mes"
                         className="p-2 hover:bg-white/10 rounded-full transition-colors text-gray-400 hover:text-white"
                       >
                         <ChevronDown className="w-6 h-6 rotate-180" />
