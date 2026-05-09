@@ -1,7 +1,7 @@
 {
   "version": 2,
   "framework": null,
-  "installCommand": "pnpm install",
+  "installCommand": "pnpm install --no-frozen-lockfile",
   "buildCommand": "mkdir -p empty_dist && echo 'API Backend Only' > empty_dist/index.txt",
   "outputDirectory": "empty_dist",
   "functions": {
