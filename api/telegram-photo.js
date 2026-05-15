@@ -1,5 +1,7 @@
 import { sendTelegramPhoto } from './_telegram.js';
 import { getEvents, getDb } from './_firebase.js';
+import fs from 'fs';
+import path from 'path';
 
 const daysOfWeek = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO'];
 
@@ -84,28 +86,20 @@ async function ensureFonts() {
     if (fontsRegistered) return;
     const { GlobalFonts } = await import('@napi-rs/canvas');
 
-    // Download Anton (Impact-like bold font) from Google Fonts
+    // Load Anton from local file system
     try {
-        const antonUrl = 'https://fonts.gstatic.com/s/anton/v25/1Ptgg87GROyAm3K9-C8CSKlv.ttf';
-        const antonResp = await fetch(antonUrl);
-        if (antonResp.ok) {
-            const buffer = Buffer.from(await antonResp.arrayBuffer());
-            GlobalFonts.register(buffer, 'Anton');
-            console.log('✅ Anton font registered');
-        }
+        const antonPath = path.join(process.cwd(), 'api', 'fonts', 'Anton-Regular.ttf');
+        GlobalFonts.register(fs.readFileSync(antonPath), 'Anton');
+        console.log('✅ Anton font registered from local file');
     } catch (e) {
         console.warn('Failed to load Anton font:', e.message);
     }
 
-    // Download Roboto for body text
+    // Load Roboto from local file system
     try {
-        const robotoUrl = 'https://fonts.gstatic.com/s/roboto/v47/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWubEbGmT.ttf';
-        const robotoResp = await fetch(robotoUrl);
-        if (robotoResp.ok) {
-            const buffer = Buffer.from(await robotoResp.arrayBuffer());
-            GlobalFonts.register(buffer, 'Roboto');
-            console.log('✅ Roboto font registered');
-        }
+        const robotoPath = path.join(process.cwd(), 'api', 'fonts', 'Roboto-Regular.ttf');
+        GlobalFonts.register(fs.readFileSync(robotoPath), 'Roboto');
+        console.log('✅ Roboto font registered from local file');
     } catch (e) {
         console.warn('Failed to load Roboto font:', e.message);
     }
@@ -120,15 +114,18 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
     const { createCanvas, loadImage } = await import('@napi-rs/canvas');
     await ensureFonts();
 
-    // Font families to use (with fallbacks)
     const TITLE_FONT = 'Anton';
     const BODY_FONT = 'Roboto';
 
-    const WIDTH = 1200;
-    const MIN_HEIGHT = 1200;
-    const PADDING = 20;
+    const WIDTH = 1080;
+    const PADDING = 30;
 
-    // Group events by day
+    // Font sizes based on web base size of 24px
+    const titleFontSize = Math.round(24 * 3.5); // 84px
+    const subtitleFontSize = Math.round(24 * 2.8); // 67px
+    const dayFontSize = Math.round(24 * 1.8); // 43px
+    const eventFontSize = Math.round(24 * 1.3); // 31px
+
     const eventsByDay = {};
     festivalEvents.forEach(event => {
         const dayKey = event.day.split('T')[0];
@@ -136,42 +133,33 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
         eventsByDay[dayKey].push(event);
     });
 
-    // Sort each day's events by time
     Object.values(eventsByDay).forEach(dayEvents => {
         dayEvents.sort((a, b) => (a.hora || '00:00').localeCompare(b.hora || '00:00'));
     });
 
     const sortedDays = Object.keys(eventsByDay).sort();
-    const totalEvents = festivalEvents.length;
+    
+    // Estimate height
+    let contentHeight = PADDING;
+    contentHeight += 60; // Generation date
+    contentHeight += 40; // Top padding of pill
+    contentHeight += titleFontSize;
+    if (lugar) contentHeight += subtitleFontSize + 10;
+    contentHeight += 40; // Bottom padding of pill
+    contentHeight += 50; // Margin after pill
 
-    // --- Phase 1: Calculate required height ---
-    // We need to estimate the height before creating the canvas
-    const titleText = lugar
-        ? `VERBENAS ${lugar.toUpperCase()}`
-        : `VERBENAS ${municipio.toUpperCase()}`;
-    const subtitleText = lugar ? municipio.toUpperCase() : null;
-
-    // Rough height calculation
-    const titleAreaHeight = subtitleText ? 200 : 160;
-    const headerMargin = 40;
-    const dayHeaderHeight = 60;
-    const eventLineHeight = 50;
-    const footerHeight = 80;
-    const dateGenHeight = 30;
-
-    let estimatedContentHeight = titleAreaHeight + headerMargin + dateGenHeight;
     sortedDays.forEach(dayKey => {
-        estimatedContentHeight += dayHeaderHeight;
+        contentHeight += dayFontSize + 20; // Day header
         eventsByDay[dayKey].forEach(() => {
-            estimatedContentHeight += eventLineHeight;
+            contentHeight += eventFontSize + 15; // Event line
         });
-        estimatedContentHeight += 20; // spacing between days
+        contentHeight += 30; // Margin after day
     });
-    estimatedContentHeight += footerHeight;
+    contentHeight += 80; // Footer
+    contentHeight += PADDING;
 
-    const canvasHeight = Math.max(MIN_HEIGHT, estimatedContentHeight + PADDING * 2);
+    const canvasHeight = Math.max(1080, contentHeight);
 
-    // --- Phase 2: Create canvas and draw ---
     const canvas = createCanvas(WIDTH, canvasHeight);
     const ctx = canvas.getContext('2d');
 
@@ -179,7 +167,6 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
     if (backgroundBuffer) {
         try {
             const bgImage = await loadImage(backgroundBuffer);
-            // Draw with cover behavior
             const scale = Math.max(WIDTH / bgImage.width, canvasHeight / bgImage.height);
             const sw = WIDTH / scale;
             const sh = canvasHeight / scale;
@@ -189,7 +176,6 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
             ctx.drawImage(bgImage, sx, sy, sw, sh, 0, 0, WIDTH, canvasHeight);
             ctx.globalAlpha = 1.0;
         } catch (e) {
-            console.warn('Failed to draw background image:', e.message);
             ctx.fillStyle = '#FFFFFF';
             ctx.fillRect(0, 0, WIDTH, canvasHeight);
         }
@@ -198,207 +184,171 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
         ctx.fillRect(0, 0, WIDTH, canvasHeight);
     }
 
-    // Content overlay (semi-transparent white box)
-    const overlayMargin = PADDING;
-    const overlayX = overlayMargin;
-    const overlayY = overlayMargin;
-    const overlayW = WIDTH - overlayMargin * 2;
-    const overlayH = canvasHeight - overlayMargin * 2;
-
+    // Overlay Box
+    const boxMargin = 20;
     ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
     ctx.strokeStyle = '#000000';
-    ctx.lineWidth = 2;
-
-    // Rounded rectangle
-    const radius = 15;
+    ctx.lineWidth = 1;
     ctx.beginPath();
-    ctx.moveTo(overlayX + radius, overlayY);
-    ctx.lineTo(overlayX + overlayW - radius, overlayY);
-    ctx.arcTo(overlayX + overlayW, overlayY, overlayX + overlayW, overlayY + radius, radius);
-    ctx.lineTo(overlayX + overlayW, overlayY + overlayH - radius);
-    ctx.arcTo(overlayX + overlayW, overlayY + overlayH, overlayX + overlayW - radius, overlayY + overlayH, radius);
-    ctx.lineTo(overlayX + radius, overlayY + overlayH);
-    ctx.arcTo(overlayX, overlayY + overlayH, overlayX, overlayY + overlayH - radius, radius);
-    ctx.lineTo(overlayX, overlayY + radius);
-    ctx.arcTo(overlayX, overlayY, overlayX + radius, overlayY, radius);
-    ctx.closePath();
+    ctx.roundRect(boxMargin, boxMargin, WIDTH - boxMargin*2, canvasHeight - boxMargin*2, 10);
     ctx.fill();
     ctx.stroke();
 
-    let currentY = overlayY + 30;
+    let currentY = boxMargin + 25;
 
-    // Generation date (top right)
-    ctx.font = `18px ${BODY_FONT}`;
-    ctx.fillStyle = '#555555';
+    // Generation Date
+    ctx.font = `19px ${BODY_FONT}`;
+    ctx.fillStyle = '#888888';
     ctx.textAlign = 'right';
     const genDate = new Date().toLocaleString('es-ES', { timeZone: 'Atlantic/Canary' });
-    ctx.fillText(`Generado ${genDate}`, overlayX + overlayW - 20, currentY);
-    ctx.textAlign = 'center';
-    currentY += 30;
+    ctx.fillText(`Generado ${genDate}`, WIDTH - boxMargin - 20, currentY);
 
-    // Random color for title background
+    currentY += 40;
+
+    // Pill Background
     const hueRanges = [
         { min: 0, max: 30 }, { min: 45, max: 150 },
         { min: 170, max: 260 }, { min: 280, max: 330 }
     ];
     const selectedRange = hueRanges[Math.floor(Math.random() * hueRanges.length)];
     const randomHue = Math.floor(Math.random() * (selectedRange.max - selectedRange.min)) + selectedRange.min;
-    const bgColor = `hsl(${randomHue}, 70%, 50%)`;
+    const randomSat = Math.floor(Math.random() * 40) + 60;
+    const randomLight = Math.floor(Math.random() * 25) + 45;
+    const bgColor = `hsl(${randomHue}, ${randomSat}%, ${randomLight}%)`;
 
-    // Title pill background
-    const titleFontSize = 56;
-    const subtitleFontSize = 44;
     ctx.font = `${titleFontSize}px ${TITLE_FONT}`;
-    const titleMetrics = ctx.measureText(titleText);
-    const titleWidth = Math.min(titleMetrics.width + 120, overlayW - 40);
+    const titleText = lugar ? `VERBENAS ${lugar.toUpperCase()}` : `VERBENAS ${municipio.toUpperCase()}`;
+    const subtitleText = lugar ? municipio.toUpperCase() : null;
+    
+    let maxTextWidth = ctx.measureText(titleText).width;
+    if (subtitleText) {
+        ctx.font = `${subtitleFontSize}px ${TITLE_FONT}`;
+        maxTextWidth = Math.max(maxTextWidth, ctx.measureText(subtitleText).width);
+    }
 
-    const pillHeight = subtitleText ? 140 : 100;
-    const pillX = WIDTH / 2 - titleWidth / 2;
+    const pillW = Math.min(maxTextWidth + 80, WIDTH - boxMargin*2 - 40);
+    const pillH = subtitleText ? titleFontSize + subtitleFontSize + 60 : titleFontSize + 60;
+    const pillX = WIDTH / 2 - pillW / 2;
     const pillY = currentY;
-    const pillRadius = 50;
 
-    // Draw pill
+    // Draw Pill
     ctx.fillStyle = bgColor;
     ctx.beginPath();
-    ctx.moveTo(pillX + pillRadius, pillY);
-    ctx.lineTo(pillX + titleWidth - pillRadius, pillY);
-    ctx.arcTo(pillX + titleWidth, pillY, pillX + titleWidth, pillY + pillRadius, pillRadius);
-    ctx.lineTo(pillX + titleWidth, pillY + pillHeight - pillRadius);
-    ctx.arcTo(pillX + titleWidth, pillY + pillHeight, pillX + titleWidth - pillRadius, pillY + pillHeight, pillRadius);
-    ctx.lineTo(pillX + pillRadius, pillY + pillHeight);
-    ctx.arcTo(pillX, pillY + pillHeight, pillX, pillY + pillHeight - pillRadius, pillRadius);
-    ctx.lineTo(pillX, pillY + pillRadius);
-    ctx.arcTo(pillX, pillY, pillX + pillRadius, pillY, pillRadius);
-    ctx.closePath();
+    ctx.roundRect(pillX, pillY, pillW, pillH, 40);
     ctx.fill();
 
-    // White border on pill
+    // White Border
     ctx.strokeStyle = '#FFFFFF';
     ctx.lineWidth = 5;
     ctx.stroke();
 
-    // Title text with shadow
-    ctx.font = `${titleFontSize}px ${TITLE_FONT}`;
-    ctx.textAlign = 'center';
-    ctx.lineJoin = 'round';
-
-    const drawTitleLine = (txt, yPos) => {
-        // Drop shadow offset
-        ctx.lineWidth = 8;
-        ctx.strokeStyle = 'rgba(0,0,0,0.7)';
-        ctx.strokeText(txt, WIDTH / 2 + 5, yPos + 5);
+    // Text helper
+    const drawThickText = (txt, y, fontSize, fillCol, strokeCol, strokeWidth) => {
+        ctx.font = `${fontSize}px ${TITLE_FONT}`;
+        ctx.textAlign = 'center';
+        ctx.lineJoin = 'round';
+        ctx.miterLimit = 2;
         
-        // Main black outline
-        ctx.lineWidth = 6;
-        ctx.strokeStyle = '#000000';
-        ctx.strokeText(txt, WIDTH / 2, yPos);
+        // Shadow/stroke
+        if (strokeWidth > 0 && strokeCol) {
+            ctx.lineWidth = strokeWidth;
+            ctx.strokeStyle = strokeCol;
+            ctx.strokeText(txt, WIDTH / 2, y);
+        }
         
-        // White fill
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillText(txt, WIDTH / 2, yPos);
+        ctx.fillStyle = fillCol;
+        ctx.fillText(txt, WIDTH / 2, y);
     };
 
-    drawTitleLine(titleText, pillY + (subtitleText ? 65 : 75));
+    const drawTitleText = (txt, y, fontSize) => {
+        ctx.font = `${fontSize}px ${TITLE_FONT}`;
+        ctx.textAlign = 'center';
+        ctx.lineJoin = 'round';
+        
+        // Offset shadow
+        ctx.lineWidth = 6;
+        ctx.strokeStyle = 'rgba(0,0,0,0.8)';
+        ctx.strokeText(txt, WIDTH / 2 + 4, y + 4);
+        ctx.fillText(txt, WIDTH / 2 + 4, y + 4);
+        
+        // White text
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillText(txt, WIDTH / 2, y);
+    };
 
-    // Subtitle (municipio)
+    currentY += titleFontSize + 15;
+    drawTitleText(titleText, currentY, titleFontSize);
+
     if (subtitleText) {
-        ctx.font = `${subtitleFontSize}px ${TITLE_FONT}`;
-        drawTitleLine(subtitleText, pillY + 120);
+        currentY += subtitleFontSize;
+        drawTitleText(subtitleText, currentY, subtitleFontSize);
     }
 
-    currentY = pillY + pillHeight + 40;
+    currentY += 70; // Space after pill
 
-    // Events section
+    // Events Loop
     sortedDays.forEach(dayKey => {
         const dayDate = new Date(dayKey + 'T12:00:00');
         const dayName = dayDate.toLocaleDateString('es-ES', {
             weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
         }).toUpperCase();
 
-        // Day header with yellow text outline
-        ctx.font = `36px ${TITLE_FONT}`;
-        ctx.textAlign = 'center';
-        ctx.lineJoin = 'round';
-
-        // Yellow Outline
-        ctx.lineWidth = 6;
-        ctx.strokeStyle = '#FFD700'; // Gold
-        ctx.strokeText(dayName, WIDTH / 2, currentY);
-
-        // Green text fill
-        ctx.fillStyle = '#006400';
-        ctx.fillText(dayName, WIDTH / 2, currentY);
-
+        drawThickText(dayName, currentY, dayFontSize, '#006400', '#FFD700', 6);
+        
         // Underline
         const dayWidth = ctx.measureText(dayName).width;
         ctx.strokeStyle = '#006400';
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(WIDTH / 2 - dayWidth / 2, currentY + 8);
-        ctx.lineTo(WIDTH / 2 + dayWidth / 2, currentY + 8);
+        ctx.moveTo(WIDTH / 2 - dayWidth / 2, currentY + 10);
+        ctx.lineTo(WIDTH / 2 + dayWidth / 2, currentY + 10);
         ctx.stroke();
 
-        currentY += dayHeaderHeight;
+        currentY += dayFontSize + 15;
 
-        // Events for this day
         eventsByDay[dayKey].forEach(event => {
-            const eventFontSize = totalEvents >= 7 ? 28 : 34;
-            ctx.font = `${eventFontSize}px ${TITLE_FONT}`;
-            ctx.textAlign = 'center';
-
-            // Build event text parts and draw with different colors
             const parts = [];
-            // Hora: Blue fill, Yellow outline
             parts.push({ text: `${event.hora}H`, fill: '#0000FF', stroke: '#FFD700' });
-            
             if (event.tipo !== 'Baile Normal') {
-                // Tipo: Black fill, Yellow outline
                 parts.push({ text: `|${event.tipo}`, fill: '#000000', stroke: '#FFD700' });
             }
-            
-            // Orquesta: Red fill, Black outline (matches the web screenshot appearance)
-            parts.push({ text: `|${event.orquesta}`, fill: '#CC0000', stroke: '#000000' });
+            // Web uses RED shadow for Orquesta with black text inside
+            parts.push({ text: `|${event.orquesta}`, fill: '#000000', stroke: '#FF0000' });
 
-            // Calculate total width
+            ctx.font = `${eventFontSize}px ${TITLE_FONT}`;
             let totalWidth = 0;
-            parts.forEach(p => {
-                totalWidth += ctx.measureText(p.text).width;
-            });
+            parts.forEach(p => { totalWidth += ctx.measureText(p.text).width; });
 
-            // Draw centered
             let drawX = WIDTH / 2 - totalWidth / 2;
             ctx.lineJoin = 'round';
-            ctx.lineWidth = 5;
+            ctx.miterLimit = 2;
             ctx.textAlign = 'left';
 
             parts.forEach(p => {
                 const w = ctx.measureText(p.text).width;
-
-                // Outline
+                ctx.lineWidth = 6;
                 ctx.strokeStyle = p.stroke;
                 ctx.strokeText(p.text, drawX, currentY);
-
-                // Fill
+                
                 ctx.fillStyle = p.fill;
                 ctx.fillText(p.text, drawX, currentY);
-
+                
                 drawX += w;
             });
 
-            currentY += eventLineHeight;
+            currentY += eventFontSize + 15;
         });
 
-        currentY += 15; // spacing between days
+        currentY += 20;
     });
 
     // Footer
-    currentY = Math.max(currentY, canvasHeight - footerHeight - PADDING);
-    ctx.font = `bold 36px ${BODY_FONT}`;
+    currentY = Math.max(currentY, canvasHeight - boxMargin - 30);
+    ctx.font = `26px ${BODY_FONT}`;
     ctx.textAlign = 'center';
     ctx.fillStyle = '#FF0000';
-    ctx.fillText('Más info en: debelingoconangel.web.app', WIDTH / 2, currentY + 20);
+    ctx.fillText('Más info en: debelingoconangel.web.app', WIDTH / 2, currentY);
 
-    // Convert to PNG buffer
     return canvas.toBuffer('image/png');
 }
 
