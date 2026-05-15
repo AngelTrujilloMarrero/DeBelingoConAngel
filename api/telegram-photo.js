@@ -123,8 +123,8 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
     // Font sizes based on web base size of 24px
     const titleFontSize = Math.round(24 * 3.5); // 84px
     const subtitleFontSize = Math.round(24 * 2.8); // 67px
-    const dayFontSize = Math.round(24 * 1.8); // 43px
-    const eventFontSize = Math.round(24 * 1.3); // 31px
+    const dayFontSize = Math.round(24 * 2.0); // 48px (increased)
+    const eventFontSize = Math.round(24 * 1.8); // 43px (increased)
 
     const eventsByDay = {};
     festivalEvents.forEach(event => {
@@ -308,46 +308,73 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
         currentY += dayFontSize + 15;
 
         eventsByDay[dayKey].forEach(event => {
-            const parts = [];
-            parts.push({ text: `${event.hora}H`, fill: '#0000FF', stroke: '#FFD700' });
+            const maxAllowedWidth = WIDTH - boxMargin * 2 - 100;
+            
+            // 1. Prepare prefix (Hora | Tipo)
+            const prefixParts = [];
+            prefixParts.push({ text: `${event.hora}H`, fill: '#0000FF', stroke: '#FFD700' });
             if (event.tipo !== 'Baile Normal') {
-                parts.push({ text: `|${event.tipo}`, fill: '#000000', stroke: '#FFD700' });
+                prefixParts.push({ text: `|${event.tipo}`, fill: '#000000', stroke: '#FFD700' });
             }
-            // Web uses RED stroke for Orquesta with black text inside
-            parts.push({ text: `|${event.orquesta}`, fill: '#000000', stroke: '#FF0000' });
+            
+            ctx.font = `${eventFontSize}px ${TITLE_FONT}`;
+            let prefixWidth = 0;
+            prefixParts.forEach(p => { prefixWidth += ctx.measureText(p.text).width; });
 
-            let currentEventFontSize = eventFontSize;
-            let totalWidth = 0;
-            const maxAllowedWidth = WIDTH - boxMargin * 2 - 20;
-
-            // Scale down text if it's too long to fit the screen
-            do {
-                ctx.font = `${currentEventFontSize}px ${TITLE_FONT}`;
-                totalWidth = 0;
-                parts.forEach(p => { totalWidth += ctx.measureText(p.text).width; });
-                if (totalWidth > maxAllowedWidth) {
-                    currentEventFontSize -= 2;
+            // 2. Wrap Orchestra Name
+            const orchestraText = `|${event.orquesta}`;
+            const words = orchestraText.split(' ');
+            const lines = [];
+            let currentLine = '';
+            
+            words.forEach(word => {
+                const testLine = currentLine ? `${currentLine} ${word}` : word;
+                const testWidth = ctx.measureText(testLine).width;
+                if (testWidth + prefixWidth > maxAllowedWidth && currentLine) {
+                    lines.push(currentLine);
+                    currentLine = word;
+                    prefixWidth = 0; // After first line, prefix is gone
+                } else {
+                    currentLine = testLine;
                 }
-            } while (totalWidth > maxAllowedWidth && currentEventFontSize > 16);
+            });
+            lines.push(currentLine);
 
-            let drawX = WIDTH / 2 - totalWidth / 2;
+            // 3. Draw Lines
             ctx.lineJoin = 'round';
             ctx.miterLimit = 2;
-            ctx.textAlign = 'left';
+            
+            lines.forEach((lineText, index) => {
+                const parts = [];
+                if (index === 0) {
+                    // First line includes the prefix
+                    prefixParts.forEach(p => parts.push(p));
+                    parts.push({ text: lineText, fill: '#000000', stroke: '#FF0000' });
+                } else {
+                    // Subsequent lines are just orchestra
+                    parts.push({ text: lineText, fill: '#000000', stroke: '#FF0000' });
+                }
 
-            parts.forEach(p => {
-                const w = ctx.measureText(p.text).width;
-                ctx.lineWidth = Math.max(3, Math.floor(currentEventFontSize / 5)); // Adjust stroke thickness
-                ctx.strokeStyle = p.stroke;
-                ctx.strokeText(p.text, drawX, currentY);
+                let totalWidth = 0;
+                parts.forEach(p => { totalWidth += ctx.measureText(p.text).width; });
                 
-                ctx.fillStyle = p.fill;
-                ctx.fillText(p.text, drawX, currentY);
-                
-                drawX += w;
+                let drawX = WIDTH / 2 - totalWidth / 2;
+                ctx.textAlign = 'left';
+
+                parts.forEach(p => {
+                    const w = ctx.measureText(p.text).width;
+                    ctx.lineWidth = 6;
+                    ctx.strokeStyle = p.stroke;
+                    ctx.strokeText(p.text, drawX, currentY);
+                    ctx.fillStyle = p.fill;
+                    ctx.fillText(p.text, drawX, currentY);
+                    drawX += w;
+                });
+
+                currentY += eventFontSize + 15;
             });
 
-            currentY += Math.max(eventFontSize + 20, 50); // More spacing between event lines
+            currentY += 15; // Gap between events
         });
 
         currentY += 40; // More spacing between days
