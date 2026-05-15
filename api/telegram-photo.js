@@ -172,7 +172,7 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
             const sh = canvasHeight / scale;
             const sx = (bgImage.width - sw) / 2;
             const sy = (bgImage.height - sh) / 2;
-            ctx.globalAlpha = 0.85; // Increased background visibility
+            ctx.globalAlpha = 1.0; // Max background visibility
             ctx.drawImage(bgImage, sx, sy, sw, sh, 0, 0, WIDTH, canvasHeight);
             ctx.globalAlpha = 1.0;
         } catch (e) {
@@ -186,7 +186,7 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
 
     // Overlay Box
     const boxMargin = 20;
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.60)'; // Reduced white overlay to see more background
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.45)'; // Even more transparent to see background
     ctx.strokeStyle = '#000000';
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -281,11 +281,11 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
     drawTitleText(titleText, currentY, titleFontSize);
 
     if (subtitleText) {
-        currentY += subtitleFontSize;
+        currentY += subtitleFontSize + 10;
         drawTitleText(subtitleText, currentY, subtitleFontSize);
     }
 
-    currentY += 70; // Space after pill
+    currentY = pillY + pillH + 60; // Absolute positioning relative to pill bottom to avoid overlap
 
     // Events Loop
     sortedDays.forEach(dayKey => {
@@ -347,10 +347,10 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
                 drawX += w;
             });
 
-            currentY += eventFontSize + 15;
+            currentY += Math.max(eventFontSize + 20, 50); // More spacing between event lines
         });
 
-        currentY += 20;
+        currentY += 40; // More spacing between days
     });
 
     // Footer
