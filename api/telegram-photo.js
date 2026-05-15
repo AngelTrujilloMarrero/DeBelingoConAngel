@@ -172,7 +172,7 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
             const sh = canvasHeight / scale;
             const sx = (bgImage.width - sw) / 2;
             const sy = (bgImage.height - sh) / 2;
-            ctx.globalAlpha = 0.5;
+            ctx.globalAlpha = 0.85; // Increased background visibility
             ctx.drawImage(bgImage, sx, sy, sw, sh, 0, 0, WIDTH, canvasHeight);
             ctx.globalAlpha = 1.0;
         } catch (e) {
@@ -186,7 +186,7 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
 
     // Overlay Box
     const boxMargin = 20;
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.75)';
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.60)'; // Reduced white overlay to see more background
     ctx.strokeStyle = '#000000';
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -265,13 +265,14 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
         ctx.textAlign = 'center';
         ctx.lineJoin = 'round';
         
-        // Offset shadow
+        // Offset shadow (black)
         ctx.lineWidth = 6;
         ctx.strokeStyle = 'rgba(0,0,0,0.8)';
+        ctx.fillStyle = 'rgba(0,0,0,0.8)'; // FIX: Ensure shadow is actually black, not background color
         ctx.strokeText(txt, WIDTH / 2 + 4, y + 4);
         ctx.fillText(txt, WIDTH / 2 + 4, y + 4);
         
-        // White text
+        // White text main
         ctx.fillStyle = '#FFFFFF';
         ctx.fillText(txt, WIDTH / 2, y);
     };
@@ -312,12 +313,22 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
             if (event.tipo !== 'Baile Normal') {
                 parts.push({ text: `|${event.tipo}`, fill: '#000000', stroke: '#FFD700' });
             }
-            // Web uses RED shadow for Orquesta with black text inside
+            // Web uses RED stroke for Orquesta with black text inside
             parts.push({ text: `|${event.orquesta}`, fill: '#000000', stroke: '#FF0000' });
 
-            ctx.font = `${eventFontSize}px ${TITLE_FONT}`;
+            let currentEventFontSize = eventFontSize;
             let totalWidth = 0;
-            parts.forEach(p => { totalWidth += ctx.measureText(p.text).width; });
+            const maxAllowedWidth = WIDTH - boxMargin * 2 - 20;
+
+            // Scale down text if it's too long to fit the screen
+            do {
+                ctx.font = `${currentEventFontSize}px ${TITLE_FONT}`;
+                totalWidth = 0;
+                parts.forEach(p => { totalWidth += ctx.measureText(p.text).width; });
+                if (totalWidth > maxAllowedWidth) {
+                    currentEventFontSize -= 2;
+                }
+            } while (totalWidth > maxAllowedWidth && currentEventFontSize > 16);
 
             let drawX = WIDTH / 2 - totalWidth / 2;
             ctx.lineJoin = 'round';
@@ -326,7 +337,7 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
 
             parts.forEach(p => {
                 const w = ctx.measureText(p.text).width;
-                ctx.lineWidth = 6;
+                ctx.lineWidth = Math.max(3, Math.floor(currentEventFontSize / 5)); // Adjust stroke thickness
                 ctx.strokeStyle = p.stroke;
                 ctx.strokeText(p.text, drawX, currentY);
                 
