@@ -123,8 +123,8 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
     // Font sizes based on web base size of 24px
     const titleFontSize = Math.round(24 * 3.5); // 84px
     const subtitleFontSize = Math.round(24 * 2.8); // 67px
-    const dayFontSize = Math.round(24 * 2.0); // 48px (increased)
-    const eventFontSize = Math.round(24 * 1.8); // 43px (increased)
+    const dayFontSize = Math.round(24 * 2.0); // 48px
+    const eventFontSize = Math.round(24 * 2.2); // 53px (increased further)
 
     const eventsByDay = {};
     festivalEvents.forEach(event => {
@@ -384,7 +384,7 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
     currentY = Math.max(currentY, canvasHeight - boxMargin - 30);
     ctx.font = `26px ${BODY_FONT}`;
     ctx.textAlign = 'center';
-    ctx.fillStyle = '#FF0000';
+    ctx.fillStyle = '#000000';
     ctx.fillText('Más info en: debelingoconangel.web.app', WIDTH / 2, currentY);
 
     return canvas.toBuffer('image/png');
