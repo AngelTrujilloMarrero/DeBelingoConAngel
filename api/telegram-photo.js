@@ -77,10 +77,52 @@ async function tryDownloadBackground(lugar, municipio) {
 }
 
 /**
+ * Download and register fonts for @napi-rs/canvas (serverless has no system fonts)
+ */
+let fontsRegistered = false;
+async function ensureFonts() {
+    if (fontsRegistered) return;
+    const { GlobalFonts } = await import('@napi-rs/canvas');
+
+    // Download Anton (Impact-like bold font) from Google Fonts
+    try {
+        const antonUrl = 'https://fonts.gstatic.com/s/anton/v25/1Ptgg87GROyAm3K9-C8CSKlv.ttf';
+        const antonResp = await fetch(antonUrl);
+        if (antonResp.ok) {
+            const buffer = Buffer.from(await antonResp.arrayBuffer());
+            GlobalFonts.register(buffer, 'Anton');
+            console.log('✅ Anton font registered');
+        }
+    } catch (e) {
+        console.warn('Failed to load Anton font:', e.message);
+    }
+
+    // Download Roboto for body text
+    try {
+        const robotoUrl = 'https://fonts.gstatic.com/s/roboto/v47/KFOMCnqEu92Fr1ME7kSn66aGLdTylUAMQXC89YmC2DPNWubEbGmT.ttf';
+        const robotoResp = await fetch(robotoUrl);
+        if (robotoResp.ok) {
+            const buffer = Buffer.from(await robotoResp.arrayBuffer());
+            GlobalFonts.register(buffer, 'Roboto');
+            console.log('✅ Roboto font registered');
+        }
+    } catch (e) {
+        console.warn('Failed to load Roboto font:', e.message);
+    }
+
+    fontsRegistered = true;
+}
+
+/**
  * Generate a festival poster image using @napi-rs/canvas
  */
 async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer) {
     const { createCanvas, loadImage } = await import('@napi-rs/canvas');
+    await ensureFonts();
+
+    // Font families to use (with fallbacks)
+    const TITLE_FONT = 'Anton';
+    const BODY_FONT = 'Roboto';
 
     const WIDTH = 1200;
     const MIN_HEIGHT = 1200;
@@ -186,7 +228,7 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
     let currentY = overlayY + 30;
 
     // Generation date (top right)
-    ctx.font = '18px Arial, sans-serif';
+    ctx.font = `18px ${BODY_FONT}`;
     ctx.fillStyle = '#555555';
     ctx.textAlign = 'right';
     const genDate = new Date().toLocaleString('es-ES', { timeZone: 'Atlantic/Canary' });
@@ -206,7 +248,7 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
     // Title pill background
     const titleFontSize = 56;
     const subtitleFontSize = 44;
-    ctx.font = `bold ${titleFontSize}px Impact, Arial, sans-serif`;
+    ctx.font = `${titleFontSize}px ${TITLE_FONT}`;
     const titleMetrics = ctx.measureText(titleText);
     const titleWidth = Math.min(titleMetrics.width + 120, overlayW - 40);
 
@@ -236,7 +278,7 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
     ctx.stroke();
 
     // Title text with shadow
-    ctx.font = `bold ${titleFontSize}px Impact, Arial, sans-serif`;
+    ctx.font = `${titleFontSize}px ${TITLE_FONT}`;
     ctx.textAlign = 'center';
     ctx.fillStyle = 'rgba(0,0,0,0.8)';
     ctx.fillText(titleText, WIDTH / 2 + 4, pillY + (subtitleText ? 55 : 65) + 4);
@@ -245,7 +287,7 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
 
     // Subtitle (municipio)
     if (subtitleText) {
-        ctx.font = `bold ${subtitleFontSize}px Impact, Arial, sans-serif`;
+        ctx.font = `${subtitleFontSize}px ${TITLE_FONT}`;
         ctx.fillStyle = 'rgba(0,0,0,0.8)';
         ctx.fillText(subtitleText, WIDTH / 2 + 3, pillY + 105 + 3);
         ctx.fillStyle = '#FFFFFF';
@@ -262,7 +304,7 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
         }).toUpperCase();
 
         // Day header with yellow text shadow (matching current cartel style)
-        ctx.font = 'bold 36px Impact, Arial, sans-serif';
+        ctx.font = `36px ${TITLE_FONT}`;
         ctx.textAlign = 'center';
 
         // Yellow shadow
@@ -288,7 +330,7 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
         // Events for this day
         eventsByDay[dayKey].forEach(event => {
             const eventFontSize = totalEvents >= 7 ? 28 : 34;
-            ctx.font = `bold ${eventFontSize}px Impact, Arial, sans-serif`;
+            ctx.font = `${eventFontSize}px ${TITLE_FONT}`;
             ctx.textAlign = 'center';
 
             // Build event text parts and draw with different colors
@@ -337,7 +379,7 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
 
     // Footer
     currentY = Math.max(currentY, canvasHeight - footerHeight - PADDING);
-    ctx.font = 'bold 36px Arial, sans-serif';
+    ctx.font = `bold 36px ${BODY_FONT}`;
     ctx.textAlign = 'center';
     ctx.fillStyle = '#FF0000';
     ctx.fillText('Más info en: debelingoconangel.web.app', WIDTH / 2, currentY + 20);
