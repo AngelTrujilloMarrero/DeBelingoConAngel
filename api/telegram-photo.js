@@ -280,18 +280,30 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
     // Title text with shadow
     ctx.font = `${titleFontSize}px ${TITLE_FONT}`;
     ctx.textAlign = 'center';
-    ctx.fillStyle = 'rgba(0,0,0,0.8)';
-    ctx.fillText(titleText, WIDTH / 2 + 4, pillY + (subtitleText ? 55 : 65) + 4);
-    ctx.fillStyle = '#FFFFFF';
-    ctx.fillText(titleText, WIDTH / 2, pillY + (subtitleText ? 55 : 65));
+    ctx.lineJoin = 'round';
+
+    const drawTitleLine = (txt, yPos) => {
+        // Drop shadow offset
+        ctx.lineWidth = 8;
+        ctx.strokeStyle = 'rgba(0,0,0,0.7)';
+        ctx.strokeText(txt, WIDTH / 2 + 5, yPos + 5);
+        
+        // Main black outline
+        ctx.lineWidth = 6;
+        ctx.strokeStyle = '#000000';
+        ctx.strokeText(txt, WIDTH / 2, yPos);
+        
+        // White fill
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillText(txt, WIDTH / 2, yPos);
+    };
+
+    drawTitleLine(titleText, pillY + (subtitleText ? 65 : 75));
 
     // Subtitle (municipio)
     if (subtitleText) {
         ctx.font = `${subtitleFontSize}px ${TITLE_FONT}`;
-        ctx.fillStyle = 'rgba(0,0,0,0.8)';
-        ctx.fillText(subtitleText, WIDTH / 2 + 3, pillY + 105 + 3);
-        ctx.fillStyle = '#FFFFFF';
-        ctx.fillText(subtitleText, WIDTH / 2, pillY + 105);
+        drawTitleLine(subtitleText, pillY + 120);
     }
 
     currentY = pillY + pillHeight + 40;
@@ -303,16 +315,17 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
             weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
         }).toUpperCase();
 
-        // Day header with yellow text shadow (matching current cartel style)
+        // Day header with yellow text outline
         ctx.font = `36px ${TITLE_FONT}`;
         ctx.textAlign = 'center';
+        ctx.lineJoin = 'round';
 
-        // Yellow shadow
-        ctx.fillStyle = 'rgba(255, 215, 0, 0.8)';
-        ctx.fillText(dayName, WIDTH / 2 + 2, currentY + 2);
-        ctx.fillText(dayName, WIDTH / 2 - 2, currentY - 2);
+        // Yellow Outline
+        ctx.lineWidth = 6;
+        ctx.strokeStyle = '#FFD700'; // Gold
+        ctx.strokeText(dayName, WIDTH / 2, currentY);
 
-        // Green text
+        // Green text fill
         ctx.fillStyle = '#006400';
         ctx.fillText(dayName, WIDTH / 2, currentY);
 
@@ -335,11 +348,16 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
 
             // Build event text parts and draw with different colors
             const parts = [];
-            parts.push({ text: `${event.hora}H`, color: 'blue' });
+            // Hora: Blue fill, Yellow outline
+            parts.push({ text: `${event.hora}H`, fill: '#0000FF', stroke: '#FFD700' });
+            
             if (event.tipo !== 'Baile Normal') {
-                parts.push({ text: `|${event.tipo}`, color: '#000000' });
+                // Tipo: Black fill, Yellow outline
+                parts.push({ text: `|${event.tipo}`, fill: '#000000', stroke: '#FFD700' });
             }
-            parts.push({ text: `|${event.orquesta}`, color: '#000000', shadow: 'red' });
+            
+            // Orquesta: Red fill, Black outline (matches the web screenshot appearance)
+            parts.push({ text: `|${event.orquesta}`, fill: '#CC0000', stroke: '#000000' });
 
             // Calculate total width
             let totalWidth = 0;
@@ -349,25 +367,21 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
 
             // Draw centered
             let drawX = WIDTH / 2 - totalWidth / 2;
+            ctx.lineJoin = 'round';
+            ctx.lineWidth = 5;
+            ctx.textAlign = 'left';
+
             parts.forEach(p => {
                 const w = ctx.measureText(p.text).width;
 
-                // Yellow/gold text shadow (cartel style)
-                ctx.fillStyle = 'rgba(255, 215, 0, 0.6)';
-                ctx.textAlign = 'left';
-                ctx.fillText(p.text, drawX + 2, currentY + 2);
-                ctx.fillText(p.text, drawX - 2, currentY - 2);
+                // Outline
+                ctx.strokeStyle = p.stroke;
+                ctx.strokeText(p.text, drawX, currentY);
 
-                // Red shadow for orchestra name
-                if (p.shadow) {
-                    ctx.fillStyle = p.shadow;
-                    ctx.fillText(p.text, drawX + 2, currentY + 2);
-                    ctx.fillText(p.text, drawX - 2, currentY - 2);
-                }
-
-                // Main text
-                ctx.fillStyle = p.color;
+                // Fill
+                ctx.fillStyle = p.fill;
                 ctx.fillText(p.text, drawX, currentY);
+
                 drawX += w;
             });
 
