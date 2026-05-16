@@ -100,10 +100,12 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
     const WIDTH = 1080;
     const PADDING = 30;
 
-    const titleFontSize = Math.round(24 * 3.2); // 77px
-    const subtitleFontSize = Math.round(24 * 2.5); // 60px
-    const dayFontSize = Math.round(24 * 1.8); // 43px
-    const eventFontSize = Math.round(24 * 1.8); // 43px
+    // Font sizes optimized
+    const isSmallFestival = festivalEvents.length <= 5;
+    const titleFontSize = Math.round(24 * 3.2); 
+    const subtitleFontSize = Math.round(24 * 2.5);
+    const dayFontSize = isSmallFestival ? Math.round(24 * 2.2) : Math.round(24 * 1.8);
+    const eventFontSize = isSmallFestival ? Math.round(24 * 2.5) : Math.round(24 * 1.8);
 
     const eventsByDay = {};
     festivalEvents.forEach(event => {
@@ -123,12 +125,12 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
     contentHeight += titleFontSize + (lugar ? subtitleFontSize + 10 : 0);
     
     sortedDays.forEach(dayKey => {
-        contentHeight += dayFontSize + 40;
+        contentHeight += dayFontSize + 45;
         const dayEvents = eventsByDay[dayKey];
         const useColumns = dayEvents.length > 1;
         const rows = useColumns ? Math.ceil(dayEvents.length / 2) : dayEvents.length;
-        contentHeight += rows * 115;
-        contentHeight += 20;
+        contentHeight += rows * (isSmallFestival ? 150 : 120);
+        contentHeight += 25;
     });
     contentHeight += 100;
 
@@ -266,7 +268,7 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
             // Card BG
             ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
             ctx.beginPath();
-            ctx.roundRect(baseX - 10, drawY - eventFontSize, colWidth + 20, eventFontSize + 55, 15);
+            ctx.roundRect(baseX - 15, drawY - eventFontSize, colWidth + 30, eventFontSize + (isSmallFestival ? 80 : 60), 15);
             ctx.fill();
 
             // Prefix (Centered)
@@ -276,21 +278,29 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
             const fullPrefix = timeText + typeText;
             
             ctx.font = `bold ${eventFontSize * 0.9}px ${TITLE_FONT}`;
-            ctx.fillStyle = '#0000FF';
-            // Render parts centered
-            const prefixW = ctx.measureText(fullPrefix).width;
-            let startX = centerX - prefixW / 2;
+            const timeW = ctx.measureText(timeText).width;
+            let typeW = 0;
+            if (typeText) {
+                ctx.font = `${eventFontSize * 0.75}px ${TITLE_FONT}`;
+                typeW = ctx.measureText(typeText).width;
+            }
+            
+            const totalPrefixW = timeW + typeW + 5;
+            let startX = centerX - totalPrefixW / 2;
             
             ctx.textAlign = 'left';
+            ctx.font = `bold ${eventFontSize * 0.9}px ${TITLE_FONT}`;
+            ctx.fillStyle = '#0000FF';
             ctx.fillText(timeText, startX, drawY);
+            
             if (typeText) {
-                startX += ctx.measureText(timeText).width;
-                ctx.font = `${eventFontSize * 0.7}px ${TITLE_FONT}`;
-                ctx.fillStyle = '#666';
+                startX += timeW + 5;
+                ctx.font = `${eventFontSize * 0.75}px ${TITLE_FONT}`;
+                ctx.fillStyle = '#222'; // Darker color as requested
                 ctx.fillText(typeText, startX, drawY);
             }
 
-            drawY += eventFontSize + 10;
+            drawY += eventFontSize + 15;
 
             // Orchestra (Centered)
             ctx.font = `${eventFontSize}px ${TITLE_FONT}`;
@@ -317,13 +327,13 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
                 ctx.lineWidth = 1;
                 ctx.strokeText(l, centerX, drawY);
                 ctx.fillText(l, centerX, drawY);
-                drawY += eventFontSize + 5;
+                drawY += eventFontSize + 10;
             });
 
-            colY[colIdx] = drawY + 15;
+            colY[colIdx] = drawY + 20;
         });
 
-        currentY = Math.max(colY[0], colY[1]) + 20;
+        currentY = Math.max(colY[0], colY[1]) + 25;
     });
 
     currentY = Math.max(currentY, canvasHeight - boxMargin - 40);
