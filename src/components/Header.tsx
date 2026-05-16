@@ -70,8 +70,10 @@ const Header: React.FC<HeaderProps> = ({ searchTerm, setSearchTerm }) => {
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60" />
       </div>
 
+      <div className={`absolute inset-0 backdrop-blur-md bg-black/30 pointer-events-none transition-all duration-700 ${isScrolled ? 'opacity-100' : 'opacity-0'}`} />
+
       {/* Spotlight Effect */}
-      <div className={`absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 overflow-hidden ${isScrolled ? 'hidden' : ''}`}>
+      <div className={`absolute inset-0 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-300 overflow-hidden hidden md:block ${isScrolled ? 'md:hidden' : ''}`}>
         <div
           className="absolute w-[800px] h-[800px] -left-[400px] -top-[400px]"
           style={{
@@ -87,7 +89,7 @@ const Header: React.FC<HeaderProps> = ({ searchTerm, setSearchTerm }) => {
         style={{ overflow: 'visible' }}
       >
         {/* Group Title */}
-        <div className={`w-full flex flex-col items-center transition-all duration-500 ease-in-out ${isScrolled ? 'max-h-0 opacity-0 pointer-events-none mb-0 overflow-hidden' : 'max-h-24 opacity-100 mb-0 overflow-visible'}`}>
+        <div className={`w-full flex flex-col items-center md:transition-all md:duration-500 md:ease-in-out ${isScrolled ? 'max-h-0 opacity-0 pointer-events-none mb-0 overflow-hidden' : 'max-h-24 opacity-100 mb-0 overflow-visible'}`}>
           {/* Visible on mobile - small */}
           <div className="block md:hidden transition-all duration-500">
             <span aria-hidden="true" className="text-xs font-bold font-orbitron tracking-widest transform scale-x-110 origin-center inline-block group/text cursor-pointer transition-transform duration-300 py-0.5">

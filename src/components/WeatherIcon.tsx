@@ -164,7 +164,7 @@ const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, time, alert 
                         onClick={(e) => e.stopPropagation()}
                         title={`Ver alerta ${alert[0].level} en web de AEMET`}
                     >
-                        <AlertTriangle className="w-5 h-5 animate-pulse" aria-hidden="true" />
+                        <AlertTriangle className="w-5 h-5 md:animate-pulse" aria-hidden="true" />
                     </a>
                     {alert.map((a, idx) => (
                         <span key={idx} className={`${getAlertColor(a.level || '')}`}>

@@ -45,9 +45,12 @@
   body {
     color: theme(colors.foreground);
     font-feature-settings: "rlig" 1, "calt" 1;
-    overflow-x: clip;
     min-height: 100vh;
     background-color: #001f3f; /* Solid fallback for mobile */
+  }
+
+  #root {
+    /* Removed overflow-x: hidden to prevent mobile GPU tearing */
   }
 
   @media (min-width: 768px) {
@@ -78,14 +81,9 @@
 /* Global mobile stability fix: disable heavy CSS features on small screens 
    to prevent GPU rendering artifacts and crashes (auto-reloads) */
 @media (max-width: 767px) {
-  * {
+  .backdrop-blur-md, .backdrop-blur-lg, .backdrop-blur-sm, .glass {
     backdrop-filter: none !important;
     -webkit-backdrop-filter: none !important;
-    box-shadow: none !important;
-    text-shadow: none !important;
-    animation: none !important;
-    transition: none !important;
-    will-change: auto !important;
   }
 }
 
@@ -313,29 +311,17 @@
 .orchestra-names-container {
   display: inline-flex;
   flex-wrap: wrap;
-  gap: 0;
+  gap: 4px;
   align-items: baseline;
 }
 
 .orchestra-name-unit {
-  white-space: nowrap !important;
   display: inline-block;
-  word-break: keep-all !important;
-  overflow-wrap: normal !important;
-  hyphens: none !important;
+  word-break: break-word;
 }
 
 .orchestra-separator {
-  white-space: nowrap;
-  margin-right: 4px;
-}
-
-.orchestra-name-unit:not(:last-child)::after {
-  content: " ";
-  white-space: normal;
-  word-break: break-all;
-  width: 0;
-  display: inline-block;
+  margin-right: 0px;
 }
 
 @keyframes wave {

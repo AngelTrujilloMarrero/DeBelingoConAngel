@@ -140,7 +140,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
   };
 
   return (
-    <div className="bg-gray-900 md:bg-gradient-to-br md:from-gray-900 md:via-gray-800 md:to-gray-900 text-white shadow-2xl overflow-hidden">
+    <div className="bg-gray-900 md:bg-gradient-to-br md:from-gray-900 md:via-gray-800 md:to-gray-900 text-white">
       {/* Header */}
       <div className="bg-blue-600 md:bg-gradient-to-r md:from-blue-600 md:to-purple-600 pt-3 pb-2 md:py-2">
         <h2 className="text-xl md:text-3xl font-bold text-center flex items-center justify-center gap-2 md:gap-3">
@@ -160,7 +160,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
               {updateInfo.relativeLabel && (
                 <>
                   <div className="w-px h-3 bg-white/20" />
-                  <div className={`flex items-center px-1.5 py-0.5 rounded-md text-[8.5px] md:text-xs font-black uppercase tracking-wider animate-pulse ${updateInfo.badgeClasses}`}>
+                  <div className={`flex items-center px-1.5 py-0.5 rounded-md text-[8.5px] md:text-xs font-black uppercase tracking-wider md:animate-pulse ${updateInfo.badgeClasses}`}>
                     {updateInfo.relativeLabel}
                   </div>
                 </>
@@ -188,7 +188,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
       {/* Events List */}
       <div className="p-6 space-y-6">
         {events.length === 0 && searchTerm ? (
-          <div className="py-20 text-center space-y-4 animate-in fade-in zoom-in duration-500">
+          <div className="py-20 text-center space-y-4 md:animate-in md:fade-in md:zoom-in md:duration-500">
             <div className="bg-gray-800/50 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 border border-gray-700">
               <Search className="w-10 h-10 text-gray-500" />
             </div>
@@ -213,7 +213,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
             const sortedDayEvents = sortEventsByDateTime(dayEvents);
 
             return (
-              <div key={dayKey} className={`space-y-4 ${dayKey !== Object.keys(eventsByDay).sort()[0] ? 'mt-8 pt-4 border-t border-gray-700/30' : ''}`}>
+              <div key={dayKey} className={`space-y-4 transform-gpu ${dayKey !== Object.keys(eventsByDay).sort()[0] ? 'mt-8 pt-4 border-t border-gray-700/30' : ''}`}>
                 <div className="py-3 bg-gray-800/50 md:bg-gradient-to-r md:from-transparent md:via-yellow-400/15 md:to-transparent border-y border-yellow-400/20">
                   <h3 className="text-xl md:text-2xl font-bold text-yellow-400 flex items-center justify-center gap-3">
                     <Calendar className="w-6 h-6 text-yellow-500" aria-hidden="true" />
@@ -227,9 +227,9 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                     <div
                       key={event.id}
                       onDoubleClick={() => toggleEvent(event.id)}
-                      className="bg-gray-800/80 md:bg-gradient-to-r md:from-gray-800/50 md:to-gray-700/50 rounded-lg p-4 border border-gray-600/30 hover:border-blue-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20 cursor-pointer select-none group"
+                      className="bg-gray-800 md:bg-gray-800/80 md:bg-gradient-to-r md:from-gray-800/50 md:to-gray-700/50 rounded-lg p-4 border border-gray-600/30 hover:border-blue-400/50 md:transition-all md:duration-300 hover:shadow-lg hover:shadow-blue-500/20 cursor-pointer select-none group transform-gpu will-change-transform"
                     >
-                      <div className="flex flex-wrap items-center gap-4 text-center md:text-left min-w-0 overflow-hidden">
+                      <div className="flex flex-wrap items-center gap-4 text-center md:text-left min-w-0">
                         <div className="flex items-center gap-2 text-blue-300 font-bold">
                           <Clock className="w-5 h-5" aria-hidden="true" />
                           <span className="text-lg">{event.hora}H</span>
@@ -259,7 +259,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                             href={generateTransitLink(event)}
                             target="_blank"
                             rel="noopener noreferrer"
-                             className="flex items-center px-3 py-1.5 bg-green-900/40 md:bg-gradient-to-r md:from-green-500/20 md:to-green-600/20 text-green-300 rounded-lg text-sm font-medium border border-green-500/30 hover:from-green-500/30 hover:to-green-600/30 hover:border-green-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-green-500/20"
+                             className="flex items-center px-3 py-1.5 bg-green-900 md:bg-green-900/40 md:bg-gradient-to-r md:from-green-500/20 md:to-green-600/20 text-green-300 rounded-lg text-sm font-medium border border-green-500/30 hover:from-green-500/30 hover:to-green-600/30 hover:border-green-400/50 md:transition-all md:duration-300 hover:shadow-lg hover:shadow-green-500/20"
                             title={`Cómo llegar en guagua a ${event.municipio}`}
                           >
                             <TITSALogo />
@@ -276,7 +276,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                             href={generateDirectionsLink(event)}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 text-emerald-300 rounded-lg text-sm font-medium border border-emerald-500/30 hover:from-emerald-500/30 hover:to-teal-500/30 hover:border-emerald-400/50 transition-all duration-300 hover:shadow-lg hover:shadow-emerald-500/20"
+                            className="flex items-center gap-2 px-3 py-1.5 bg-emerald-900 md:bg-gradient-to-r md:from-emerald-500/20 md:to-teal-500/20 text-emerald-300 rounded-lg text-sm font-medium border border-emerald-500/30 hover:from-emerald-500/30 hover:to-teal-500/30 hover:border-emerald-400/50 md:transition-all md:duration-300 hover:shadow-lg hover:shadow-emerald-500/20"
                             title={`Cómo llegar a ${event.lugar ? event.lugar + ', ' : ''}${event.municipio}`}
                           >
                             <Navigation className="w-4 h-4" />
@@ -284,7 +284,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                           </a>
                         </div>
 
-                        <div className="flex items-center gap-2 text-green-400 font-semibold min-w-0 max-w-full overflow-hidden">
+                        <div className="flex items-center gap-2 text-green-400 font-semibold min-w-0 max-w-full">
                           <Music2 className="w-5 h-5 flex-shrink-0" />
                           <span className="text-sm leading-relaxed min-w-0 orchestra-names-container">
                             {event.orquesta.split(',').map((orquesta, i, arr) => (
@@ -390,7 +390,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
         }}
       >
         {/* Spotlight effect for footer area too - Optimized */}
-        <div className="absolute inset-0 pointer-events-none opacity-0 group-hover/footer:opacity-100 transition-opacity duration-300 overflow-hidden">
+        <div className="absolute inset-0 pointer-events-none opacity-0 group-hover/footer:opacity-100 transition-opacity duration-300 overflow-hidden hidden md:block">
           <div
             className="absolute w-[600px] h-[600px] -left-[300px] -top-[300px]"
             style={{
@@ -442,7 +442,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                     <div className="text-sm">
                       <div className="flex items-center justify-start gap-2 flex-wrap mb-1">
                         {index === 0 && (
-                          <span className="bg-cyan-500/20 text-cyan-300 text-[9px] font-black px-1.5 py-0.5 rounded-full border border-cyan-500/30 mr-1 animate-pulse">
+                          <span className="bg-cyan-500/20 text-cyan-300 text-[9px] font-black px-1.5 py-0.5 rounded-full border border-cyan-500/30 mr-1 md:animate-pulse">
                             MÁS RECIENTE
                           </span>
                         )}

@@ -6,7 +6,7 @@ const TITSALogo: React.FC = () => {
       <img
         src="/fotos/titsa-logo.png"
         alt="TITSA"
-        className="h-5 w-auto object-contain brightness-110 contrast-110"
+        className="h-5 w-auto object-contain md:brightness-110 md:contrast-110"
         onError={(e) => {
           // Fallback if image fails to load
           e.currentTarget.style.display = 'none';
