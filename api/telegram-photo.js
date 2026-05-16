@@ -120,11 +120,11 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
     const WIDTH = 1080;
     const PADDING = 30;
 
-    // Font sizes based on web base size of 24px
-    const titleFontSize = Math.round(24 * 3.5); // 84px
-    const subtitleFontSize = Math.round(24 * 2.8); // 67px
-    const dayFontSize = Math.round(24 * 2.0); // 48px
-    const eventFontSize = Math.round(24 * 2.2); // 53px (increased further)
+    // Font sizes optimized for 2-column layout
+    const titleFontSize = Math.round(24 * 3.2); // 77px
+    const subtitleFontSize = Math.round(24 * 2.5); // 60px
+    const dayFontSize = Math.round(24 * 1.8); // 43px
+    const eventFontSize = Math.round(24 * 1.8); // 43px
 
     const eventsByDay = {};
     festivalEvents.forEach(event => {
@@ -139,24 +139,18 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
 
     const sortedDays = Object.keys(eventsByDay).sort();
     
-    // Estimate height
-    let contentHeight = PADDING;
-    contentHeight += 60; // Generation date
-    contentHeight += 40; // Top padding of pill
-    contentHeight += titleFontSize;
-    if (lugar) contentHeight += subtitleFontSize + 10;
-    contentHeight += 40; // Bottom padding of pill
-    contentHeight += 50; // Margin after pill
-
+    // Improved height estimation for 2 columns
+    let contentHeight = PADDING + 120; // Top stuff (reduced)
+    contentHeight += titleFontSize + (lugar ? subtitleFontSize + 10 : 0);
+    
     sortedDays.forEach(dayKey => {
-        contentHeight += dayFontSize + 20; // Day header
-        eventsByDay[dayKey].forEach(() => {
-            contentHeight += eventFontSize + 15; // Event line
-        });
-        contentHeight += 30; // Margin after day
+        contentHeight += dayFontSize + 35; // Day header
+        const dayEvents = eventsByDay[dayKey];
+        const rows = Math.ceil(dayEvents.length / 2);
+        contentHeight += rows * 110; // Estimated height per row
+        contentHeight += 15; // Day margin (reduced)
     });
-    contentHeight += 80; // Footer
-    contentHeight += PADDING;
+    contentHeight += 100; // Footer space
 
     const canvasHeight = Math.max(1080, contentHeight);
 
@@ -172,9 +166,7 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
             const sh = canvasHeight / scale;
             const sx = (bgImage.width - sw) / 2;
             const sy = (bgImage.height - sh) / 2;
-            ctx.globalAlpha = 1.0; // Max background visibility
             ctx.drawImage(bgImage, sx, sy, sw, sh, 0, 0, WIDTH, canvasHeight);
-            ctx.globalAlpha = 1.0;
         } catch (e) {
             ctx.fillStyle = '#FFFFFF';
             ctx.fillRect(0, 0, WIDTH, canvasHeight);
@@ -186,7 +178,7 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
 
     // Overlay Box
     const boxMargin = 20;
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.45)'; // Even more transparent to see background
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.45)';
     ctx.strokeStyle = '#000000';
     ctx.lineWidth = 1;
     ctx.beginPath();
@@ -198,12 +190,12 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
 
     // Generation Date
     ctx.font = `19px ${BODY_FONT}`;
-    ctx.fillStyle = '#888888';
+    ctx.fillStyle = '#666666';
     ctx.textAlign = 'right';
     const genDate = new Date().toLocaleString('es-ES', { timeZone: 'Atlantic/Canary' });
     ctx.fillText(`Generado ${genDate}`, WIDTH - boxMargin - 20, currentY);
 
-    currentY += 40;
+    currentY += 25; // Tighter
 
     // Pill Background
     const hueRanges = [
@@ -212,9 +204,7 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
     ];
     const selectedRange = hueRanges[Math.floor(Math.random() * hueRanges.length)];
     const randomHue = Math.floor(Math.random() * (selectedRange.max - selectedRange.min)) + selectedRange.min;
-    const randomSat = Math.floor(Math.random() * 40) + 60;
-    const randomLight = Math.floor(Math.random() * 25) + 45;
-    const bgColor = `hsl(${randomHue}, ${randomSat}%, ${randomLight}%)`;
+    const bgColor = `hsl(${randomHue}, 70%, 50%)`;
 
     ctx.font = `${titleFontSize}px ${TITLE_FONT}`;
     const titleText = lugar ? `VERBENAS ${lugar.toUpperCase()}` : `VERBENAS ${municipio.toUpperCase()}`;
@@ -227,7 +217,7 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
     }
 
     const pillW = Math.min(maxTextWidth + 80, WIDTH - boxMargin*2 - 40);
-    const pillH = subtitleText ? titleFontSize + subtitleFontSize + 60 : titleFontSize + 60;
+    const pillH = subtitleText ? titleFontSize + subtitleFontSize + 45 : titleFontSize + 45;
     const pillX = WIDTH / 2 - pillW / 2;
     const pillY = currentY;
 
@@ -236,56 +226,29 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
     ctx.beginPath();
     ctx.roundRect(pillX, pillY, pillW, pillH, 40);
     ctx.fill();
-
-    // White Border
     ctx.strokeStyle = '#FFFFFF';
     ctx.lineWidth = 5;
     ctx.stroke();
 
-    // Text helper
-    const drawThickText = (txt, y, fontSize, fillCol, strokeCol, strokeWidth) => {
-        ctx.font = `${fontSize}px ${TITLE_FONT}`;
-        ctx.textAlign = 'center';
-        ctx.lineJoin = 'round';
-        ctx.miterLimit = 2;
-        
-        // Shadow/stroke
-        if (strokeWidth > 0 && strokeCol) {
-            ctx.lineWidth = strokeWidth;
-            ctx.strokeStyle = strokeCol;
-            ctx.strokeText(txt, WIDTH / 2, y);
-        }
-        
-        ctx.fillStyle = fillCol;
-        ctx.fillText(txt, WIDTH / 2, y);
-    };
-
     const drawTitleText = (txt, y, fontSize) => {
         ctx.font = `${fontSize}px ${TITLE_FONT}`;
         ctx.textAlign = 'center';
-        ctx.lineJoin = 'round';
-        
-        // Offset shadow (black)
         ctx.lineWidth = 6;
         ctx.strokeStyle = 'rgba(0,0,0,0.8)';
-        ctx.fillStyle = 'rgba(0,0,0,0.8)'; // FIX: Ensure shadow is actually black, not background color
-        ctx.strokeText(txt, WIDTH / 2 + 4, y + 4);
-        ctx.fillText(txt, WIDTH / 2 + 4, y + 4);
-        
-        // White text main
+        ctx.strokeText(txt, WIDTH / 2 + 3, y + 3);
         ctx.fillStyle = '#FFFFFF';
         ctx.fillText(txt, WIDTH / 2, y);
     };
 
-    currentY += titleFontSize + 15;
+    currentY += titleFontSize + 5;
     drawTitleText(titleText, currentY, titleFontSize);
 
     if (subtitleText) {
-        currentY += subtitleFontSize + 10;
+        currentY += subtitleFontSize + 5;
         drawTitleText(subtitleText, currentY, subtitleFontSize);
     }
 
-    currentY = pillY + pillH + 60; // Absolute positioning relative to pill bottom to avoid overlap
+    currentY = pillY + pillH + 35; // Tighter
 
     // Events Loop
     sortedDays.forEach(dayKey => {
@@ -294,95 +257,97 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
             weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
         }).toUpperCase();
 
-        drawThickText(dayName, currentY, dayFontSize, '#006400', '#FFD700', 6);
+        // Day Header
+        ctx.font = `${dayFontSize}px ${TITLE_FONT}`;
+        ctx.textAlign = 'center';
+        ctx.lineWidth = 5;
+        ctx.strokeStyle = '#FFD700';
+        ctx.strokeText(dayName, WIDTH / 2, currentY);
+        ctx.fillStyle = '#006400';
+        ctx.fillText(dayName, WIDTH / 2, currentY);
         
-        // Underline
         const dayWidth = ctx.measureText(dayName).width;
         ctx.strokeStyle = '#006400';
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(WIDTH / 2 - dayWidth / 2, currentY + 10);
-        ctx.lineTo(WIDTH / 2 + dayWidth / 2, currentY + 10);
+        ctx.moveTo(WIDTH / 2 - dayWidth / 2, currentY + 8);
+        ctx.lineTo(WIDTH / 2 + dayWidth / 2, currentY + 8);
         ctx.stroke();
 
-        currentY += dayFontSize + 15;
+        currentY += dayFontSize + 20;
 
-        eventsByDay[dayKey].forEach(event => {
-            const maxAllowedWidth = WIDTH - boxMargin * 2 - 100;
+        // 2 Column Grid Logic
+        const colGap = 30;
+        const colWidth = (WIDTH - boxMargin * 2 - 60 - colGap) / 2;
+        const leftX = boxMargin + 30;
+        const rightX = WIDTH / 2 + colGap / 2;
+        
+        let colY = [currentY, currentY];
+
+        eventsByDay[dayKey].forEach((event, idx) => {
+            const colIdx = idx % 2;
+            const drawX = colIdx === 0 ? leftX : rightX;
+            let drawY = colY[colIdx];
+
+            // Event Card Background
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+            ctx.beginPath();
+            ctx.roundRect(drawX - 10, drawY - eventFontSize, colWidth + 20, eventFontSize + 45, 15);
+            ctx.fill();
+
+            // Render Prefix (Hora | Tipo)
+            ctx.font = `bold ${eventFontSize * 0.9}px ${TITLE_FONT}`;
+            ctx.textAlign = 'left';
+            const timeText = `${event.hora}H`;
+            ctx.fillStyle = '#0000FF';
+            ctx.fillText(timeText, drawX, drawY);
             
-            // 1. Prepare prefix (Hora | Tipo)
-            const prefixParts = [];
-            prefixParts.push({ text: `${event.hora}H`, fill: '#0000FF', stroke: '#FFD700' });
+            let currentX = drawX + ctx.measureText(timeText).width + 8;
             if (event.tipo !== 'Baile Normal') {
-                prefixParts.push({ text: `|${event.tipo}`, fill: '#000000', stroke: '#FFD700' });
+                ctx.font = `${eventFontSize * 0.7}px ${TITLE_FONT}`;
+                ctx.fillStyle = '#666';
+                ctx.fillText(`| ${event.tipo.toUpperCase()}`, currentX, drawY);
             }
-            
+
+            drawY += eventFontSize + 5;
+
+            // Orchestra Name
             ctx.font = `${eventFontSize}px ${TITLE_FONT}`;
-            let prefixWidth = 0;
-            prefixParts.forEach(p => { prefixWidth += ctx.measureText(p.text).width; });
-
-            // 2. Wrap Orchestra Name
-            const orchestraText = `|${event.orquesta}`;
+            ctx.fillStyle = '#000';
+            const orchestraText = event.orquesta;
+            
             const words = orchestraText.split(' ');
-            const lines = [];
-            let currentLine = '';
-            
-            words.forEach(word => {
-                const testLine = currentLine ? `${currentLine} ${word}` : word;
-                const testWidth = ctx.measureText(testLine).width;
-                if (testWidth + prefixWidth > maxAllowedWidth && currentLine) {
-                    lines.push(currentLine);
-                    currentLine = word;
-                    prefixWidth = 0; // After first line, prefix is gone
+            let line = '';
+            let lines = [];
+            for(let n = 0; n < words.length; n++) {
+                let testLine = line + words[n] + ' ';
+                let metrics = ctx.measureText(testLine);
+                if (metrics.width > colWidth && n > 0) {
+                    lines.push(line);
+                    line = words[n] + ' ';
                 } else {
-                    currentLine = testLine;
+                    line = testLine;
                 }
-            });
-            lines.push(currentLine);
+            }
+            lines.push(line);
 
-            // 3. Draw Lines
-            ctx.lineJoin = 'round';
-            ctx.miterLimit = 2;
-            
-            lines.forEach((lineText, index) => {
-                const parts = [];
-                if (index === 0) {
-                    // First line includes the prefix
-                    prefixParts.forEach(p => parts.push(p));
-                    parts.push({ text: lineText, fill: '#000000', stroke: '#FF0000' });
-                } else {
-                    // Subsequent lines are just orchestra
-                    parts.push({ text: lineText, fill: '#000000', stroke: '#FF0000' });
-                }
-
-                let totalWidth = 0;
-                parts.forEach(p => { totalWidth += ctx.measureText(p.text).width; });
-                
-                let drawX = WIDTH / 2 - totalWidth / 2;
-                ctx.textAlign = 'left';
-
-                parts.forEach(p => {
-                    const w = ctx.measureText(p.text).width;
-                    ctx.lineWidth = 6;
-                    ctx.strokeStyle = p.stroke;
-                    ctx.strokeText(p.text, drawX, currentY);
-                    ctx.fillStyle = p.fill;
-                    ctx.fillText(p.text, drawX, currentY);
-                    drawX += w;
-                });
-
-                currentY += eventFontSize + 15;
+            lines.forEach(l => {
+                ctx.strokeStyle = '#FF0000';
+                ctx.lineWidth = 1;
+                ctx.strokeText(l.trim(), drawX, drawY);
+                ctx.fillText(l.trim(), drawX, drawY);
+                drawY += eventFontSize + 5;
             });
 
-            currentY += 15; // Gap between events
+            colY[colIdx] = drawY + 15;
         });
 
-        currentY += 40; // More spacing between days
+        currentY = Math.max(colY[0], colY[1]) + 15;
     });
 
-    // Footer
-    currentY = Math.max(currentY, canvasHeight - boxMargin - 30);
-    ctx.font = `26px ${BODY_FONT}`;
+    // Footer - Fixed at bottom
+    currentY = Math.max(currentY, canvasHeight - boxMargin - 40);
+    ctx.font = `bold 28px ${BODY_FONT}`;
     ctx.textAlign = 'center';
     ctx.fillStyle = '#000000';
     ctx.fillText('Más info en: debelingoconangel.web.app', WIDTH / 2, currentY);
