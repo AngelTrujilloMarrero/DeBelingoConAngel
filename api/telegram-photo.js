@@ -17,10 +17,7 @@ function normalize(s) {
  */
 function generateImageUrls(lugar, municipio) {
     const urls = [];
-    // Prioritize Firebase Hosting (fastest, most reliable)
-    const baseUrls = [
-        'https://debelingoconangel.web.app/fotos/'
-    ];
+    const baseUrls = ['https://debelingoconangel.web.app/fotos/'];
     const extensions = ['jpg', 'jpeg', 'png', 'webp'];
 
     const variations = [];
@@ -55,8 +52,7 @@ function generateImageUrls(lugar, municipio) {
 }
 
 /**
- * Try to download a background image from known URLs
- * Returns the image buffer or null if none found
+ * Try to download a background image
  */
 async function tryDownloadBackground(lugar, municipio) {
     const urls = generateImageUrls(lugar, municipio);
@@ -66,49 +62,34 @@ async function tryDownloadBackground(lugar, municipio) {
             if (response.ok) {
                 const contentType = response.headers.get('content-type') || '';
                 if (contentType.startsWith('image/')) {
-                    console.log(`Background image found: ${url}`);
                     return Buffer.from(await response.arrayBuffer());
                 }
             }
-        } catch (e) {
-            // Skip this URL, try next
-        }
+        } catch (e) {}
     }
-    console.log(`No background image found for ${lugar || ''} ${municipio}`);
     return null;
 }
 
 /**
- * Download and register fonts for @napi-rs/canvas (serverless has no system fonts)
+ * Download and register fonts
  */
 let fontsRegistered = false;
 async function ensureFonts() {
     if (fontsRegistered) return;
     const { GlobalFonts } = await import('@napi-rs/canvas');
-
-    // Load Anton from local file system
     try {
         const antonPath = path.join(process.cwd(), 'api', 'fonts', 'Anton-Regular.ttf');
         GlobalFonts.register(fs.readFileSync(antonPath), 'Anton');
-        console.log('✅ Anton font registered from local file');
-    } catch (e) {
-        console.warn('Failed to load Anton font:', e.message);
-    }
-
-    // Load Roboto from local file system
-    try {
         const robotoPath = path.join(process.cwd(), 'api', 'fonts', 'Roboto-Regular.ttf');
         GlobalFonts.register(fs.readFileSync(robotoPath), 'Roboto');
-        console.log('✅ Roboto font registered from local file');
     } catch (e) {
-        console.warn('Failed to load Roboto font:', e.message);
+        console.warn('Font registration error:', e.message);
     }
-
     fontsRegistered = true;
 }
 
 /**
- * Generate a festival poster image using @napi-rs/canvas
+ * Generate a festival poster image
  */
 async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer) {
     const { createCanvas, loadImage } = await import('@napi-rs/canvas');
@@ -116,11 +97,9 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
 
     const TITLE_FONT = 'Anton';
     const BODY_FONT = 'Roboto';
-
     const WIDTH = 1080;
     const PADDING = 30;
 
-    // Font sizes optimized for 2-column layout
     const titleFontSize = Math.round(24 * 3.2); // 77px
     const subtitleFontSize = Math.round(24 * 2.5); // 60px
     const dayFontSize = Math.round(24 * 1.8); // 43px
@@ -139,21 +118,21 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
 
     const sortedDays = Object.keys(eventsByDay).sort();
     
-    // Improved height estimation for 2 columns
-    let contentHeight = PADDING + 120; // Top stuff (reduced)
+    // Height estimation
+    let contentHeight = PADDING + 120;
     contentHeight += titleFontSize + (lugar ? subtitleFontSize + 10 : 0);
     
     sortedDays.forEach(dayKey => {
-        contentHeight += dayFontSize + 35; // Day header
+        contentHeight += dayFontSize + 40;
         const dayEvents = eventsByDay[dayKey];
-        const rows = Math.ceil(dayEvents.length / 2);
-        contentHeight += rows * 110; // Estimated height per row
-        contentHeight += 15; // Day margin (reduced)
+        const useColumns = dayEvents.length > 1;
+        const rows = useColumns ? Math.ceil(dayEvents.length / 2) : dayEvents.length;
+        contentHeight += rows * 115;
+        contentHeight += 20;
     });
-    contentHeight += 100; // Footer space
+    contentHeight += 100;
 
     const canvasHeight = Math.max(1080, contentHeight);
-
     const canvas = createCanvas(WIDTH, canvasHeight);
     const ctx = canvas.getContext('2d');
 
@@ -188,23 +167,20 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
 
     let currentY = boxMargin + 25;
 
-    // Generation Date
+    // Gen Date
     ctx.font = `19px ${BODY_FONT}`;
-    ctx.fillStyle = '#666666';
+    ctx.fillStyle = '#444444';
     ctx.textAlign = 'right';
     const genDate = new Date().toLocaleString('es-ES', { timeZone: 'Atlantic/Canary' });
     ctx.fillText(`Generado ${genDate}`, WIDTH - boxMargin - 20, currentY);
 
-    currentY += 25; // Tighter
+    currentY += 25;
 
-    // Pill Background
-    const hueRanges = [
-        { min: 0, max: 30 }, { min: 45, max: 150 },
-        { min: 170, max: 260 }, { min: 280, max: 330 }
-    ];
+    // Pill
+    const hueRanges = [{ min: 0, max: 30 }, { min: 45, max: 150 }, { min: 170, max: 260 }, { min: 280, max: 330 }];
     const selectedRange = hueRanges[Math.floor(Math.random() * hueRanges.length)];
     const randomHue = Math.floor(Math.random() * (selectedRange.max - selectedRange.min)) + selectedRange.min;
-    const bgColor = `hsl(${randomHue}, 70%, 50%)`;
+    const bgColor = `hsl(${randomHue}, 75%, 45%)`;
 
     ctx.font = `${titleFontSize}px ${TITLE_FONT}`;
     const titleText = lugar ? `VERBENAS ${lugar.toUpperCase()}` : `VERBENAS ${municipio.toUpperCase()}`;
@@ -216,12 +192,11 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
         maxTextWidth = Math.max(maxTextWidth, ctx.measureText(subtitleText).width);
     }
 
-    const pillW = Math.min(maxTextWidth + 80, WIDTH - boxMargin*2 - 40);
-    const pillH = subtitleText ? titleFontSize + subtitleFontSize + 45 : titleFontSize + 45;
+    const pillW = Math.min(maxTextWidth + 100, WIDTH - boxMargin*2 - 40);
+    const pillH = subtitleText ? titleFontSize + subtitleFontSize + 55 : titleFontSize + 55;
     const pillX = WIDTH / 2 - pillW / 2;
     const pillY = currentY;
 
-    // Draw Pill
     ctx.fillStyle = bgColor;
     ctx.beginPath();
     ctx.roundRect(pillX, pillY, pillW, pillH, 40);
@@ -235,29 +210,25 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
         ctx.textAlign = 'center';
         ctx.lineWidth = 6;
         ctx.strokeStyle = 'rgba(0,0,0,0.8)';
-        ctx.strokeText(txt, WIDTH / 2 + 3, y + 3);
+        ctx.strokeText(txt, WIDTH / 2 + 4, y + 4);
         ctx.fillStyle = '#FFFFFF';
         ctx.fillText(txt, WIDTH / 2, y);
     };
 
-    currentY += titleFontSize + 5;
+    currentY += titleFontSize + 10;
     drawTitleText(titleText, currentY, titleFontSize);
-
     if (subtitleText) {
-        currentY += subtitleFontSize + 5;
+        currentY += subtitleFontSize + 10;
         drawTitleText(subtitleText, currentY, subtitleFontSize);
     }
 
-    currentY = pillY + pillH + 35; // Tighter
+    currentY = pillY + pillH + 40;
 
-    // Events Loop
+    // Days Loop
     sortedDays.forEach(dayKey => {
         const dayDate = new Date(dayKey + 'T12:00:00');
-        const dayName = dayDate.toLocaleDateString('es-ES', {
-            weekday: 'long', day: 'numeric', month: 'long', year: 'numeric'
-        }).toUpperCase();
+        const dayName = dayDate.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase();
 
-        // Day Header
         ctx.font = `${dayFontSize}px ${TITLE_FONT}`;
         ctx.textAlign = 'center';
         ctx.lineWidth = 5;
@@ -270,82 +241,91 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
         ctx.strokeStyle = '#006400';
         ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(WIDTH / 2 - dayWidth / 2, currentY + 8);
-        ctx.lineTo(WIDTH / 2 + dayWidth / 2, currentY + 8);
+        ctx.moveTo(WIDTH / 2 - dayWidth / 2, currentY + 10);
+        ctx.lineTo(WIDTH / 2 + dayWidth / 2, currentY + 10);
         ctx.stroke();
 
-        currentY += dayFontSize + 20;
+        currentY += dayFontSize + 25;
 
-        // 2 Column Grid Logic
-        const colGap = 30;
-        const colWidth = (WIDTH - boxMargin * 2 - 60 - colGap) / 2;
-        const leftX = boxMargin + 30;
+        const dayEvents = eventsByDay[dayKey];
+        const useColumns = dayEvents.length > 1;
+        
+        const colGap = 40;
+        const colWidth = useColumns ? (WIDTH - boxMargin * 2 - 80 - colGap) / 2 : WIDTH - boxMargin * 2 - 120;
+        const leftX = useColumns ? boxMargin + 40 : WIDTH / 2 - colWidth / 2;
         const rightX = WIDTH / 2 + colGap / 2;
         
         let colY = [currentY, currentY];
 
-        eventsByDay[dayKey].forEach((event, idx) => {
-            const colIdx = idx % 2;
-            const drawX = colIdx === 0 ? leftX : rightX;
+        dayEvents.forEach((event, idx) => {
+            const colIdx = useColumns ? idx % 2 : 0;
+            const baseX = useColumns ? (colIdx === 0 ? leftX : rightX) : leftX;
+            const centerX = baseX + colWidth / 2;
             let drawY = colY[colIdx];
 
-            // Event Card Background
+            // Card BG
             ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
             ctx.beginPath();
-            ctx.roundRect(drawX - 10, drawY - eventFontSize, colWidth + 20, eventFontSize + 45, 15);
+            ctx.roundRect(baseX - 10, drawY - eventFontSize, colWidth + 20, eventFontSize + 55, 15);
             ctx.fill();
 
-            // Render Prefix (Hora | Tipo)
-            ctx.font = `bold ${eventFontSize * 0.9}px ${TITLE_FONT}`;
-            ctx.textAlign = 'left';
+            // Prefix (Centered)
+            ctx.textAlign = 'center';
             const timeText = `${event.hora}H`;
-            ctx.fillStyle = '#0000FF';
-            ctx.fillText(timeText, drawX, drawY);
+            const typeText = event.tipo !== 'Baile Normal' ? ` | ${event.tipo.toUpperCase()}` : '';
+            const fullPrefix = timeText + typeText;
             
-            let currentX = drawX + ctx.measureText(timeText).width + 8;
-            if (event.tipo !== 'Baile Normal') {
+            ctx.font = `bold ${eventFontSize * 0.9}px ${TITLE_FONT}`;
+            ctx.fillStyle = '#0000FF';
+            // Render parts centered
+            const prefixW = ctx.measureText(fullPrefix).width;
+            let startX = centerX - prefixW / 2;
+            
+            ctx.textAlign = 'left';
+            ctx.fillText(timeText, startX, drawY);
+            if (typeText) {
+                startX += ctx.measureText(timeText).width;
                 ctx.font = `${eventFontSize * 0.7}px ${TITLE_FONT}`;
                 ctx.fillStyle = '#666';
-                ctx.fillText(`| ${event.tipo.toUpperCase()}`, currentX, drawY);
+                ctx.fillText(typeText, startX, drawY);
             }
 
-            drawY += eventFontSize + 5;
+            drawY += eventFontSize + 10;
 
-            // Orchestra Name
+            // Orchestra (Centered)
             ctx.font = `${eventFontSize}px ${TITLE_FONT}`;
             ctx.fillStyle = '#000';
-            const orchestraText = event.orquesta;
+            ctx.textAlign = 'center';
             
+            const orchestraText = event.orquesta;
             const words = orchestraText.split(' ');
             let line = '';
             let lines = [];
             for(let n = 0; n < words.length; n++) {
                 let testLine = line + words[n] + ' ';
-                let metrics = ctx.measureText(testLine);
-                if (metrics.width > colWidth && n > 0) {
-                    lines.push(line);
+                if (ctx.measureText(testLine).width > colWidth && n > 0) {
+                    lines.push(line.trim());
                     line = words[n] + ' ';
                 } else {
                     line = testLine;
                 }
             }
-            lines.push(line);
+            lines.push(line.trim());
 
             lines.forEach(l => {
                 ctx.strokeStyle = '#FF0000';
                 ctx.lineWidth = 1;
-                ctx.strokeText(l.trim(), drawX, drawY);
-                ctx.fillText(l.trim(), drawX, drawY);
+                ctx.strokeText(l, centerX, drawY);
+                ctx.fillText(l, centerX, drawY);
                 drawY += eventFontSize + 5;
             });
 
             colY[colIdx] = drawY + 15;
         });
 
-        currentY = Math.max(colY[0], colY[1]) + 15;
+        currentY = Math.max(colY[0], colY[1]) + 20;
     });
 
-    // Footer - Fixed at bottom
     currentY = Math.max(currentY, canvasHeight - boxMargin - 40);
     ctx.font = `bold 28px ${BODY_FONT}`;
     ctx.textAlign = 'center';
@@ -356,7 +336,7 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
 }
 
 /**
- * Build a caption for the Telegram photo
+ * Build a caption
  */
 function buildCaption(lugar, municipio, eventCount) {
     let caption = `🎵 <b>VERBENAS${lugar ? ' ' + lugar.toUpperCase() + ',' : ''} ${municipio.toUpperCase()}</b>\n`;
@@ -366,96 +346,43 @@ function buildCaption(lugar, municipio, eventCount) {
 }
 
 /**
- * Main handler: reads queue, generates cartels, sends photos to Telegram
+ * Main handler
  */
 export default async function handler(req, res) {
     try {
         const db = getDb();
-
-        // 1. Read the queue
         const queueSnapshot = await db.ref('telegramPhotoQueue').once('value');
         const queue = queueSnapshot.val();
-
-        if (!queue || Object.keys(queue).length === 0) {
-            return res.status(200).json({ success: true, message: 'Queue empty, nothing to send.' });
-        }
-
-        // 2. Get all current events
+        if (!queue) return res.status(200).json({ success: true, message: 'Queue empty' });
         const allEvents = await getEvents();
-
-        // Cutoff: events from 2 days ago onwards
         const cutoff = new Date();
         cutoff.setDate(cutoff.getDate() - 2);
         cutoff.setHours(0, 0, 0, 0);
         const cutoffStr = cutoff.toISOString().split('T')[0];
-
-        const activeEvents = allEvents.filter(e =>
-            !e.cancelado && e.day >= cutoffStr
-        );
-
-        // 3. Process each queue entry
+        const activeEvents = allEvents.filter(e => !e.cancelado && e.day >= cutoffStr);
         const results = [];
         const queueEntries = Object.entries(queue);
-
         for (const [queueId, entry] of queueEntries) {
             const { lugar, municipio } = entry;
-
-            // Find matching events
-            const festivalEvents = activeEvents.filter(e =>
-                (e.lugar || '') === (lugar || '') && e.municipio === municipio
-            );
-
+            const festivalEvents = activeEvents.filter(e => (e.lugar || '') === (lugar || '') && e.municipio === municipio);
             if (festivalEvents.length === 0) {
-                console.log(`No events found for ${lugar || ''} ${municipio}, skipping.`);
-                // Remove from queue even if no events
                 await db.ref(`telegramPhotoQueue/${queueId}`).remove();
-                results.push({ label: entry.label, status: 'skipped', reason: 'no events' });
                 continue;
             }
-
-            // Sort events
-            festivalEvents.sort((a, b) =>
-                new Date(`${a.day}T${a.hora || '00:00'}`).getTime() -
-                new Date(`${b.day}T${b.hora || '00:00'}`).getTime()
-            );
-
-            // Try to get background image
+            festivalEvents.sort((a, b) => new Date(`${a.day}T${a.hora || '00:00'}`).getTime() - new Date(`${b.day}T${b.hora || '00:00'}`).getTime());
             const bgBuffer = await tryDownloadBackground(lugar, municipio);
-
-            // Generate cartel
             const cartelBuffer = await generateCartel(festivalEvents, lugar, municipio, bgBuffer);
-
-            // Build caption
             const caption = buildCaption(lugar, municipio, festivalEvents.length);
-
-            // Send to Telegram
             const sendResult = await sendTelegramPhoto(cartelBuffer, caption);
-
             if (sendResult.success) {
-                // Remove from queue
                 await db.ref(`telegramPhotoQueue/${queueId}`).remove();
                 results.push({ label: entry.label, status: 'sent' });
-                console.log(`✅ Cartel sent for ${entry.label}`);
-            } else {
-                results.push({ label: entry.label, status: 'error', error: sendResult.error });
-                console.error(`❌ Failed to send cartel for ${entry.label}:`, sendResult.error);
             }
-
-            // Small delay between sends to avoid Telegram rate limits
-            if (queueEntries.indexOf([queueId, entry]) < queueEntries.length - 1) {
-                await new Promise(resolve => setTimeout(resolve, 1000));
-            }
+            if (queueEntries.indexOf([queueId, entry]) < queueEntries.length - 1) await new Promise(r => setTimeout(r, 1000));
         }
-
-        const sentCount = results.filter(r => r.status === 'sent').length;
-        return res.status(200).json({
-            success: true,
-            sent: sentCount,
-            total: queueEntries.length,
-            results
-        });
+        return res.status(200).json({ success: true, results });
     } catch (error) {
-        console.error('Error in telegram-photo handler:', error);
+        console.error('Error:', error);
         return res.status(500).json({ success: false, error: error.message });
     }
 }
