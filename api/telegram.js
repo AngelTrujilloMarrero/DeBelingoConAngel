@@ -215,7 +215,11 @@ async function handleNotifyChange(req, res) {
     return res.status(200).json(await sendTelegramMessage(message));
 }
 
+import { applySecurityHeaders } from './_cors.js';
+
 export default async function handler(req, res) {
+    if (applySecurityHeaders(req, res)) return;
+
     if (req.method === 'POST') return handleNotifyChange(req, res);
     const { action } = req.query;
     if (action === 'weekly') return handleWeekly(req, res);
