@@ -100,7 +100,6 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
     const WIDTH = 1080;
     const PADDING = 30;
 
-    // Font sizes optimized
     const isSmallFestival = festivalEvents.length <= 5;
     const titleFontSize = Math.round(24 * 3.2); 
     const subtitleFontSize = Math.round(24 * 2.5);
@@ -121,18 +120,18 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
     const sortedDays = Object.keys(eventsByDay).sort();
     
     // Height estimation
-    let contentHeight = PADDING + 120;
+    let contentHeight = PADDING + 150;
     contentHeight += titleFontSize + (lugar ? subtitleFontSize + 10 : 0);
     
     sortedDays.forEach(dayKey => {
-        contentHeight += dayFontSize + 45;
+        contentHeight += dayFontSize + 50;
         const dayEvents = eventsByDay[dayKey];
         const useColumns = dayEvents.length > 1;
         const rows = useColumns ? Math.ceil(dayEvents.length / 2) : dayEvents.length;
         contentHeight += rows * (isSmallFestival ? 150 : 120);
-        contentHeight += 25;
+        contentHeight += 30;
     });
-    contentHeight += 100;
+    contentHeight += 120;
 
     const canvasHeight = Math.max(1080, contentHeight);
     const canvas = createCanvas(WIDTH, canvasHeight);
@@ -224,7 +223,7 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
         drawTitleText(subtitleText, currentY, subtitleFontSize);
     }
 
-    currentY = pillY + pillH + 40;
+    currentY = pillY + pillH + 70; // Added more top margin for the first day
 
     // Days Loop
     sortedDays.forEach(dayKey => {
@@ -271,11 +270,10 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
             ctx.roundRect(baseX - 15, drawY - eventFontSize, colWidth + 30, eventFontSize + (isSmallFestival ? 80 : 60), 15);
             ctx.fill();
 
-            // Prefix (Centered)
+            // Prefix
             ctx.textAlign = 'center';
             const timeText = `${event.hora}H`;
             const typeText = event.tipo !== 'Baile Normal' ? ` | ${event.tipo.toUpperCase()}` : '';
-            const fullPrefix = timeText + typeText;
             
             ctx.font = `bold ${eventFontSize * 0.9}px ${TITLE_FONT}`;
             const timeW = ctx.measureText(timeText).width;
@@ -296,13 +294,13 @@ async function generateCartel(festivalEvents, lugar, municipio, backgroundBuffer
             if (typeText) {
                 startX += timeW + 5;
                 ctx.font = `${eventFontSize * 0.75}px ${TITLE_FONT}`;
-                ctx.fillStyle = '#222'; // Darker color as requested
+                ctx.fillStyle = '#222';
                 ctx.fillText(typeText, startX, drawY);
             }
 
             drawY += eventFontSize + 15;
 
-            // Orchestra (Centered)
+            // Orchestra
             ctx.font = `${eventFontSize}px ${TITLE_FONT}`;
             ctx.fillStyle = '#000';
             ctx.textAlign = 'center';
