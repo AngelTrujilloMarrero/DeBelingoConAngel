@@ -7,6 +7,10 @@
       ".write": "true",
       ".validate": "newData.isNumber() && newData.val() <= 2000000 && newData.val() >= 0"
     },
+    "dailyVisits": {
+      ".read": true,
+      ".write": "true"
+    },
     "mapUsage": {
       ".read": true,
       ".write": "true"
