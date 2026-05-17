@@ -86,18 +86,19 @@ async function handleImgur(image, res) {
 export default async function handler(req, res) {
     if (applySecurityHeaders(req, res)) return;
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-    const { error: authError, status: authStatus } = await verifySecurity(req);
+    const { error: authError, status: authStatus, claims } = await verifySecurity(req);
     if (authError) return res.status(authStatus).json({ error: authError });
 
     const { image, provider = 'imgbb' } = req.body;
     if (!image || !isValidImageSignature(image)) return res.status(400).json({ error: 'Invalid image data' });
 
-    // Si Cloudinary está configurado en las variables de entorno, lo usamos con prioridad absoluta
+    // Si Cloudinary está configurado en las variables de entorno y es una petición interna del Admin (o se solicita explícitamente)
+    const isInternal = claims && claims.internal === true;
     const hasCloudinary = (process.env.APP_PRIVATE_KEY_Cloudinary || process.env.CLOUDINARY_API_KEY) && 
                          (process.env.APP_PRIVATE_SECRET_KEY_Cloudinary || process.env.CLOUDINARY_API_SECRET);
 
     try {
-        if (hasCloudinary) {
+        if (hasCloudinary && (isInternal || provider === 'cloudinary')) {
             return await handleCloudinary(image, res);
         }
         if (provider === 'imgur') return await handleImgur(image, res);
