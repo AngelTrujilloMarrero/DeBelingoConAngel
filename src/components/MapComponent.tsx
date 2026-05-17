@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 // CORRECCIÓN: Se renombra el icono 'Map' a 'MapIcon' para evitar conflictos con el objeto nativo Map de JS.
-import { Map as MapIcon, Navigation, AlertCircle, MapPin, Calendar, Clock, Search, Sparkles, Wand2, Loader2, Brain, Cpu } from 'lucide-react';
+import { Map as MapIcon, Navigation, AlertCircle, MapPin, Search, Loader2 } from 'lucide-react';
 import { Event } from '../types';
 import { geocodeAddress, municipioMapping, normalizarMunicipio } from '../utils/geocoding';
 import { checkLocalRateLimit, checkGlobalRateLimit } from '../utils/rateLimit';
@@ -20,10 +20,6 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
   const [isSearching, setIsSearching] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
-
-  // Estados para la IA de Belingo
-  const [isAiLoading, setIsAiLoading] = useState(false);
-  const [aiMessage, setAiMessage] = useState<string | null>(null);
 
   // Filter events for map display
   // Modified logic: "con 3 horas máxima pasadas el evento"
@@ -92,112 +88,6 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
     } finally {
       setIsSearching(false);
     }
-  };
-
-  const handleAiAnalysis = async () => {
-    if (!userLocation.trim()) return;
-
-    if (!token) {
-      alert("Por favor, espera a que se valide el captcha de seguridad.");
-      return;
-    }
-
-    // Límite local: 1 consulta por segundo
-    if (!checkLocalRateLimit('map_query_local', 1, 1000)) {
-      alert("Por favor, espera un segundo entre consultas.");
-      return;
-    }
-
-    // Límite global: 39 consultas al día (86400000 ms)
-    const isGlobalAllowed = await checkGlobalRateLimit('mapUsage', 39, 24 * 60 * 60 * 1000);
-    if (!isGlobalAllowed) {
-      alert("Se ha alcanzado el límite global de consultas de Ángel IA por hoy (máximo 39). Inténtalo de nuevo mañana.");
-      return;
-    }
-
-    setIsAiLoading(true);
-    setAiMessage(null);
-
-    const maxRetries = 2;
-    let lastError: Error | null = null;
-
-    for (let attempt = 0; attempt <= maxRetries; attempt++) {
-      try {
-        if (attempt > 0) {
-          console.log(`[Angel IA] Reintento ${attempt}/${maxRetries}...`);
-          setAiMessage("⏳ Verificando seguridad, un momentito...");
-          await new Promise(resolve => setTimeout(resolve, 1500));
-        }
-
-        const currentToken = attempt > 0 ? (typeof window !== 'undefined' && (window as any)._turnstileToken) : token;
-
-        if (!currentToken) {
-          throw new Error("Token de seguridad no disponible. Por favor, recarga la página.");
-        }
-
-        const now = new Date();
-        const cutOffTime = new Date(now.getTime() - 3 * 60 * 60 * 1000);
-
-        const upcomingEvents = events
-          .filter(e => {
-            if (e.cancelado) return false;
-            const eventDateTime = new Date(`${e.day}T${e.hora}`);
-            return eventDateTime >= cutOffTime;
-          })
-          .sort((a, b) => new Date(`${a.day}T${a.hora}`).getTime() - new Date(`${b.day}T${b.hora}`).getTime())
-          .slice(0, 8);
-
-        const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL || 'https://de-belingo-con-angel-debelingoconangels-projects.vercel.app';
-        const prompt = `Usuario en: "${userLocation}".
-        
-        Listado de Verbenas:
-        ${upcomingEvents.length > 0
-            ? upcomingEvents.map(e => `- ${e.day} a las ${e.hora}: ${e.orquesta} en ${e.municipio} (${e.lugar})`).join('\n')
-            : "No hay verbenas próximas."}
-        
-        Instrucción: Basándote SOLO en este listado, indica al usuario cuáles son las más próximas en tiempo y cuáles le quedan más cerca de "${userLocation}". Sé breve, concreto y ve al grano.`;
-
-        const { getSecurityHeaders } = await import('../utils/firebase');
-        const headers = await getSecurityHeaders(currentToken);
-
-        const response = await fetch(`${API_BASE_URL}/api/ai`, {
-          method: 'POST',
-          headers,
-          body: JSON.stringify({ prompt })
-        });
-
-        const text = await response.text();
-        let finalData;
-        try { finalData = JSON.parse(text); } catch { finalData = { error: `Error del servidor (${response.status})` }; }
-
-        if (response.ok && finalData.response) {
-          setAiMessage(finalData.response);
-          resetToken();
-          setIsAiLoading(false);
-          return;
-        }
-
-        const errorMsg = finalData.error || "Se me trabó el magua";
-        throw new Error(errorMsg);
-      } catch (err: any) {
-        console.error(`[Angel IA] Error en intento ${attempt + 1}:`, err);
-        lastError = err;
-
-        if (err.message?.includes('401') || err.message?.includes('Unauthorized') || err.message?.includes('Security check failed')) {
-          if (attempt < maxRetries) {
-            resetToken();
-            continue;
-          }
-        } else {
-          break;
-        }
-      }
-    }
-
-    resetToken();
-    setIsAiLoading(false);
-    const errorMessage = lastError?.message || "Error desconocido";
-    setAiMessage(`¡Ñoos! ${errorMessage}. ¡Inténtalo de nuevo, puntal!`);
   };
 
   useEffect(() => {
@@ -376,8 +266,8 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
 
   return (
     <div className="space-y-4">
-      {/* Search & AI Block */}
-      <div className="bg-gray-900 border-4 border-black p-6 rounded-2xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)] space-y-4">
+      {/* Search Block */}
+      <div className="bg-gray-900 border-4 border-black p-6 rounded-2xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
         <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
           <label htmlFor="user-location-input" className="text-white font-black flex items-center gap-2 text-xl uppercase tracking-tighter">
             <MapPin className="w-6 h-6 text-yellow-400" />
@@ -389,61 +279,20 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
               type="text"
               placeholder="Tu municipio (ej: Arafo)..."
               value={userLocation}
-              onChange={(e) => {
-                setUserLocation(e.target.value);
-                if (!e.target.value) setAiMessage(null);
-              }}
+              onChange={(e) => setUserLocation(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleUserLocationSearch()}
               className="w-full md:w-64 px-4 py-3 rounded-xl bg-gray-800 text-white border-2 border-yellow-400/50 focus:outline-none focus:border-yellow-400 font-bold placeholder-gray-500 transition-all"
             />
-            <div className="flex gap-2 w-full sm:w-auto">
-              <button
-                onClick={handleUserLocationSearch}
-                disabled={isSearching}
-                className="flex-1 sm:flex-initial justify-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-black transition-all transform active:scale-95 flex items-center gap-2 disabled:opacity-50 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
-              >
-                {isSearching ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
-                BUSCAR
-              </button>
-              <button
-                onClick={handleAiAnalysis}
-                disabled={isAiLoading || !userLocation.trim()}
-                className="flex-1 sm:flex-initial justify-center bg-yellow-400 hover:bg-yellow-500 text-black px-6 py-3 rounded-xl font-black transition-all transform active:scale-95 flex items-center gap-2 disabled:opacity-50 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
-              >
-                {isAiLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : <Brain className="w-5 h-5" />}
-                ÁNGEL IA
-              </button>
-            </div>
+            <button
+              onClick={handleUserLocationSearch}
+              disabled={isSearching}
+              className="flex-1 sm:flex-initial justify-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-black transition-all transform active:scale-95 flex items-center gap-2 disabled:opacity-50 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
+            >
+              {isSearching ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
+              BUSCAR
+            </button>
           </div>
         </div>
-
-        {/* AI Response Integrated */}
-        {aiMessage && (
-          <div className="animate-fadeInUp bg-yellow-400 border-4 border-black p-5 rounded-xl shadow-[6px_6px_0px_0px_rgba(0,0,0,1)] relative group" aria-live="polite">
-            <div className="flex items-start gap-4">
-              <div className="bg-black p-3 rounded-lg flex-shrink-0 rotate-2 group-hover:rotate-0 transition-transform">
-                <Sparkles className="w-6 h-6 text-yellow-400 animate-pulse" />
-              </div>
-              <div className="flex-1">
-                <div className="flex items-center justify-between mb-2">
-                  <h4 className="text-black font-black text-lg uppercase tracking-tighter flex items-center gap-2">
-                    <Wand2 className="w-4 h-4" />
-                    CONSEJO DE ÁNGEL (IA)
-                  </h4>
-                  <button
-                    onClick={() => setAiMessage(null)}
-                    className="bg-black text-white w-6 h-6 rounded-full flex items-center justify-center font-bold hover:scale-110 transition-transform"
-                  >
-                    ✕
-                  </button>
-                </div>
-                <p className="text-black text-lg font-black leading-snug italic whitespace-pre-wrap overflow-y-auto max-h-[500px] pr-2 scrollbar-thin scrollbar-thumb-black/20">
-                  "{aiMessage}"
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-lg text-center font-bold shadow-lg">
