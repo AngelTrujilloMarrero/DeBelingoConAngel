@@ -132,7 +132,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
         .slice(0, 8);
 
       // Usar URL absoluta de Vercel para evitar errores de JSON (SyntaxError <)
-      const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL || 'https://de-belingo-con-angel.vercel.app';
+      const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL || 'https://de-belingo-con-angel-debelingoconangels-projects.vercel.app';
       const prompt = `Usuario en: "${userLocation}".
       
       Listado de Verbenas:

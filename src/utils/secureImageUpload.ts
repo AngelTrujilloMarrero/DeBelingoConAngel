@@ -9,13 +9,7 @@ import { getSecurityHeaders } from './firebase';
 const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/jpg'];
 
-// Determinar la URL base de la API según el entorno
-// En producción, usar la URL de Vercel (backend separado)
-// En desarrollo, usar rutas relativas (Vercel dev)
-const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL ||
-    (import.meta.env.PROD
-        ? 'https://de-belingo-con-angel.vercel.app'
-        : '');
+const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL || 'https://de-belingo-con-angel-debelingoconangels-projects.vercel.app';
 
 export interface UploadProgress {
     loaded: number;

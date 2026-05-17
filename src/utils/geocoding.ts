@@ -92,8 +92,7 @@ export async function geocodeAddress(address: string, token?: string): Promise<C
   }
 
   // Determinar URL base (igual que en useAemetAlerts.ts)
-  const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL ||
-    (import.meta.env.PROD ? 'https://de-belingo-con-angel.vercel.app' : '');
+  const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL || 'https://de-belingo-con-angel-debelingoconangels-projects.vercel.app';
 
   const proxyUrl = `${API_BASE_URL}/api/geocoding?q=${encodeURIComponent(address)}`;
 
