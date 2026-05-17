@@ -49,7 +49,26 @@ export const TurnstileProvider: React.FC<TurnstileProviderProps> = ({ children }
 
     const resetToken = useCallback(() => {
         setToken(null);
+        if (typeof window !== 'undefined') {
+            (window as any)._turnstileToken = null;
+        }
         turnstileRef.current?.reset();
+    }, []);
+
+    // Exponer función global para que upload pueda forzar re-verificación
+    React.useEffect(() => {
+        if (typeof window !== 'undefined') {
+            (window as any)._resetTurnstile = () => {
+                setToken(null);
+                (window as any)._turnstileToken = null;
+                turnstileRef.current?.reset();
+            };
+        }
+        return () => {
+            if (typeof window !== 'undefined') {
+                delete (window as any)._resetTurnstile;
+            }
+        };
     }, []);
 
     return (

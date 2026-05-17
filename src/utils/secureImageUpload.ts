@@ -11,24 +11,33 @@ const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/jpg'];
 
 const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL || 'https://de-belingo-con-angel-debelingoconangels-projects.vercel.app';
 
-async function waitForTurnstileToken(timeoutMs: number = 10000): Promise<string | null> {
-    if (typeof window !== 'undefined' && (window as any)._turnstileToken) {
-        return (window as any)._turnstileToken;
-    }
+async function waitForTurnstileToken(): Promise<void> {
+    const poll = (timeout: number): Promise<string | null> => {
+        return new Promise((resolve) => {
+            const start = Date.now();
+            const check = () => {
+                if (typeof window !== 'undefined' && (window as any)._turnstileToken) {
+                    return resolve((window as any)._turnstileToken);
+                }
+                if (Date.now() - start > timeout) {
+                    return resolve(null);
+                }
+                setTimeout(check, 200);
+            };
+            check();
+        });
+    };
 
-    return new Promise((resolve) => {
-        const start = Date.now();
-        const check = () => {
-            if (typeof window !== 'undefined' && (window as any)._turnstileToken) {
-                return resolve((window as any)._turnstileToken);
-            }
-            if (Date.now() - start > timeoutMs) {
-                return resolve(null);
-            }
-            setTimeout(check, 200);
-        };
-        check();
-    });
+    let token = await poll(5000);
+    if (token) return;
+
+    if (typeof window !== 'undefined' && (window as any)._resetTurnstile) {
+        (window as any)._resetTurnstile();
+    }
+    token = await poll(5000);
+    if (token) return;
+
+    throw new ImageUploadError('Error de verificación de seguridad. Recarga la página e inténtalo de nuevo.');
 }
 
 export interface UploadProgress {
