@@ -273,8 +273,17 @@ function buscarLugar(lugar: string): Coordinates | null {
 
 export async function geocodeAddress(address: string, token?: string): Promise<Coordinates | null> {
   const parts = address.split(',').map(p => p.trim());
-  const lugar = parts[0];
-  const municipio = parts[1] || '';
+  let lugar = parts[0];
+  let municipio = parts[1] || '';
+
+  // Si parts[0] es el nombre de un municipio, es un evento sin lugar especifico
+  const esMunicipio = Object.keys(municipioCoordinates).some(key =>
+    lugar.toLowerCase().includes(key.toLowerCase())
+  );
+  if (esMunicipio) {
+    municipio = lugar;
+    lugar = '';
+  }
 
   if (lugar) {
     const lugarCoords = buscarLugar(lugar);
@@ -288,8 +297,8 @@ export async function geocodeAddress(address: string, token?: string): Promise<C
 
   const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL || 'https://de-belingo-con-angel-debelingoconangels-projects.vercel.app';
   const query = lugar && municipio
-    ? `${lugar}, ${municipioMapping[municipio] || municipio}, Tenerife, España`
-    : `${address}, Tenerife, Santa Cruz de Tenerife, Canarias, España`;
+    ? `${lugar}, ${municipio}, Tenerife, España`
+    : `${address}, Tenerife`;
   const proxyUrl = `${API_BASE_URL}/api/geocoding?q=${encodeURIComponent(query)}`;
 
   try {
@@ -304,9 +313,11 @@ export async function geocodeAddress(address: string, token?: string): Promise<C
     console.error("Error en geocodificación:", error);
   }
 
-  for (const [key, coords] of Object.entries(municipioCoordinates)) {
-    if (address.toLowerCase().includes(key.toLowerCase())) {
-      return coords;
+  if (municipio) {
+    for (const [key, coords] of Object.entries(municipioCoordinates)) {
+      if (municipio.toLowerCase().includes(key.toLowerCase()) || key.toLowerCase().includes(municipio.toLowerCase())) {
+        return coords;
+      }
     }
   }
 
