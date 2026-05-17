@@ -249,15 +249,25 @@ export const lugarCoordinates: Record<string, Coordinates> = {
   "Calle Dr. González": { lat: 28.4682, lng: -16.2546 },
 };
 
+function normalizarTexto(texto: string): string {
+  return texto.toLowerCase()
+    .replace(/á/g, 'a').replace(/é/g, 'e').replace(/í/g, 'i')
+    .replace(/ó/g, 'o').replace(/ú/g, 'u').replace(/ü/g, 'u')
+    .replace(/ñ/g, 'n')
+    .replace(/[^a-z0-9]/g, '')
+    .trim();
+}
+
 function buscarLugar(lugar: string): Coordinates | null {
-  const lugarLower = lugar.toLowerCase().trim();
+  const norm = normalizarTexto(lugar);
+  if (norm.length < 3) return null;
 
   for (const [key, coords] of Object.entries(lugarCoordinates)) {
-    const keyLower = key.toLowerCase();
-    if (lugarLower === keyLower || lugarLower.includes(keyLower) || keyLower.includes(lugarLower)) {
+    if (normalizarTexto(key) === norm) {
       return coords;
     }
   }
+
   return null;
 }
 
@@ -271,9 +281,11 @@ export async function geocodeAddress(address: string, token?: string): Promise<C
     if (lugarCoords) return lugarCoords;
   }
 
-  for (const [key, coords] of Object.entries(municipioCoordinates)) {
-    if (address.toLowerCase().includes(key.toLowerCase())) {
-      return coords;
+  if (!lugar) {
+    for (const [key, coords] of Object.entries(municipioCoordinates)) {
+      if (address.toLowerCase().includes(key.toLowerCase())) {
+        return coords;
+      }
     }
   }
 
