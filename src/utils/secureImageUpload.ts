@@ -6,10 +6,30 @@
 import { ImageInfo } from '../types/messages';
 import { getSecurityHeaders } from './firebase';
 
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024;
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/jpg'];
 
 const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL || 'https://de-belingo-con-angel-debelingoconangels-projects.vercel.app';
+
+async function waitForTurnstileToken(timeoutMs: number = 10000): Promise<string | null> {
+    if (typeof window !== 'undefined' && (window as any)._turnstileToken) {
+        return (window as any)._turnstileToken;
+    }
+
+    return new Promise((resolve) => {
+        const start = Date.now();
+        const check = () => {
+            if (typeof window !== 'undefined' && (window as any)._turnstileToken) {
+                return resolve((window as any)._turnstileToken);
+            }
+            if (Date.now() - start > timeoutMs) {
+                return resolve(null);
+            }
+            setTimeout(check, 200);
+        };
+        check();
+    });
+}
 
 export interface UploadProgress {
     loaded: number;
@@ -83,6 +103,8 @@ export async function uploadToImgBB(file: File): Promise<string> {
     try {
         validateFile(file);
         const base64 = await readFileAsBase64(file);
+
+        await waitForTurnstileToken();
         const headers = await getSecurityHeaders();
 
         const response = await fetch(`${API_BASE_URL}/api/upload-imgbb`, {
@@ -133,6 +155,8 @@ export async function uploadToImgur(
         }
 
         const base64 = await readFileAsBase64(file);
+
+        await waitForTurnstileToken();
         const headers = await getSecurityHeaders();
 
         const response = await fetch(`${API_BASE_URL}/api/upload-imgur`, {

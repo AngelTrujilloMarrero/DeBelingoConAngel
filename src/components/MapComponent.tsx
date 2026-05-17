@@ -213,7 +213,7 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
         <div className="flex items-center justify-center gap-2">
           {/* CORRECCIÓN: Usar el componente renombrado 'MapIcon' */}
           <MapIcon className="w-6 h-6" />
-          <span className="text-lg">UBICACIÓN APROXIMADA DE LAS VERBENAS</span>
+          <span className="text-lg">UBICACIÓN DE LAS VERBENAS</span>
           <Navigation className="w-6 h-6" />
         </div>
       </div>
