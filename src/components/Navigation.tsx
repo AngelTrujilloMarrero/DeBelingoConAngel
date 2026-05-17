@@ -13,7 +13,6 @@ const Navigation: React.FC = () => {
       <div className="px-0 sm:px-4">
         <div className="flex justify-center items-center flex-nowrap gap-0 min-[380px]:gap-0.5 sm:gap-2">
           <NavLink to="/" className={navLinkClass}>Eventos</NavLink>
-          <NavLink to="/mapa" className={navLinkClass}>Mapa</NavLink>
           <NavLink to="/estadisticas" className={navLinkClass}>Estadísticas</NavLink>
           <NavLink to="/formaciones" className={navLinkClass}>
             <span className="hidden sm:inline">Formaciones</span>
