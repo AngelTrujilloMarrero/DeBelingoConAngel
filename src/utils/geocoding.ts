@@ -87,7 +87,6 @@ export const lugarCoordinates: Record<string, Coordinates> = {
   "Taganana": { lat: 28.5333, lng: -16.2667 },
   "Punta Del Hidalgo": { lat: 28.5500, lng: -16.2833 },
   "Las Mercedes": { lat: 28.5000, lng: -16.2833 },
-  "La Laguna": { lat: 28.4667, lng: -16.3667 },
   "Plaza El Cristo": { lat: 28.4650, lng: -16.3150 },
   "Plaza Tranvia": { lat: 28.4580, lng: -16.3160 },
   "San Diego": { lat: 28.4700, lng: -16.3400 },
@@ -138,14 +137,12 @@ export const lugarCoordinates: Record<string, Coordinates> = {
   "El Fraile": { lat: 28.0600, lng: -16.6800 },
   "Polideportivo Las Chafiras": { lat: 28.0833, lng: -16.6500 },
   "Las Chafiras": { lat: 28.0833, lng: -16.6500 },
-  "Arona": { lat: 28.0377, lng: -16.6904 },
 
   // GRANADILLA DE ABONA
   "Abrigos": { lat: 28.0833, lng: -16.5500 },
   "Medano": { lat: 28.0667, lng: -16.5333 },
   "El Medano": { lat: 28.0667, lng: -16.5333 },
   "San Isidro": { lat: 28.0833, lng: -16.5500 },
-  "Granadilla": { lat: 28.1021, lng: -16.5577 },
   "Charco Del Pino": { lat: 28.1000, lng: -16.5333 },
   "Los Abrigos": { lat: 28.0833, lng: -16.5500 },
 
@@ -163,28 +160,21 @@ export const lugarCoordinates: Record<string, Coordinates> = {
   "Alcalá": { lat: 28.2167, lng: -16.8167 },
   "Chío": { lat: 28.2000, lng: -16.7667 },
   "Playa San Juan": { lat: 28.2167, lng: -16.8000 },
-  "Guía": { lat: 28.1907, lng: -16.7965 },
   "Alcalá Playa": { lat: 28.2167, lng: -16.8167 },
 
   // CANDELARIA
   "Cuevecitas": { lat: 28.3500, lng: -16.3667 },
   "Igueste": { lat: 28.3833, lng: -16.3333 },
-  "Arafo": { lat: 28.3463, lng: -16.3989 },
-  "Candelaria": { lat: 28.3581, lng: -16.3843 },
-  "Barranco Hondo": { lat: 28.3600, lng: -16.3700 },
+  "Barranco Hondo Candelaria": { lat: 28.3600, lng: -16.3700 },
   "Chacorche": { lat: 28.3833, lng: -16.3167 },
   "Punta Larga": { lat: 28.3667, lng: -16.3500 },
   "Las Caletas": { lat: 28.3500, lng: -16.3500 },
-  "Güímar": { lat: 28.2737, lng: -16.4083 },
 
   // LA OROTAVA
-  "La Orotava": { lat: 28.3833, lng: -16.5167 },
-  "Puerto De La Cruz": { lat: 28.4167, lng: -16.5500 },
   "Plaza De La Constitución": { lat: 28.3850, lng: -16.5200 },
   "Plaza Del Ayuntamiento": { lat: 28.3850, lng: -16.5200 },
   "La Florida": { lat: 28.3900, lng: -16.5300 },
   "El Pinillo": { lat: 28.4000, lng: -16.5400 },
-  "Los Realejos": { lat: 28.3667, lng: -16.6333 },
   "Martín": { lat: 28.3900, lng: -16.5100 },
   "La Perdoma": { lat: 28.3900, lng: -16.5000 },
   "El Calvario": { lat: 28.3800, lng: -16.5200 },
@@ -197,92 +187,55 @@ export const lugarCoordinates: Record<string, Coordinates> = {
   "El Mocanal": { lat: 28.3700, lng: -16.6100 },
 
   // TACORONTE
-  "Tacoronte": { lat: 28.4667, lng: -16.4167 },
-  "El Sauzal": { lat: 28.4735, lng: -16.4363 },
   "Guayonje": { lat: 28.4600, lng: -16.4100 },
   "El Socorro": { lat: 28.4800, lng: -16.4300 },
-  "La Laguna": { lat: 28.4667, lng: -16.3667 },
-
-  // LA MATANZA / LA VICTORIA
-  "Matanza": { lat: 28.4500, lng: -16.4500 },
-  "Victoria": { lat: 28.4328, lng: -16.4674 },
-  "La Matanza": { lat: 28.4500, lng: -16.4500 },
-  "La Victoria": { lat: 28.4328, lng: -16.4674 },
 
   // GARACHICO
   "Caleta De Interian": { lat: 28.3667, lng: -16.7833 },
-  "Garachico": { lat: 28.3605, lng: -16.7612 },
   "El Guincho": { lat: 28.3600, lng: -16.7600 },
 
   // ICOD DE LOS VINOS
   "Plaza Andrés": { lat: 28.3670, lng: -16.6999 },
   "Icod El Alto": { lat: 28.3500, lng: -16.6833 },
-  "Icod": { lat: 28.3670, lng: -16.6999 },
   "San Marcos": { lat: 28.3833, lng: -16.7167 },
   "El Amparo": { lat: 28.3600, lng: -16.6800 },
 
   // ADEJE
   "Armeñime": { lat: 28.1167, lng: -16.7667 },
-  "Adeje": { lat: 28.1263, lng: -16.7433 },
-  "Costa Adeje": { lat: 28.0700, lng: -16.7300 },
   "La Caleta": { lat: 28.0700, lng: -16.7300 },
-  "Tejina": { lat: 28.1300, lng: -16.7500 },
+  "Tejina Adeje": { lat: 28.1300, lng: -16.7500 },
   "El Duque": { lat: 28.0700, lng: -16.7400 },
   "Torviscas": { lat: 28.0750, lng: -16.7350 },
   "Fañabé": { lat: 28.0650, lng: -16.7300 },
 
   // SAN MIGUEL DE ABONA
   "Guargacho": { lat: 28.0833, lng: -16.6167 },
-  "San Miguel": { lat: 28.0833, lng: -16.6333 },
   "Amarilla Golf": { lat: 28.0500, lng: -16.6000 },
   "El Roque": { lat: 28.0700, lng: -16.6200 },
 
   // TEGUESTE
   "Plaza San Marcos": { lat: 28.5167, lng: -16.3333 },
-  "Tegueste": { lat: 28.5167, lng: -16.3333 },
   "Tegueste Bajo": { lat: 28.5100, lng: -16.3300 },
 
   // EL TANQUE
   "Plaza Cristo Del Calvario": { lat: 28.3333, lng: -16.7833 },
-  "Tanque": { lat: 28.3333, lng: -16.7833 },
   "Ruiz": { lat: 28.3300, lng: -16.7900 },
 
   // BUENAVISTA DEL NORTE
-  "Buenavista": { lat: 28.3424, lng: -16.8722 },
   "Campanario": { lat: 28.3400, lng: -16.8700 },
 
   // LOS SILOS
-  "Silos": { lat: 28.3662, lng: -16.8164 },
   "Los Silos": { lat: 28.3662, lng: -16.8164 },
 
   // GÜÍMAR
-  "Güímar": { lat: 28.2737, lng: -16.4083 },
   "Chacona": { lat: 28.2667, lng: -16.3833 },
   "La Esperanza": { lat: 28.2800, lng: -16.4000 },
 
   // EL ROSARIO
-  "Rosario": { lat: 28.4500, lng: -16.3667 },
-  "Radazul": { lat: 28.4667, lng: -16.2167 },
   "Bailadores": { lat: 28.4550, lng: -16.2100 },
 
   // LA GUANCHA
   "Santa Catalina": { lat: 28.3800, lng: -16.6600 },
-  "Guancha": { lat: 28.3789, lng: -16.6604 },
-
-  // FASNIA
-  "Fasnia": { lat: 28.2319, lng: -16.4421 },
-
-  // ARAFO
-  "Arafo": { lat: 28.3463, lng: -16.3989 },
-
-  // SANTA ÚRSULA
-  "Santa Úrsula": { lat: 28.4333, lng: -16.5000 },
-
-  // SAN JUAN DE LA RAMBLA
-  "San Juan Rambla": { lat: 28.3833, lng: -16.6500 },
-
-  // VILAFLOR
-  "Vilaflor": { lat: 28.1000, lng: -16.6333 },
 
   // PLAZAS Y LUGARES ESPECÍFICOS
   "Plaza": { lat: 28.4682, lng: -16.2546 },
