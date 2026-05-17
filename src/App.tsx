@@ -67,7 +67,7 @@ function AppContent() {
             <Route path="/mapa" element={<MapaPage events={events} />} />
             <Route path="/estadisticas" element={<EstadisticasPage events={events} />} />
             <Route path="/formaciones" element={<FormacionesPage events={events} />} />
-            <Route path="/redes" element={<RedesPage />} />
+            <Route path="/redes" element={<RedesPage events={events} />} />
             <Route path="/privacidad" element={<PrivacidadPage />} />
             <Route path="/terminos" element={<TerminosPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />

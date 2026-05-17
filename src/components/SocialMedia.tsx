@@ -1,6 +1,9 @@
 import React from 'react';
 import { MessageCircle, Heart, BookOpen, Scroll, Music2, Globe } from 'lucide-react';
 import { socialFollowersRef, onValue, set, get } from '../utils/firebase';
+import MapComponent from './MapComponent';
+import TaxiInfo from './TaxiInfo';
+import { Event } from '../types';
 
 interface SocialLink {
   name: string;
@@ -8,6 +11,10 @@ interface SocialLink {
   icon: React.ComponentType<{ className?: string }>;
   color: string;
   hoverColor: string;
+}
+
+interface SocialMediaProps {
+  events?: Event[];
 }
 
 interface FollowersData {
@@ -27,7 +34,7 @@ const DEFAULT_FOLLOWERS: FollowersData = {
   lastUpdated: '2026-02-21'
 };
 
-const SocialMedia: React.FC = () => {
+const SocialMedia: React.FC<SocialMediaProps> = ({ events = [] }) => {
   const [followers, setFollowers] = React.useState<FollowersData>(DEFAULT_FOLLOWERS);
   const [loading, setLoading] = React.useState(true);
   const [dataSource, setDataSource] = React.useState<'firebase' | 'fallback'>('fallback');
@@ -263,6 +270,13 @@ const SocialMedia: React.FC = () => {
             </div>
           </div>
         </div>
+      </div>
+
+      <div className="mt-8">
+        <MapComponent events={events} />
+      </div>
+      <div className="mt-4">
+        <TaxiInfo />
       </div>
 
       {/* Estilos adicionales */}
