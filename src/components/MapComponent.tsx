@@ -118,58 +118,86 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
     setIsAiLoading(true);
     setAiMessage(null);
 
-    try {
-      const now = new Date();
-      const cutOffTime = new Date(now.getTime() - 3 * 60 * 60 * 1000); // 3h margin
+    const maxRetries = 2;
+    let lastError: Error | null = null;
 
-      const upcomingEvents = events
-        .filter(e => {
-          if (e.cancelado) return false;
-          const eventDateTime = new Date(`${e.day}T${e.hora}`);
-          return eventDateTime >= cutOffTime;
-        })
-        .sort((a, b) => new Date(`${a.day}T${a.hora}`).getTime() - new Date(`${b.day}T${b.hora}`).getTime())
-        .slice(0, 8);
+    for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      try {
+        if (attempt > 0) {
+          console.log(`[Angel IA] Reintento ${attempt}/${maxRetries}...`);
+          setAiMessage("⏳ Verificando seguridad, un momentito...");
+          await new Promise(resolve => setTimeout(resolve, 1500));
+        }
 
-      // Usar URL absoluta de Vercel para evitar errores de JSON (SyntaxError <)
-      const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL || 'https://de-belingo-con-angel-debelingoconangels-projects.vercel.app';
-      const prompt = `Usuario en: "${userLocation}".
-      
-      Listado de Verbenas:
-      ${upcomingEvents.length > 0
-          ? upcomingEvents.map(e => `- ${e.day} a las ${e.hora}: ${e.orquesta} en ${e.municipio} (${e.lugar})`).join('\n')
-          : "No hay verbenas próximas."}
-      
-      Instrucción: Basándote SOLO en este listado, indica al usuario cuáles son las más próximas en tiempo y cuáles le quedan más cerca de "${userLocation}". Sé breve, concreto y ve al grano.`;
+        const currentToken = attempt > 0 ? (typeof window !== 'undefined' && (window as any)._turnstileToken) : token;
 
-      const { getSecurityHeaders } = await import('../utils/firebase');
-      const headers = await getSecurityHeaders(token);
+        if (!currentToken) {
+          throw new Error("Token de seguridad no disponible. Por favor, recarga la página.");
+        }
 
-      const response = await fetch(`${API_BASE_URL}/api/ai`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({ prompt })
-      });
+        const now = new Date();
+        const cutOffTime = new Date(now.getTime() - 3 * 60 * 60 * 1000);
 
-      // Safe JSON parse (Vercel 504 returns HTML, not JSON)
-      const text = await response.text();
-      let finalData;
-      try { finalData = JSON.parse(text); } catch { finalData = { error: `Error del servidor (${response.status})` }; }
+        const upcomingEvents = events
+          .filter(e => {
+            if (e.cancelado) return false;
+            const eventDateTime = new Date(`${e.day}T${e.hora}`);
+            return eventDateTime >= cutOffTime;
+          })
+          .sort((a, b) => new Date(`${a.day}T${a.hora}`).getTime() - new Date(`${b.day}T${b.hora}`).getTime())
+          .slice(0, 8);
 
-      if (response.ok && finalData.response) {
-        setAiMessage(finalData.response);
-      } else {
+        const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL || 'https://de-belingo-con-angel-debelingoconangels-projects.vercel.app';
+        const prompt = `Usuario en: "${userLocation}".
+        
+        Listado de Verbenas:
+        ${upcomingEvents.length > 0
+            ? upcomingEvents.map(e => `- ${e.day} a las ${e.hora}: ${e.orquesta} en ${e.municipio} (${e.lugar})`).join('\n')
+            : "No hay verbenas próximas."}
+        
+        Instrucción: Basándote SOLO en este listado, indica al usuario cuáles son las más próximas en tiempo y cuáles le quedan más cerca de "${userLocation}". Sé breve, concreto y ve al grano.`;
+
+        const { getSecurityHeaders } = await import('../utils/firebase');
+        const headers = await getSecurityHeaders(currentToken);
+
+        const response = await fetch(`${API_BASE_URL}/api/ai`, {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({ prompt })
+        });
+
+        const text = await response.text();
+        let finalData;
+        try { finalData = JSON.parse(text); } catch { finalData = { error: `Error del servidor (${response.status})` }; }
+
+        if (response.ok && finalData.response) {
+          setAiMessage(finalData.response);
+          resetToken();
+          setIsAiLoading(false);
+          return;
+        }
+
         const errorMsg = finalData.error || "Se me trabó el magua";
         throw new Error(errorMsg);
+      } catch (err: any) {
+        console.error(`[Angel IA] Error en intento ${attempt + 1}:`, err);
+        lastError = err;
+
+        if (err.message?.includes('401') || err.message?.includes('Unauthorized') || err.message?.includes('Security check failed')) {
+          if (attempt < maxRetries) {
+            resetToken();
+            continue;
+          }
+        } else {
+          break;
+        }
       }
-    } catch (err: any) {
-      console.error("Error calling AI API:", err);
-      const errorMessage = err?.message || "Error desconocido";
-      setAiMessage(`¡Ñoos! ${errorMessage}. ¡Inténtalo de nuevo, puntal!`);
-    } finally {
-      resetToken(); // ALWAYS reset token, even on errors
-      setIsAiLoading(false);
     }
+
+    resetToken();
+    setIsAiLoading(false);
+    const errorMessage = lastError?.message || "Error desconocido";
+    setAiMessage(`¡Ñoos! ${errorMessage}. ¡Inténtalo de nuevo, puntal!`);
   };
 
   useEffect(() => {

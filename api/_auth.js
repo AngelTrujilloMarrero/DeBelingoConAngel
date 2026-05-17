@@ -55,17 +55,24 @@ export async function verifySecurity(req) {
     formData.append('response', turnstileToken);
     formData.append('remoteip', req.headers['x-forwarded-for'] || req.socket.remoteAddress);
 
+    console.log('[Turnstile] Verifying token with Cloudflare...');
+    console.log('[Turnstile] Secret key configured:', CLOUDFLARE_SECRET.substring(0, 4) + '...' + CLOUDFLARE_SECRET.substring(CLOUDFLARE_SECRET.length - 2));
+    console.log('[Turnstile] Token length:', turnstileToken?.length);
+
     const result = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
       body: formData,
       method: 'POST'
     });
 
     const outcome = await result.json();
+    console.log('[Turnstile] Verification result:', JSON.stringify(outcome));
+
     if (outcome.success) return { claims: { turnstile: true }, error: null };
 
+    console.error('[Turnstile] Verification failed. Error codes:', outcome['error-codes']);
     return { error: 'Unauthorized: Security check failed', status: 401 };
   } catch (err) {
-    console.error('Security verification error:', err.message);
+    console.error('[Turnstile] Security verification error:', err.message);
     return { error: 'Internal Security Error', status: 401 };
   }
 }
