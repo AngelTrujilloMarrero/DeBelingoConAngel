@@ -86,13 +86,19 @@ async function handleImgur(image, res) {
 export default async function handler(req, res) {
     if (applySecurityHeaders(req, res)) return;
     if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-    const { error: authError, status: authStatus, claims } = await verifySecurity(req);
-    if (authError) return res.status(authStatus).json({ error: authError });
+
+    // Rate limit: 20 uploads per hour per IP
+    const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    const { allowed, error: rateError } = await checkRateLimit(`upload:${clientIp}`, 20, 60 * 60 * 1000);
+    if (!allowed) return res.status(429).json({ error: rateError });
+
+    // Internal key bypass (admin)
+    const internalKey = req.headers['x-app-internal-key'];
+    const claims = (internalKey && internalKey === process.env.APP_INTERNAL_SECRET) ? { internal: true } : null;
 
     const { image, provider = 'imgbb' } = req.body;
     if (!image || !isValidImageSignature(image)) return res.status(400).json({ error: 'Invalid image data' });
 
-    // Si Cloudinary está configurado en las variables de entorno y es una petición interna del Admin (o se solicita explícitamente)
     const isInternal = claims && claims.internal === true;
     const hasCloudinary = (process.env.APP_PRIVATE_KEY_Cloudinary || process.env.CLOUDINARY_API_KEY) && 
                          (process.env.APP_PRIVATE_SECRET_KEY_Cloudinary || process.env.CLOUDINARY_API_SECRET);
