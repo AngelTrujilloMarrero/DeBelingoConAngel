@@ -1,6 +1,7 @@
 import { verifySecurity } from './_auth.js';
 import { applySecurityHeaders } from './_cors.js';
 import { checkRateLimit } from './_rateLimit.js';
+import crypto from 'crypto';
 
 function isValidImageSignature(base64Data) {
     if (!base64Data || typeof base64Data !== 'string') return false;
@@ -8,6 +9,45 @@ function isValidImageSignature(base64Data) {
     const header = clean.substring(0, 32);
     const validSignatures = ['/9j/', 'iVBORw0KGgo', 'R0lGODhl', 'R0lGODdh', 'UklGR'];
     return validSignatures.some(sig => header.startsWith(sig));
+}
+
+async function handleCloudinary(image, res) {
+    const cloudName = process.env.CLOUDINARY_CLOUD_NAME || 'dxqj8hkm3';
+    const apiKey = process.env.APP_PRIVATE_KEY_Cloudinary || process.env.CLOUDINARY_API_KEY;
+    const apiSecret = process.env.APP_PRIVATE_SECRET_KEY_Cloudinary || process.env.CLOUDINARY_API_SECRET;
+
+    if (!apiKey || !apiSecret) {
+        throw new Error('Cloudinary credentials (API Key or API Secret) not configured');
+    }
+
+    const timestamp = Math.floor(Date.now() / 1000);
+    const stringToSign = `timestamp=${timestamp}${apiSecret}`;
+    const signature = crypto.createHash('sha1').update(stringToSign).digest('hex');
+
+    const formData = new FormData();
+    const cleanBase64 = image.replace(/^data:image\/\w+;base64,/, '');
+    const dataUrl = `data:image/jpeg;base64,${cleanBase64}`;
+    
+    formData.append('file', dataUrl);
+    formData.append('api_key', apiKey);
+    formData.append('timestamp', timestamp.toString());
+    formData.append('signature', signature);
+
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/image/upload`, {
+        method: 'POST',
+        body: formData
+    });
+
+    const result = await response.json();
+    if (response.ok && result.secure_url) {
+        return res.status(200).json({ 
+            success: true, 
+            url: result.secure_url, 
+            publicId: result.public_id 
+        });
+    }
+
+    throw new Error(result.error?.message || 'Cloudinary upload failed');
 }
 
 async function handleImgBB(image, res) {
@@ -52,7 +92,14 @@ export default async function handler(req, res) {
     const { image, provider = 'imgbb' } = req.body;
     if (!image || !isValidImageSignature(image)) return res.status(400).json({ error: 'Invalid image data' });
 
+    // Si Cloudinary está configurado en las variables de entorno, lo usamos con prioridad absoluta
+    const hasCloudinary = (process.env.APP_PRIVATE_KEY_Cloudinary || process.env.CLOUDINARY_API_KEY) && 
+                         (process.env.APP_PRIVATE_SECRET_KEY_Cloudinary || process.env.CLOUDINARY_API_SECRET);
+
     try {
+        if (hasCloudinary) {
+            return await handleCloudinary(image, res);
+        }
         if (provider === 'imgur') return await handleImgur(image, res);
         return await handleImgBB(image, res);
     } catch (error) {
