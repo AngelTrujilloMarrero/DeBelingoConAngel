@@ -1,11 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
 import L from 'leaflet';
 // CORRECCIÓN: Se renombra el icono 'Map' a 'MapIcon' para evitar conflictos con el objeto nativo Map de JS.
-import { Map as MapIcon, Navigation, AlertCircle, MapPin, Search, Loader2 } from 'lucide-react';
+import { Map as MapIcon, Navigation, AlertCircle } from 'lucide-react';
 import { Event } from '../types';
 import { geocodeAddress, municipioMapping, normalizarMunicipio } from '../utils/geocoding';
-import { checkLocalRateLimit, checkGlobalRateLimit } from '../utils/rateLimit';
-import { useTurnstile } from './TurnstileProvider';
 import 'leaflet/dist/leaflet.css';
 
 interface MapComponentProps {
@@ -13,11 +11,8 @@ interface MapComponentProps {
 }
 
 const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
-  const { token, resetToken } = useTurnstile();
   const [loadingProgress, setLoadingProgress] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
-  const [userLocation, setUserLocation] = useState('');
-  const [isSearching, setIsSearching] = useState(false);
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
 
@@ -37,58 +32,6 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
       return eventDateTime >= cutOffTime;
     });
   }, [events]);
-
-  const handleUserLocationSearch = async () => {
-    if (!userLocation.trim()) return;
-
-    if (!token) {
-      alert("Por favor, espera a que se valide el captcha de seguridad.");
-      return;
-    }
-
-    // Límite local: 1 consulta por segundo
-    if (!checkLocalRateLimit('map_query_local', 1, 1000)) {
-      alert("Por favor, espera un segundo entre consultas.");
-      return;
-    }
-
-    // Límite global: 39 consultas al día (86400000 ms)
-    const isGlobalAllowed = await checkGlobalRateLimit('mapUsage', 39, 24 * 60 * 60 * 1000);
-    if (!isGlobalAllowed) {
-      alert("Se ha alcanzado el límite global de consultas del mapa por hoy (máximo 39). Inténtalo de nuevo mañana.");
-      return;
-    }
-
-    setIsSearching(true);
-    try {
-      // Add Tenerife to context to prioritize local results
-      const searchAddress = `${userLocation}, Tenerife, España`;
-      const coords = await geocodeAddress(searchAddress, token);
-      resetToken(); // Reset after use for security
-
-      if (coords && mapInstanceRef.current) {
-        mapInstanceRef.current.setView([coords.lat, coords.lng], 13);
-
-        L.marker([coords.lat, coords.lng], {
-          icon: new L.Icon({
-            iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
-            shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
-            iconSize: [25, 41],
-            iconAnchor: [12, 41],
-            popupAnchor: [1, -34],
-            shadowSize: [41, 41]
-          })
-        })
-          .bindPopup("📍 Ubicación seleccionada")
-          .addTo(mapInstanceRef.current)
-          .openPopup();
-      }
-    } catch (error) {
-      console.error("Error finding user location:", error);
-    } finally {
-      setIsSearching(false);
-    }
-  };
 
   useEffect(() => {
     if (mapRef.current && !mapInstanceRef.current) {
@@ -262,39 +205,10 @@ const MapComponent: React.FC<MapComponentProps> = ({ events }) => {
         mapInstanceRef.current = null;
       }
     };
-  }, [events, token]);
+  }, [events]);
 
   return (
     <div className="space-y-4">
-      {/* Search Block */}
-      <div className="bg-gray-900 border-4 border-black p-6 rounded-2xl shadow-[8px_8px_0px_0px_rgba(0,0,0,1)]">
-        <div className="flex flex-col md:flex-row gap-4 items-center justify-between">
-          <label htmlFor="user-location-input" className="text-white font-black flex items-center gap-2 text-xl uppercase tracking-tighter">
-            <MapPin className="w-6 h-6 text-yellow-400" />
-            ¿Donde te encuentras?
-          </label>
-          <div className="flex flex-col sm:flex-row w-full md:w-auto gap-2">
-            <input
-              id="user-location-input"
-              type="text"
-              placeholder="Tu municipio (ej: Arafo)..."
-              value={userLocation}
-              onChange={(e) => setUserLocation(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleUserLocationSearch()}
-              className="w-full md:w-64 px-4 py-3 rounded-xl bg-gray-800 text-white border-2 border-yellow-400/50 focus:outline-none focus:border-yellow-400 font-bold placeholder-gray-500 transition-all"
-            />
-            <button
-              onClick={handleUserLocationSearch}
-              disabled={isSearching}
-              className="flex-1 sm:flex-initial justify-center bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-xl font-black transition-all transform active:scale-95 flex items-center gap-2 disabled:opacity-50 border-2 border-black shadow-[4px_4px_0px_0px_rgba(0,0,0,1)]"
-            >
-              {isSearching ? <Loader2 className="w-5 h-5 animate-spin" /> : <Search className="w-5 h-5" />}
-              BUSCAR
-            </button>
-          </div>
-        </div>
-      </div>
-
       <div className="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-4 rounded-lg text-center font-bold shadow-lg">
         <div className="flex items-center justify-center gap-2">
           {/* CORRECCIÓN: Usar el componente renombrado 'MapIcon' */}
