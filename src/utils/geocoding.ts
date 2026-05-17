@@ -237,16 +237,8 @@ export const lugarCoordinates: Record<string, Coordinates> = {
   // LA GUANCHA
   "Santa Catalina": { lat: 28.3800, lng: -16.6600 },
 
-  // PLAZAS Y LUGARES ESPECÍFICOS
-  "Plaza": { lat: 28.4682, lng: -16.2546 },
-  "Casco": { lat: 28.4682, lng: -16.2546 },
-  "Centro": { lat: 28.4682, lng: -16.2546 },
-  "Mercado": { lat: 28.4167, lng: -16.5500 },
-  "Sala Capri": { lat: 28.4833, lng: -16.1833 },
-  "Pabellón": { lat: 28.4682, lng: -16.2546 },
-  "Calle Frangollo": { lat: 28.4682, lng: -16.2546 },
-  "Calle El Medio": { lat: 28.4682, lng: -16.2546 },
-  "Calle Dr. González": { lat: 28.4682, lng: -16.2546 },
+  // Nombres genericos que existen en varios municipios - NO pueden estar aqui
+  // (se resuelven via API con el municipio como contexto)
 };
 
 function normalizarTexto(texto: string): string {
