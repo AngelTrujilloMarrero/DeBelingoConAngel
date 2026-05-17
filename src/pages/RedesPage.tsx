@@ -1,15 +1,10 @@
 import React from 'react';
 import SocialMedia from '../components/SocialMedia';
-import { Event } from '../types';
 
-interface RedesPageProps {
-    events: Event[];
-}
-
-const RedesPage: React.FC<RedesPageProps> = ({ events }) => {
+const RedesPage: React.FC = () => {
     return (
         <div className="container mx-auto px-4 py-8 space-y-6">
-            <SocialMedia events={events} />
+            <SocialMedia />
         </div>
     );
 };
