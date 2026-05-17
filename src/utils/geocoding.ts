@@ -1,13 +1,6 @@
 import { Coordinates, MunicipioMapping } from '../types';
 import { getSecurityHeaders } from './firebase';
 
-interface Bounds {
-  minLat: number;
-  maxLat: number;
-  minLng: number;
-  maxLng: number;
-}
-
 export const municipioMapping: MunicipioMapping = {
   "Adeje": "Adeje",
   "Arafo": "Arafo",
@@ -81,40 +74,6 @@ export const municipioCoordinates: Record<string, Coordinates> = {
   "Victoria": { lat: 28.4328, lng: -16.4674 },
   "Vilaflor": { lat: 28.1000, lng: -16.6333 },
   "Silos": { lat: 28.3662, lng: -16.8164 }
-};
-
-// Bounding boxes aproximados de cada municipio (para validar resultados de API)
-export const municipioBounds: Record<string, Bounds> = {
-  "Adeje":          { minLat: 28.05, maxLat: 28.18, minLng: -16.80, maxLng: -16.68 },
-  "Arafo":          { minLat: 28.31, maxLat: 28.37, minLng: -16.43, maxLng: -16.37 },
-  "Arona":          { minLat: 27.98, maxLat: 28.12, minLng: -16.74, maxLng: -16.60 },
-  "Buenavista":     { minLat: 28.29, maxLat: 28.39, minLng: -16.91, maxLng: -16.82 },
-  "Candelaria":     { minLat: 28.32, maxLat: 28.40, minLng: -16.41, maxLng: -16.33 },
-  "Rosario":        { minLat: 28.42, maxLat: 28.49, minLng: -16.40, maxLng: -16.32 },
-  "Sauzal":         { minLat: 28.44, maxLat: 28.50, minLng: -16.46, maxLng: -16.41 },
-  "Tanque":         { minLat: 28.30, maxLat: 28.38, minLng: -16.80, maxLng: -16.75 },
-  "Fasnia":         { minLat: 28.20, maxLat: 28.27, minLng: -16.48, maxLng: -16.40 },
-  "Garachico":      { minLat: 28.33, maxLat: 28.39, minLng: -16.79, maxLng: -16.73 },
-  "Granadilla":     { minLat: 28.01, maxLat: 28.16, minLng: -16.60, maxLng: -16.48 },
-  "Guancha":        { minLat: 28.34, maxLat: 28.41, minLng: -16.70, maxLng: -16.62 },
-  "Guía":           { minLat: 28.12, maxLat: 28.25, minLng: -16.84, maxLng: -16.72 },
-  "Güímar":         { minLat: 28.25, maxLat: 28.33, minLng: -16.45, maxLng: -16.36 },
-  "Icod":           { minLat: 28.33, maxLat: 28.41, minLng: -16.76, maxLng: -16.66 },
-  "Matanza":        { minLat: 28.43, maxLat: 28.48, minLng: -16.48, maxLng: -16.43 },
-  "Orotava":        { minLat: 28.31, maxLat: 28.44, minLng: -16.59, maxLng: -16.43 },
-  "Puerto":         { minLat: 28.40, maxLat: 28.44, minLng: -16.57, maxLng: -16.53 },
-  "Realejos":       { minLat: 28.33, maxLat: 28.41, minLng: -16.67, maxLng: -16.59 },
-  "Laguna":         { minLat: 28.42, maxLat: 28.56, minLng: -16.41, maxLng: -16.28 },
-  "San Juan Rambla":{ minLat: 28.35, maxLat: 28.42, minLng: -16.69, maxLng: -16.62 },
-  "San Miguel":     { minLat: 28.03, maxLat: 28.13, minLng: -16.67, maxLng: -16.57 },
-  "Santa Cruz":     { minLat: 28.40, maxLat: 28.58, minLng: -16.31, maxLng: -16.13 },
-  "Santa Úrsula":   { minLat: 28.40, maxLat: 28.46, minLng: -16.52, maxLng: -16.47 },
-  "Santiago Teide": { minLat: 28.24, maxLat: 28.35, minLng: -16.88, maxLng: -16.76 },
-  "Tacoronte":      { minLat: 28.44, maxLat: 28.51, minLng: -16.45, maxLng: -16.39 },
-  "Tegueste":       { minLat: 28.49, maxLat: 28.55, minLng: -16.36, maxLng: -16.30 },
-  "Victoria":       { minLat: 28.41, maxLat: 28.46, minLng: -16.49, maxLng: -16.44 },
-  "Vilaflor":       { minLat: 28.06, maxLat: 28.16, minLng: -16.67, maxLng: -16.59 },
-  "Silos":          { minLat: 28.33, maxLat: 28.40, minLng: -16.85, maxLng: -16.78 },
 };
 
 export const lugarCoordinates: Record<string, Coordinates> = {
@@ -317,7 +276,6 @@ export async function geocodeAddress(address: string, token?: string): Promise<C
   let lugar = parts[0];
   let municipio = parts[1] || '';
 
-  // Si parts[0] es el nombre de un municipio, es un evento sin lugar especifico
   const esMunicipio = Object.keys(municipioCoordinates).some(key =>
     lugar.toLowerCase().includes(key.toLowerCase())
   );
@@ -331,55 +289,32 @@ export async function geocodeAddress(address: string, token?: string): Promise<C
     if (lugarCoords) return lugarCoords;
   }
 
-  if (!address || address.startsWith(",")) {
-    console.warn("Dirección inválida:", address);
-    return null;
+  if (lugar && municipio) {
+    const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL || 'https://de-belingo-con-angel-debelingoconangels-projects.vercel.app';
+    const query = `${lugar}, ${municipio}`;
+    const proxyUrl = `${API_BASE_URL}/api/geocoding?q=${encodeURIComponent(query)}`;
+
+    try {
+      const headers = await getSecurityHeaders(token);
+      const response = await fetch(proxyUrl, { headers });
+      if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+      const data = await response.json();
+      if (data && data.length > 0) {
+        return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
+      }
+    } catch (error) {
+      console.error("Error en geocodificación:", error);
+    }
   }
 
-  // Determinar clave del municipio para buscar bounds
-  let municipioKey = '';
   if (municipio) {
-    for (const key of Object.keys(municipioCoordinates)) {
+    for (const [key, coords] of Object.entries(municipioCoordinates)) {
       if (municipio.toLowerCase().includes(key.toLowerCase()) || key.toLowerCase().includes(municipio.toLowerCase())) {
-        municipioKey = key;
-        break;
+        return coords;
       }
     }
-  }
-
-  const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL || 'https://de-belingo-con-angel-debelingoconangels-projects.vercel.app';
-  const query = lugar && municipio
-    ? `${lugar}, ${municipio}, Tenerife, España`
-    : `${address}, Tenerife`;
-  const proxyUrl = `${API_BASE_URL}/api/geocoding?q=${encodeURIComponent(query)}`;
-
-  try {
-    const headers = await getSecurityHeaders(token);
-    const response = await fetch(proxyUrl, { headers });
-    if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
-    const data = await response.json();
-    if (data && data.length > 0) {
-      const lat = parseFloat(data[0].lat);
-      const lng = parseFloat(data[0].lon);
-
-      // Validar que el resultado este dentro del municipio
-      if (municipioKey && municipioBounds[municipioKey]) {
-        const b = municipioBounds[municipioKey];
-        if (lat >= b.minLat && lat <= b.maxLat && lng >= b.minLng && lng <= b.maxLng) {
-          return { lat, lng };
-        }
-        console.warn(`Coordenadas fuera del municipio ${municipioKey}: ${lat},${lng}. Usando fallback.`);
-      } else {
-        return { lat, lng };
-      }
-    }
-  } catch (error) {
-    console.error("Error en geocodificación:", error);
-  }
-
-  if (municipio && municipioKey) {
-    return municipioCoordinates[municipioKey] || null;
   }
 
   return null;
 }
+
