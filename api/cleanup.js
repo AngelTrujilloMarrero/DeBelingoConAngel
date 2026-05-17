@@ -31,7 +31,7 @@ export default async function handler(req, res) {
         }
         results.messages = msgKeys.length;
 
-        // 4. Cleanup Trashed Events (Expired)
+        // 3. Cleanup Trashed Events (Expired)
         const trashedRef = db.ref('trashedEvents');
         const trashedSnap = await trashedRef.once('value');
         const now = new Date();
@@ -41,6 +41,19 @@ export default async function handler(req, res) {
             await trashedRef.update(up);
         }
         results.trashed = trashKeys.length;
+
+        // 4. Cleanup Rate Limits (Delete expired rate limits to save database space)
+        const rateLimitsRef = db.ref('rateLimits');
+        const rateLimitsSnap = await rateLimitsRef.once('value');
+        const rateLimitsData = rateLimitsSnap.val() || {};
+        const expiredRateLimitKeys = Object.entries(rateLimitsData)
+            .filter(([_, v]) => v.resetTime && Date.now() > v.resetTime)
+            .map(([k]) => k);
+        if (expiredRateLimitKeys.length > 0) {
+            const up = {}; expiredRateLimitKeys.forEach(k => up[k] = null);
+            await rateLimitsRef.update(up);
+        }
+        results.rateLimits = expiredRateLimitKeys.length;
 
         return res.status(200).json({ success: true, results });
     } catch (error) {
