@@ -281,14 +281,6 @@ export async function geocodeAddress(address: string, token?: string): Promise<C
     if (lugarCoords) return lugarCoords;
   }
 
-  if (!lugar) {
-    for (const [key, coords] of Object.entries(municipioCoordinates)) {
-      if (address.toLowerCase().includes(key.toLowerCase())) {
-        return coords;
-      }
-    }
-  }
-
   if (!address || address.startsWith(",")) {
     console.warn("Dirección inválida:", address);
     return null;
@@ -308,10 +300,15 @@ export async function geocodeAddress(address: string, token?: string): Promise<C
     if (data && data.length > 0) {
       return { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon) };
     }
-    console.warn("No se encontraron coordenadas para:", address);
-    return null;
   } catch (error) {
     console.error("Error en geocodificación:", error);
-    return null;
   }
+
+  for (const [key, coords] of Object.entries(municipioCoordinates)) {
+    if (address.toLowerCase().includes(key.toLowerCase())) {
+      return coords;
+    }
+  }
+
+  return null;
 }
