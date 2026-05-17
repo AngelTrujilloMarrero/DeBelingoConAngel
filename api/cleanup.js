@@ -20,12 +20,7 @@ export default async function handler(req, res) {
         }
         results.deletions = delKeys.length;
 
-        // 2. Cleanup Analytics (Erase old visits node completely to save database space)
-        const analyticsRef = db.ref('analytics/visits');
-        await analyticsRef.set(null);
-        results.analytics = 'cleaned up completely';
-
-        // 3. Cleanup Messages (> 60 days)
+        // 2. Cleanup Messages (> 60 days)
         const msgRef = db.ref('guestbook/messages');
         const msgSnap = await msgRef.once('value');
         const sixtyDaysAgo = Date.now() - (60 * 24 * 60 * 60 * 1000);
