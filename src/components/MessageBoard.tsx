@@ -174,10 +174,26 @@ const MessageBoard: React.FC = () => {
     };
 
     const sendEmailNotification = async (message: string) => {
-        try {
-            // Usamos FormSubmit: 100% gratuito, sin API Keys y plug-and-play.
-            // La primera vez recibirás un correo para confirmar la dirección.
-            await fetch("https://formsubmit.co/ajax/atrujimar@gmail.com", {
+        const sendWeb3Forms = async () => {
+            const res = await fetch("https://api.web3forms.com/submit", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({
+                    access_key: "158a5a3d-fcd2-4ced-bd32-bf9a57b4f56e",
+                    subject: "🔔 Nuevo mensaje en el Muro de Belingo",
+                    Mensaje: message,
+                    Fecha: new Date().toLocaleString('es-ES')
+                })
+            });
+            if (!res.ok) throw new Error("Web3Forms falló con status: " + res.status);
+            return await res.json();
+        };
+
+        const sendFormSubmit = async () => {
+            const res = await fetch("https://formsubmit.co/ajax/atrujimar@gmail.com", {
                 method: "POST",
                 headers: {
                     'Content-Type': 'application/json',
@@ -187,13 +203,26 @@ const MessageBoard: React.FC = () => {
                     _subject: "🔔 Nuevo mensaje en el Muro de Belingo",
                     Mensaje: message,
                     Fecha: new Date().toLocaleString('es-ES'),
-                    _template: "table", // Formato visual limpio en el email
-                    _captcha: "false"   // Ya tenemos nuestro propio captcha
+                    _template: "table",
+                    _captcha: "false"
                 })
             });
-            console.log('Intento de notificación enviado');
-        } catch (error) {
-            console.error('Error al enviar correo:', error);
+            if (!res.ok) throw new Error("FormSubmit falló con status: " + res.status);
+            return await res.json();
+        };
+
+        try {
+            console.log("Intentando enviar notificación con Web3Forms...");
+            await sendWeb3Forms();
+            console.log("Notificación enviada con Web3Forms correctamente.");
+        } catch (errorWeb3) {
+            console.warn("Web3Forms falló, intentando con FormSubmit como respaldo...", errorWeb3);
+            try {
+                await sendFormSubmit();
+                console.log("Notificación enviada con FormSubmit correctamente.");
+            } catch (errorFormSubmit) {
+                console.error('Ambos servicios de correo fallaron. Web3Forms:', errorWeb3, 'FormSubmit:', errorFormSubmit);
+            }
         }
     };
 
