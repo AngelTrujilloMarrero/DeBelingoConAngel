@@ -20,38 +20,10 @@ export default async function handler(req, res) {
         }
         results.deletions = delKeys.length;
 
-        // 2. Cleanup Analytics (solo el día 1 de cada mes)
-        const today = new Date(); today.setHours(0, 0, 0, 0);
-        const isFirstOfMonth = today.getDate() === 1;
-
-        if (!isFirstOfMonth) {
-            results.analytics = 'skipped (not 1st of month)';
-        } else {
-            const analyticsRef = db.ref('analytics/visits');
-            const statsRef = db.ref('Estadisticas');
-            const anaSnap = await analyticsRef.once('value');
-            const anaData = anaSnap.val() || {};
-
-            // Guardar las visitas del mes anterior en Estadisticas
-            const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-            const lastMonthName = `${String(lastMonth.getMonth() + 1).padStart(2, '0')}-${lastMonth.getFullYear()}`;
-            const startLast = lastMonth.getTime();
-            const endLast = today.getTime(); // = inicio del mes actual
-            const lastMonthVisits = Object.values(anaData).filter(v => v.timestamp >= startLast && v.timestamp < endLast).length;
-            if (lastMonthVisits > 0) {
-                await statsRef.child(lastMonthName).set({ visitas: lastMonthVisits, mes: lastMonthName, guardadoEl: new Date().toISOString() });
-            }
-
-            // Borrar todas las visitas anteriores a hoy (ayer y antes)
-            const anaKeys = Object.entries(anaData)
-                .filter(([_, v]) => !v.timestamp || v.timestamp < today.getTime())
-                .map(([k]) => k);
-            if (anaKeys.length > 0) {
-                const up = {}; anaKeys.forEach(k => up[k] = null);
-                await analyticsRef.update(up);
-            }
-            results.analytics = anaKeys.length;
-        }
+        // 2. Cleanup Analytics (Erase old visits node completely to save database space)
+        const analyticsRef = db.ref('analytics/visits');
+        await analyticsRef.set(null);
+        results.analytics = 'cleaned up completely';
 
         // 3. Cleanup Messages (> 60 days)
         const msgRef = db.ref('guestbook/messages');
