@@ -1,5 +1,4 @@
 import { Coordinates, MunicipioMapping } from '../types';
-import { getSecurityHeaders } from './firebase';
 
 export const municipioMapping: MunicipioMapping = {
   "Adeje": "Adeje",
@@ -76,7 +75,7 @@ export const municipioCoordinates: Record<string, Coordinates> = {
   "Silos": { lat: 28.3662, lng: -16.8164 }
 };
 
-export async function geocodeAddress(address: string, token?: string): Promise<Coordinates | null> {
+export async function geocodeAddress(address: string): Promise<Coordinates | null> {
   const parts = address.split(',').map(p => p.trim());
   let lugar = parts[0];
   let municipio = parts[1] || '';
@@ -90,13 +89,16 @@ export async function geocodeAddress(address: string, token?: string): Promise<C
   }
 
   if (lugar && municipio) {
-    const API_BASE_URL = import.meta.env.VITE_VERCEL_API_URL || 'https://de-belingo-con-angel-debelingoconangels-projects.vercel.app';
     const query = `${lugar}, ${municipio}`;
-    const proxyUrl = `${API_BASE_URL}/api/geocoding?q=${encodeURIComponent(query)}`;
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(query)}&limit=1&addressdetails=1`;
 
     try {
-      const headers = await getSecurityHeaders(token);
-      const response = await fetch(proxyUrl, { headers });
+      const response = await fetch(url, {
+        headers: {
+          'User-Agent': 'DeBelingoConAngel/1.0 (https://debelingoconangel.web.app)',
+          'Accept-Language': 'es-ES,es;q=0.9'
+        }
+      });
       if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
       const data = await response.json();
       if (data && data.length > 0) {
