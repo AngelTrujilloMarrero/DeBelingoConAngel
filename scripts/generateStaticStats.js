@@ -7,10 +7,15 @@ const __dirname = path.dirname(__filename);
 
 const DB_URL = "https://debelingoconangel-default-rtdb.europe-west1.firebasedatabase.app/events.json";
 const ORCH_DB_URL = "https://debelingoconangel-default-rtdb.europe-west1.firebasedatabase.app/orchestras.json";
+const VISITS_DB_URL = "https://debelingoconangel-default-rtdb.europe-west1.firebasedatabase.app/dailyVisits.json";
 const OUTPUT_FILE = path.join(__dirname, '../src/data/historicalStats.json');
 const ORCH_OUTPUT_FILE = path.join(__dirname, '../src/data/orchestraArchive.json');
+const VISITS_OUTPUT_FILE = path.join(__dirname, '../src/data/historicalDailyVisits.json');
 const EVENTS_ARCHIVE_DIR = path.join(__dirname, '../public/events-archive');
+const VISITS_ARCHIVE_DIR = path.join(__dirname, '../public/visits-archive');
 const CLEANUP_MANIFEST = path.join(__dirname, '../cleanup-events.json');
+const CLEANUP_VISITS_MANIFEST = path.join(__dirname, '../cleanup-daily-visits.json');
+const UPLOAD_VISITS_MANIFEST = path.join(__dirname, '../upload-daily-visits.json');
 
 async function generate() {
     const currentYear = new Date().getFullYear();
@@ -243,8 +248,107 @@ async function generate() {
             console.log(`✅ ¡Éxito! Archivo de orquestas actualizado: ${finalOrchestras.length} orquestas.`);
         }
 
+        // --- DAILY VISITS ARCHIVING ---
+        console.log("🚀 Iniciando procesamiento de visitas diarias...");
+        
+        // Ensure visits archive dir exists
+        if (!fs.existsSync(VISITS_ARCHIVE_DIR)) {
+            fs.mkdirSync(VISITS_ARCHIVE_DIR, { recursive: true });
+            console.log(`📁 Creado directorio ${VISITS_ARCHIVE_DIR}`);
+        }
+
+        // Clean up old visits manifests if they exist
+        if (fs.existsSync(CLEANUP_VISITS_MANIFEST)) {
+            fs.unlinkSync(CLEANUP_VISITS_MANIFEST);
+        }
+        if (fs.existsSync(UPLOAD_VISITS_MANIFEST)) {
+            fs.unlinkSync(UPLOAD_VISITS_MANIFEST);
+        }
+
+        try {
+            const visitsResponse = await fetch(VISITS_DB_URL);
+            const dailyVisitsData = await visitsResponse.json();
+
+            if (dailyVisitsData) {
+                let historicalDailyVisits = {};
+                if (fs.existsSync(VISITS_OUTPUT_FILE)) {
+                    try {
+                        historicalDailyVisits = JSON.parse(fs.readFileSync(VISITS_OUTPUT_FILE, 'utf8'));
+                    } catch (e) {
+                        console.warn("⚠️ No se pudo cargar el archivo historicalDailyVisits previo.");
+                    }
+                }
+
+                const visitsToDelete = {};
+                const visitsToUpload = {};
+                let archivedVisitsCount = 0;
+
+                Object.entries(dailyVisitsData).forEach(([dateKey, count]) => {
+                    // Key format is: "YYYY-MM-DD (Día...)"
+                    const yearStr = dateKey.slice(0, 4);
+                    const year = parseInt(yearStr);
+
+                    // Archive if the year is in the past
+                    if (year < currentYear) {
+                        archivedVisitsCount++;
+                        
+                        // Add to the local JSON structured by year
+                        if (!historicalDailyVisits[yearStr]) {
+                            historicalDailyVisits[yearStr] = {};
+                        }
+                        historicalDailyVisits[yearStr][dateKey] = count;
+
+                        // Add to manifest for Firebase deletion under /dailyVisits
+                        visitsToDelete[dateKey] = null;
+
+                        // Add to manifest for Firebase archive under /historicalDailyVisits
+                        if (!visitsToUpload[yearStr]) {
+                            visitsToUpload[yearStr] = {};
+                        }
+                        visitsToUpload[yearStr][dateKey] = count;
+                    }
+                });
+
+                console.log(`📊 Detectados ${archivedVisitsCount} registros de visitas de años anteriores.`);
+
+                if (archivedVisitsCount > 0) {
+                    // Write main static output file
+                    fs.writeFileSync(VISITS_OUTPUT_FILE, JSON.stringify(historicalDailyVisits, null, 2));
+                    console.log(`✅ Archivo de visitas históricas actualizado en ${VISITS_OUTPUT_FILE}`);
+
+                    // Generate individual year files in /public/visits-archive/
+                    Object.entries(historicalDailyVisits).forEach(([year, yearVisits]) => {
+                        const yearFilePath = path.join(VISITS_ARCHIVE_DIR, `${year}.json`);
+                        fs.writeFileSync(yearFilePath, JSON.stringify({
+                            year: parseInt(year),
+                            totalDays: Object.keys(yearVisits).length,
+                            visits: yearVisits,
+                            exportDate: new Date().toISOString()
+                        }, null, 2));
+                        console.log(`✅ Archivo estático generado: visits-archive/${year}.json`);
+                    });
+
+                    // Generate visits archive index
+                    const visitsIndex = Object.keys(historicalDailyVisits).map(Number).sort((a, b) => b - a);
+                    fs.writeFileSync(path.join(VISITS_ARCHIVE_DIR, 'index.json'), JSON.stringify({
+                        years: visitsIndex,
+                        lastUpdated: new Date().toISOString()
+                    }, null, 2));
+
+                    // Save manifests for database update
+                    fs.writeFileSync(CLEANUP_VISITS_MANIFEST, JSON.stringify(visitsToDelete, null, 2));
+                    fs.writeFileSync(UPLOAD_VISITS_MANIFEST, JSON.stringify(visitsToUpload, null, 2));
+                    console.log("📝 Manifiestos de limpieza y carga de visitas generados.");
+                } else {
+                    console.log("ℹ️ No hay registros de visitas de años anteriores para archivar.");
+                }
+            }
+        } catch (visitsError) {
+            console.error("❌ Error procesando visitas históricas:", visitsError);
+        }
+
     } catch (error) {
-        console.error("❌ Error generando estadísticas/orquestas:", error);
+        console.error("❌ Error generando estadísticas/orquestas/visitas:", error);
     }
 }
 

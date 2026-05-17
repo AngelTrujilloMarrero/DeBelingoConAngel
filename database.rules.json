@@ -11,6 +11,10 @@
       ".read": true,
       ".write": "true"
     },
+    "historicalDailyVisits": {
+      ".read": true,
+      ".write": "auth != null && (auth.uid == 'nC4NMCMC7Gha7QH5en25xNQDtLp1' || auth.uid == 'JIdFCV7ppmXAltAajzBdTzI2qYE3')"
+    },
     "mapUsage": {
       ".read": true,
       ".write": "true"

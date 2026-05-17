@@ -45,11 +45,33 @@ jobs:
             echo "ℹ️  No events to clean up."
           fi
 
+      - name: Upload Historical Daily Visits to Firebase
+        if: success()
+        run: |
+          if [ -f upload-daily-visits.json ]; then
+            echo "📤  Upload manifest found. Archiving daily visits under /historicalDailyVisits..."
+            npx firebase-tools database:update /historicalDailyVisits upload-daily-visits.json --token "${{ secrets.FIREBASE_TOKEN }}" --project debelingoconangel --confirm
+            rm upload-daily-visits.json
+          else
+            echo "ℹ️  No historical daily visits to archive."
+          fi
+
+      - name: Cleanup Old Daily Visits from Firebase
+        if: success()
+        run: |
+          if [ -f cleanup-daily-visits.json ]; then
+            echo "🗑️  Cleanup manifest found. Deleting old daily visits from /dailyVisits..."
+            npx firebase-tools database:update /dailyVisits cleanup-daily-visits.json --token "${{ secrets.FIREBASE_TOKEN }}" --project debelingoconangel --confirm
+            rm cleanup-daily-visits.json
+          else
+            echo "ℹ️  No daily visits to clean up."
+          fi
+
       - name: Commit and push changes
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: "chore: auto-update historical stats, event archives and orchestra archive for the new year [skip ci]"
-          file_pattern: 'src/data/historicalStats.json src/data/orchestraArchive.json public/events-archive/*'
+          commit_message: "chore: auto-update historical stats, event archives, daily visits and orchestra archive for the new year [skip ci]"
+          file_pattern: 'src/data/historicalStats.json src/data/historicalDailyVisits.json src/data/orchestraArchive.json public/events-archive/* public/visits-archive/*'
 
       - name: Build and Deploy to Firebase
         run: |
