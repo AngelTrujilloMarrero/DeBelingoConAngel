@@ -36,12 +36,12 @@ async function callOpenRouter(prompt, apiKey) {
     }
 }
 
-async function callMistral(prompt, apiKey) {
+async function callDeepSeek(prompt, apiKey) {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 7000);
 
     try {
-        const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+        const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
             method: 'POST',
             signal: controller.signal,
             headers: {
@@ -49,7 +49,7 @@ async function callMistral(prompt, apiKey) {
                 'Authorization': `Bearer ${apiKey}`,
             },
             body: JSON.stringify({
-                model: 'mistral-medium-latest',
+                model: 'deepseek-v4-flash',
                 messages: [
                     { role: 'system', content: 'Debes indicar siempre qué orquesta está en cada sitio basándote en el listado. Sé exacto, concreto y al grano. Al final de tu respuesta añade siempre "(M)".' },
                     { role: 'user', content: prompt }
@@ -59,7 +59,7 @@ async function callMistral(prompt, apiKey) {
             }),
         });
         clearTimeout(timeoutId);
-        if (!response.ok) throw new Error('Mistral not ok');
+        if (!response.ok) throw new Error('DeepSeek not ok');
         const data = await response.json();
         return data.choices?.[0]?.message?.content || null;
     } catch (e) {
@@ -94,7 +94,7 @@ export default async function handler(req, res) {
 
         const results = await Promise.allSettled([
             callOpenRouter(prompt, openRouterKey),
-            callMistral(prompt, mistralKey)
+            callDeepSeek(prompt, mistralKey)
         ]);
 
         // Pick the first successful, non-null result
