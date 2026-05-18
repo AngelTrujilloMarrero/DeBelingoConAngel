@@ -86,14 +86,14 @@ Orquesta: ${orquesta || 'No especificada'}
 
 Responde SOLO en JSON.`;
 
-        const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+        const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${apiKey}`,
             },
             body: JSON.stringify({
-                model: 'mistral-small-latest',
+                model: 'deepseek-v4-flash',
                 response_format: { type: 'json_object' },
                 messages: [
                     { role: 'system', content: systemPrompt },
@@ -105,7 +105,7 @@ Responde SOLO en JSON.`;
 
         if (!response.ok) {
             const error = await response.json();
-            return res.status(response.status).json({ error: error.message || 'Error calling Mistral' });
+            return res.status(response.status).json({ error: error.message || 'Error calling DeepSeek' });
         }
 
         const data = await response.json();
