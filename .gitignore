@@ -64,17 +64,5 @@ node_modules/
 
 # dotenv environment variables file
 .env
-
-# Config directory with sensitive files
-.config/
-
-# Cleanup manifest
-cleanup-events.json
-
-# dataconnect generated files
-.dataconnect
-
-# Build output directory
-dist/
-.vercel
+.env.production
 .env*.local
