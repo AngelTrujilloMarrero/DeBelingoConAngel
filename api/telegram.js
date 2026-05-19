@@ -197,7 +197,12 @@ async function handleNotifyChange(req, res) {
 
     let message = '';
     if (type === 'delete') {
-        message += `⚠️ <b>CANCELACIÓN - INMEDIATO</b>\n\n❌ <b>${event.tipo} cancelada${event.municipio ? ' en ' + event.municipio : ''}</b>\n📅 ${formatDateFull(event.day)}\n`;
+        message += `⚠️ <b>CANCELACIÓN - INMEDIATO</b>\n\n❌ <b>${event.tipo} cancelada</b>\n`;
+        let locationParts = [];
+        if (event.lugar) locationParts.push(event.lugar);
+        if (event.municipio) locationParts.push(event.municipio);
+        if (locationParts.length > 0) message += `📍 ${locationParts.join(', ')}\n`;
+        message += `📅 ${formatDateFull(event.day)}\n`;
         if (event.orquesta) message += `🎻 ${event.orquesta}\n`;
         if (reason || event.motivoEliminacion) message += `\nMotivo: ${reason || event.motivoEliminacion}\n`;
     } else {
