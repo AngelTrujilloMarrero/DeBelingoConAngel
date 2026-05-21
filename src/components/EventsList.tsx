@@ -18,6 +18,38 @@ interface EventsListProps {
   searchTerm?: string;
 }
 
+const renderMotiveText = (text: string) => {
+  if (!text) return 'Sin especificar';
+  
+  // Matches URLs starting with http://, https://, or www.
+  const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+)/gi;
+  const parts = text.split(urlRegex);
+  const matches = text.match(urlRegex) || [];
+  
+  let matchIndex = 0;
+  return parts.map((part, index) => {
+    if (matches[matchIndex] && part === matches[matchIndex]) {
+      const url = matches[matchIndex];
+      matchIndex++;
+      const href = url.match(/^https?:\/\//i) ? url : `https://${url}`;
+      return (
+        <a
+          key={index}
+          href={href}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={(e) => e.stopPropagation()}
+          className="text-blue-400 hover:text-blue-300 underline inline-flex items-center gap-0.5 break-all font-medium transition-colors"
+        >
+          {url}
+          <ExternalLink className="w-3 h-3 inline-block shrink-0" />
+        </a>
+      );
+    }
+    return <span key={index}>{part}</span>;
+  });
+};
+
 const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExportWeek, onExportFestival, searchTerm }) => {
   const [showDatePickers, setShowDatePickers] = useState(false);
   const [startDate, setStartDate] = useState('');
@@ -474,7 +506,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                         <div className="mt-1.5 flex items-center gap-1.5">
                           <span className="text-[10px] font-bold uppercase tracking-tight text-red-400/80">Motivo:</span>
                           <span className="text-xs text-gray-400 italic">
-                            {item.event.motivoEliminacion || 'Sin especificar'}
+                            {renderMotiveText(item.event.motivoEliminacion || '')}
                           </span>
                         </div>
                       )}
