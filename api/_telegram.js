@@ -1,9 +1,16 @@
+function log(level, data) {
+    const entry = { timestamp: new Date().toISOString(), ...data };
+    const line = JSON.stringify(entry);
+    if (level === 'error') console.error(line);
+    else console.log(line);
+}
+
 export async function sendTelegramMessage(message) {
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
     const chatId = process.env.TELEGRAM_CHAT_ID;
 
     if (!botToken || !chatId) {
-        console.error('Missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID');
+        log('error', { action: 'sendTelegramMessage', success: false, error: 'Missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID' });
         return { success: false, error: 'Missing credentials' };
     }
 
@@ -24,13 +31,14 @@ export async function sendTelegramMessage(message) {
         const data = await response.json();
         
         if (!response.ok) {
-            console.error('Telegram API Error:', data);
+            log('error', { action: 'sendTelegramMessage', success: false, error: data.description });
             return { success: false, error: data.description };
         }
 
+        log('info', { action: 'sendTelegramMessage', success: true });
         return { success: true, data };
     } catch (error) {
-        console.error('Telegram send error:', error);
+        log('error', { action: 'sendTelegramMessage', success: false, error: error.message });
         return { success: false, error: error.message };
     }
 }
@@ -40,7 +48,7 @@ export async function sendTelegramPhoto(imageBuffer, caption) {
     const chatId = process.env.TELEGRAM_CHAT_ID;
 
     if (!botToken || !chatId) {
-        console.error('Missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID');
+        log('error', { action: 'sendTelegramPhoto', success: false, error: 'Missing TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID' });
         return { success: false, error: 'Missing credentials' };
     }
 
@@ -61,13 +69,14 @@ export async function sendTelegramPhoto(imageBuffer, caption) {
         const data = await response.json();
 
         if (!response.ok) {
-            console.error('Telegram sendPhoto API Error:', data);
+            log('error', { action: 'sendTelegramPhoto', success: false, error: data.description });
             return { success: false, error: data.description };
         }
 
+        log('info', { action: 'sendTelegramPhoto', success: true });
         return { success: true, data };
     } catch (error) {
-        console.error('Telegram sendPhoto error:', error);
+        log('error', { action: 'sendTelegramPhoto', success: false, error: error.message });
         return { success: false, error: error.message };
     }
 }

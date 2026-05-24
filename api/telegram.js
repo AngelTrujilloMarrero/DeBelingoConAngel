@@ -80,115 +80,153 @@ function formatDateFull(dateStr) {
 
 async function handleWeekly(req, res) {
     const today = new Date();
-    const monday = new Date(today);
-    const daysUntilMonday = today.getDay() === 0 ? 1 : 8 - today.getDay();
-    monday.setDate(today.getDate() + daysUntilMonday);
-    monday.setHours(0, 0, 0, 0);
-    const sunday = new Date(monday);
-    sunday.setDate(monday.getDate() + 6);
-    sunday.setHours(23, 59, 59, 999);
+    try {
+        const monday = new Date(today);
+        const daysUntilMonday = today.getDay() === 0 ? 1 : 8 - today.getDay();
+        monday.setDate(today.getDate() + daysUntilMonday);
+        monday.setHours(0, 0, 0, 0);
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+        sunday.setHours(23, 59, 59, 999);
 
-    const events = await getEvents();
-    const weeklyEvents = events.filter(e => !e.cancelado && new Date(e.day) >= monday && new Date(e.day) <= sunday);
+        const events = await getEvents();
+        const weeklyEvents = events.filter(e => !e.cancelado && new Date(e.day) >= monday && new Date(e.day) <= sunday);
 
-    if (weeklyEvents.length === 0) return res.status(200).json({ success: true, message: 'No events next week.' });
+        if (weeklyEvents.length === 0) {
+            console.log(JSON.stringify({ timestamp: today.toISOString(), action: 'weekly', result: 'no_events' }));
+            return res.status(200).json({ success: true, message: 'No events next week.' });
+        }
 
-    weeklyEvents.sort((a, b) => new Date(a.day) - new Date(b.day) || a.hora.localeCompare(b.hora));
+        weeklyEvents.sort((a, b) => new Date(a.day) - new Date(b.day) || a.hora.localeCompare(b.hora));
 
-    const grouped = {};
-    weeklyEvents.forEach(e => {
-        const d = e.day.split('T')[0];
-        if (!grouped[d]) grouped[d] = [];
-        grouped[d].push(e);
-    });
+        const grouped = {};
+        weeklyEvents.forEach(e => {
+            const d = e.day.split('T')[0];
+            if (!grouped[d]) grouped[d] = [];
+            grouped[d].push(e);
+        });
 
-    let message = `🎵 <b>VERBENAS DE TENERIFE - SEMANA DEL ${monday.getDate()} DE ${months[monday.getMonth()]} AL ${sunday.getDate()} DE ${months[sunday.getMonth()]}</b>\n\n`;
-    Object.keys(grouped).sort().forEach(d => {
-        const dateObj = new Date(d);
-        message += `━━━━━━━━━━ <b>${daysOfWeek[dateObj.getDay()]} ${dateObj.getDate()}</b> ━━━━━━━━━━\n\n`;
-        grouped[d].forEach(e => message += formatEvent(e, null) + '\n'); // Pass null for window check as it's a weekly summary
-    });
-    message += `━━━━━━━━━━ ✦ ━━━━━━━━━━━\n\n🔗 <a href="https://debelingoconangel.web.app">debelingoconangel.web.app</a>`;
-    
-    return res.status(200).json(await sendTelegramMessage(message));
+        let message = `🎵 <b>VERBENAS DE TENERIFE - SEMANA DEL ${monday.getDate()} DE ${months[monday.getMonth()]} AL ${sunday.getDate()} DE ${months[sunday.getMonth()]}</b>\n\n`;
+        Object.keys(grouped).sort().forEach(d => {
+            const dateObj = new Date(d);
+            message += `━━━━━━━━━━ <b>${daysOfWeek[dateObj.getDay()]} ${dateObj.getDate()}</b> ━━━━━━━━━━\n\n`;
+            grouped[d].forEach(e => message += formatEvent(e, null) + '\n');
+        });
+        message += `━━━━━━━━━━ ✦ ━━━━━━━━━━━\n\n🔗 <a href="https://debelingoconangel.web.app">debelingoconangel.web.app</a>`;
+        
+        const result = await sendTelegramMessage(message);
+        console.log(JSON.stringify({ timestamp: today.toISOString(), action: 'weekly', result: 'sent', count: weeklyEvents.length }));
+        return res.status(200).json(result);
+    } catch (error) {
+        console.error(JSON.stringify({ timestamp: today.toISOString(), action: 'weekly', success: false, error: error.message }));
+        const alertMsg = `❌ <b>Error en el resumen semanal</b>\n\n${error.message}`;
+        await sendTelegramMessage(alertMsg);
+        return res.status(500).json({ success: false, error: error.message });
+    }
 }
 
 async function handleReminder(req, res) {
     const today = new Date();
-    const friday = new Date(today);
-    friday.setDate(today.getDate() + 1);
-    friday.setHours(0, 0, 0, 0);
-    const sunday = new Date(friday);
-    sunday.setDate(friday.getDate() + 2);
-    sunday.setHours(23, 59, 59, 999);
+    try {
+        const friday = new Date(today);
+        friday.setDate(today.getDate() + 1);
+        friday.setHours(0, 0, 0, 0);
+        const sunday = new Date(friday);
+        sunday.setDate(friday.getDate() + 2);
+        sunday.setHours(23, 59, 59, 999);
 
-    const events = await getEvents();
-    const weekendEvents = events.filter(e => !e.cancelado && new Date(e.day) >= friday && new Date(e.day) <= sunday);
+        const events = await getEvents();
+        const weekendEvents = events.filter(e => !e.cancelado && new Date(e.day) >= friday && new Date(e.day) <= sunday);
 
-    if (weekendEvents.length === 0) return res.status(200).json({ success: true, message: 'No events this weekend.' });
+        if (weekendEvents.length === 0) {
+            console.log(JSON.stringify({ timestamp: today.toISOString(), action: 'reminder', result: 'no_events' }));
+            return res.status(200).json({ success: true, message: 'No events this weekend.' });
+        }
 
-    weekendEvents.sort((a, b) => new Date(a.day) - new Date(b.day) || a.hora.localeCompare(b.hora));
+        weekendEvents.sort((a, b) => new Date(a.day) - new Date(b.day) || a.hora.localeCompare(b.hora));
 
-    const grouped = {};
-    weekendEvents.forEach(e => {
-        const d = e.day.split('T')[0];
-        if (!grouped[d]) grouped[d] = [];
-        grouped[d].push(e);
-    });
+        const grouped = {};
+        weekendEvents.forEach(e => {
+            const d = e.day.split('T')[0];
+            if (!grouped[d]) grouped[d] = [];
+            grouped[d].push(e);
+        });
 
-    let message = `🔔 <b>RECORDATORIO DEL FIN DE SEMANA</b>\n\n`;
-    Object.keys(grouped).sort().forEach(d => {
-        const dateObj = new Date(d);
-        message += `━━━━━━━━━━ <b>${daysOfWeek[dateObj.getDay()]} ${dateObj.getDate()}</b> ━━━━━━━━━━\n\n`;
-        grouped[d].forEach(e => message += formatEvent(e, null) + '\n');
-    });
-    message += `━━━━━━━━━━ ✦ ━━━━━━━━━━━\n\n🔗 <a href="https://debelingoconangel.web.app">debelingoconangel.web.app</a>`;
-    
-    return res.status(200).json(await sendTelegramMessage(message));
+        let message = `🔔 <b>RECORDATORIO DEL FIN DE SEMANA</b>\n\n`;
+        Object.keys(grouped).sort().forEach(d => {
+            const dateObj = new Date(d);
+            message += `━━━━━━━━━━ <b>${daysOfWeek[dateObj.getDay()]} ${dateObj.getDate()}</b> ━━━━━━━━━━\n\n`;
+            grouped[d].forEach(e => message += formatEvent(e, null) + '\n');
+        });
+        message += `━━━━━━━━━━ ✦ ━━━━━━━━━━━\n\n🔗 <a href="https://debelingoconangel.web.app">debelingoconangel.web.app</a>`;
+        
+        const result = await sendTelegramMessage(message);
+        console.log(JSON.stringify({ timestamp: today.toISOString(), action: 'reminder', result: 'sent', count: weekendEvents.length }));
+        return res.status(200).json(result);
+    } catch (error) {
+        console.error(JSON.stringify({ timestamp: today.toISOString(), action: 'reminder', success: false, error: error.message }));
+        const alertMsg = `❌ <b>Error en el recordatorio de fin de semana</b>\n\n${error.message}`;
+        await sendTelegramMessage(alertMsg);
+        return res.status(500).json({ success: false, error: error.message });
+    }
 }
 
 async function handleDaily(req, res) {
-    const events = await getEvents();
     const now = new Date();
-    
     const dayOfWeek = now.getDay();
     // Lunes (1) y Viernes (5) usamos ventana de 48h porque Domingo y Jueves no hay reporte diario (se publica la agenda completa)
     const windowHours = (dayOfWeek === 1 || dayOfWeek === 5) ? 48 : 24;
-    const sinceTime = new Date(now.getTime() - (windowHours * 60 * 60 * 1000));
 
-    const modifiedEvents = events.filter(e => {
-        if (e.cancelado) return false;
+    try {
+        const events = await getEvents();
+        const sinceTime = new Date(now.getTime() - (windowHours * 60 * 60 * 1000));
+
+        const modifiedEvents = events.filter(e => {
+            if (e.cancelado) return false;
+            
+            const eventDate = new Date(e.day);
+            eventDate.setHours(23, 59, 59, 999);
+            if (eventDate < now) return false;
+
+            const agregado = e.FechaAgregado ? new Date(e.FechaAgregado) : null;
+            const editado = e.FechaEditado ? new Date(e.FechaEditado) : null;
+            
+            return (agregado && agregado >= sinceTime) || (editado && editado >= sinceTime);
+        });
+
+        if (modifiedEvents.length === 0) {
+            const msg = `✅ <b>Daily Check-in</b>\n\nNo hay cambios en eventos en las últimas ${windowHours} horas.\n\n🔗 <a href="https://debelingoconangel.web.app">debelingoconangel.web.app</a>`;
+            const result = await sendTelegramMessage(msg);
+            console.log(JSON.stringify({ timestamp: now.toISOString(), action: 'daily', result: 'no_changes', windowHours }));
+            return res.status(200).json(result);
+        }
+
+        modifiedEvents.sort((a, b) => new Date(a.day) - new Date(b.day) || a.hora.localeCompare(b.hora));
+
+        const grouped = {};
+        modifiedEvents.forEach(e => {
+            const d = e.day.split('T')[0];
+            if (!grouped[d]) grouped[d] = [];
+            grouped[d].push(e);
+        });
+
+        let message = `🆕 <b>NOVEDADES Y MODIFICACIONES DE HOY</b>\n\n`;
+        Object.keys(grouped).sort().forEach(d => {
+            const dateObj = new Date(d);
+            message += `━━━━━━━━━━ <b>${daysOfWeek[dateObj.getDay()]} ${dateObj.getDate()}</b> ━━━━━━━━━━\n\n`;
+            grouped[d].forEach(e => message += formatEvent(e, sinceTime) + '\n');
+        });
+        message += `━━━━━━━━━━ ✦ ━━━━━━━━━━━\n\n🔗 <a href="https://debelingoconangel.web.app">debelingoconangel.web.app</a>`;
         
-        const eventDate = new Date(e.day);
-        eventDate.setHours(23, 59, 59, 999);
-        if (eventDate < now) return false;
-
-        const agregado = e.FechaAgregado ? new Date(e.FechaAgregado) : null;
-        const editado = e.FechaEditado ? new Date(e.FechaEditado) : null;
-        
-        return (agregado && agregado >= sinceTime) || (editado && editado >= sinceTime);
-    });
-
-    if (modifiedEvents.length === 0) return res.status(200).json({ success: true, message: `No events modified in the last ${windowHours} hours.` });
-
-    modifiedEvents.sort((a, b) => new Date(a.day) - new Date(b.day) || a.hora.localeCompare(b.hora));
-
-    const grouped = {};
-    modifiedEvents.forEach(e => {
-        const d = e.day.split('T')[0];
-        if (!grouped[d]) grouped[d] = [];
-        grouped[d].push(e);
-    });
-
-    let message = `🆕 <b>NOVEDADES Y MODIFICACIONES DE HOY</b>\n\n`;
-    Object.keys(grouped).sort().forEach(d => {
-        const dateObj = new Date(d);
-        message += `━━━━━━━━━━ <b>${daysOfWeek[dateObj.getDay()]} ${dateObj.getDate()}</b> ━━━━━━━━━━\n\n`;
-        grouped[d].forEach(e => message += formatEvent(e, sinceTime) + '\n');
-    });
-    message += `━━━━━━━━━━ ✦ ━━━━━━━━━━━\n\n🔗 <a href="https://debelingoconangel.web.app">debelingoconangel.web.app</a>`;
-    
-    return res.status(200).json(await sendTelegramMessage(message));
+        const result = await sendTelegramMessage(message);
+        console.log(JSON.stringify({ timestamp: now.toISOString(), action: 'daily', result: 'changes_found', count: modifiedEvents.length }));
+        return res.status(200).json(result);
+    } catch (error) {
+        console.error(JSON.stringify({ timestamp: now.toISOString(), action: 'daily', success: false, error: error.message }));
+        const alertMsg = `❌ <b>Error en el daily automático</b>\n\n${error.message}`;
+        await sendTelegramMessage(alertMsg);
+        return res.status(500).json({ success: false, error: error.message });
+    }
 }
 
 async function handleNotifyChange(req, res) {
