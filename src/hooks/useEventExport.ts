@@ -154,16 +154,25 @@ export const useEventExport = (events: AppEvent[]) => {
             return text.substring(0, fitIndex);
         }
 
+        const getEventSegments = (event: AppEvent) => {
+            const raw = [
+                { val: event.lugar || '', col: colors.lugar },
+                { val: event.municipio || '', col: colors.municipio },
+                { val: event.tipo || '', col: colors.tipo },
+                { val: event.hora || '', col: colors.hora },
+                { val: event.orquesta || '', col: colors.texto }
+            ];
+            const active = raw.filter(item => item.val.trim() !== '');
+            return active.map((item, idx) => ({
+                text: idx === 0 ? item.val : ` - ${item.val}`,
+                color: item.col
+            }));
+        };
+
         function calculateEventLines(event: AppEvent, ctx: CanvasRenderingContext2D, maxWidth: number) {
             let lines = 0;
             let currentLineWidth = 0;
-            const segments = [
-                { text: event.orquesta || '', color: colors.texto },
-                { text: event.lugar ? ` - ${event.lugar}` : '', color: colors.lugar },
-                { text: event.municipio ? ` - ${event.municipio}` : '', color: colors.municipio },
-                { text: event.hora ? ` - ${event.hora}` : '', color: colors.hora },
-                { text: event.tipo ? ` - ${event.tipo}` : '', color: colors.tipo }
-            ];
+            const segments = getEventSegments(event);
             let isFirstSegmentOnLine = true;
             segments.forEach(({ text }) => {
                 if (!text) return;
@@ -274,13 +283,7 @@ export const useEventExport = (events: AppEvent[]) => {
             currentY += finalLineHeight;
 
             groupedEvents[fecha].forEach(event => {
-                const segments = [
-                    { text: event.orquesta || '', color: colors.texto },
-                    { text: event.lugar ? ` - ${event.lugar}` : '', color: colors.lugar },
-                    { text: event.municipio ? ` - ${event.municipio}` : '', color: colors.municipio },
-                    { text: event.hora ? ` - ${event.hora}` : '', color: colors.hora },
-                    { text: event.tipo ? ` - ${event.tipo}` : '', color: colors.tipo }
-                ];
+                const segments = getEventSegments(event);
                 let currentX = 0;
                 segments.forEach(({ text, color }) => {
                     if (!text) return;
