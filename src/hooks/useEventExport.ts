@@ -123,8 +123,8 @@ export const useEventExport = (events: AppEvent[]) => {
         const colors = {
             dia: '#5c4033',
             hora: '#00008b',
-            municipio: '#006400',
-            lugar: '#006400',
+            municipio: '#004000',
+            lugar: '#004000',
             tipo: '#9400d3',
             texto: '#000000'
         };
@@ -156,16 +156,17 @@ export const useEventExport = (events: AppEvent[]) => {
 
         const getEventSegments = (event: AppEvent) => {
             const raw = [
-                { val: event.lugar || '', col: colors.lugar },
-                { val: event.municipio || '', col: colors.municipio },
-                { val: event.tipo || '', col: colors.tipo },
-                { val: event.hora || '', col: colors.hora },
-                { val: event.orquesta || '', col: colors.texto }
+                { val: event.lugar || '', col: colors.lugar, italic: true },
+                { val: event.municipio || '', col: colors.municipio, italic: true },
+                { val: event.tipo || '', col: colors.tipo, italic: false },
+                { val: event.hora || '', col: colors.hora, italic: false },
+                { val: event.orquesta || '', col: colors.texto, italic: false }
             ];
             const active = raw.filter(item => item.val.trim() !== '');
             return active.map((item, idx) => ({
                 text: idx === 0 ? item.val : ` - ${item.val}`,
-                color: item.col
+                color: item.col,
+                italic: item.italic
             }));
         };
 
@@ -174,8 +175,9 @@ export const useEventExport = (events: AppEvent[]) => {
             let currentLineWidth = 0;
             const segments = getEventSegments(event);
             let isFirstSegmentOnLine = true;
-            segments.forEach(({ text }) => {
+            segments.forEach(({ text, italic }) => {
                 if (!text) return;
+                ctx.font = italic ? `italic bold ${fontSize}px Arial` : `bold ${fontSize}px Arial`;
                 let remainingText = text.trim();
                 while (remainingText.length > 0) {
                     const prefix = (currentLineWidth > 0 || !isFirstSegmentOnLine) ? ' ' : '';
@@ -285,9 +287,10 @@ export const useEventExport = (events: AppEvent[]) => {
             groupedEvents[fecha].forEach(event => {
                 const segments = getEventSegments(event);
                 let currentX = 0;
-                segments.forEach(({ text, color }) => {
+                segments.forEach(({ text, color, italic }) => {
                     if (!text) return;
                     ctx.fillStyle = color;
+                    ctx.font = italic ? `italic bold ${fontSize}px Arial` : `bold ${fontSize}px Arial`;
                     let remainingText = text.trim();
                     while (remainingText.length > 0) {
                         const availableWidth = maxWidth - currentX;
