@@ -92,13 +92,13 @@ export const useEventExport = (events: AppEvent[]) => {
             return;
         }
 
-        if (!checkRateLimit(20)) {
-            alert('Has alcanzado el límite de 20 descargas por hora por usuario.');
+        if (!checkRateLimit(50)) {
+            alert('Has alcanzado el límite de 50 descargas por hora por usuario.');
             return;
         }
 
-        if (!await checkGlobalRateLimit(40)) {
-            alert('Se ha alcanzado el límite global de 40 descargas por hora. Inténtalo más tarde.');
+        if (!await checkGlobalRateLimit(100)) {
+            alert('Se ha alcanzado el límite global de 100 descargas por hora. Inténtalo más tarde.');
             return;
         }
 
@@ -384,13 +384,13 @@ export const useEventExport = (events: AppEvent[]) => {
     const exportFestivalToImage = useCallback(async (festivalJson: string) => {
         if (!festivalJson) return;
 
-        if (!checkRateLimit(20)) {
-            alert('Has alcanzado el límite de 20 descargas por hora por usuario.');
+        if (!checkRateLimit(50)) {
+            alert('Has alcanzado el límite de 50 descargas por hora por usuario.');
             return;
         }
 
-        if (!await checkGlobalRateLimit(40)) {
-            alert('Se ha alcanzado el límite global de 40 descargas por hora. Inténtalo más tarde.');
+        if (!await checkGlobalRateLimit(100)) {
+            alert('Se ha alcanzado el límite global de 100 descargas por hora. Inténtalo más tarde.');
             return;
         }
 
