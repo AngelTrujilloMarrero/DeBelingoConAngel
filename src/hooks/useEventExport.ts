@@ -170,14 +170,14 @@ export const useEventExport = (events: AppEvent[]) => {
             }));
         };
 
-        function calculateEventLines(event: AppEvent, ctx: CanvasRenderingContext2D, maxWidth: number) {
+        function calculateEventLines(event: AppEvent, ctx: CanvasRenderingContext2D, maxWidth: number, currentFontSize: number) {
             let lines = 0;
             let currentLineWidth = 0;
             const segments = getEventSegments(event);
             let isFirstSegmentOnLine = true;
             segments.forEach(({ text, italic }) => {
                 if (!text) return;
-                ctx.font = italic ? `italic bold ${fontSize}px Arial` : `bold ${fontSize}px Arial`;
+                ctx.font = italic ? `italic bold ${currentFontSize}px Arial` : `bold ${currentFontSize}px Arial`;
                 let remainingText = text.trim();
                 while (remainingText.length > 0) {
                     const prefix = (currentLineWidth > 0 || !isFirstSegmentOnLine) ? ' ' : '';
@@ -224,7 +224,7 @@ export const useEventExport = (events: AppEvent[]) => {
         sortedDates.forEach((fecha) => {
             requiredHeight += initialLineHeight;
             groupedEvents[fecha].forEach(event => {
-                const eventLines = calculateEventLines(event, tempCtx, maxWidth);
+                const eventLines = calculateEventLines(event, tempCtx, maxWidth, initialFontSize);
                 requiredHeight += initialLineHeight * eventLines;
             });
         });
@@ -241,7 +241,7 @@ export const useEventExport = (events: AppEvent[]) => {
             sortedDates.forEach((fecha) => {
                 requiredHeight += finalLineHeight;
                 groupedEvents[fecha].forEach(event => {
-                    const eventLines = calculateEventLines(event, tempCtx, maxWidth);
+                    const eventLines = calculateEventLines(event, tempCtx, maxWidth, fontSize);
                     requiredHeight += finalLineHeight * eventLines;
                 });
             });
