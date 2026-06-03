@@ -63,14 +63,15 @@ export const useEventExport = (events: AppEvent[]) => {
 
     const trackDownload = async (type: 'date' | 'festival') => {
         try {
+            console.log(`[Analytics] Tracking download of type ${type}...`);
             const recordsRef = ref(db, 'downloads/records');
-            await push(recordsRef, {
+            const result = await push(recordsRef, {
                 timestamp: Date.now(),
                 type
             });
-            console.log(`[Analytics] Download of type ${type} tracked successfully`);
+            console.log(`[Analytics] Download of type ${type} tracked successfully. Key: ${result.key}`);
         } catch (error) {
-            console.error('[Analytics] Error tracking download:', error);
+            console.error(`[Analytics] Error tracking download of type ${type}:`, error);
         }
     };
 
@@ -348,7 +349,7 @@ export const useEventExport = (events: AppEvent[]) => {
                 downloadLink.download = 'eventos.png';
                 downloadLink.click();
             }
-            trackDownload('date');
+            await trackDownload('date');
         } catch (e) {
             console.error("Error generando data URL:", e);
             alert("Error al generar la imagen. Puede deberse a restricciones de seguridad del navegador.");
@@ -777,7 +778,7 @@ export const useEventExport = (events: AppEvent[]) => {
                     backgroundColor: null,
                     useCORS: true,
                     scale: 1 // Ensure consistent scale
-                }).then(canvas => {
+                }).then(async canvas => {
                     // Opción 4: Compresión Adaptativa
                     // Calidad dinámica según altura del canvas
                     let quality = 0.85; // Calidad base 85%
@@ -799,7 +800,7 @@ export const useEventExport = (events: AppEvent[]) => {
                         link.href = dataURL;
                         link.click();
                     }
-                    trackDownload('festival');
+                    await trackDownload('festival');
                     document.body.removeChild(tempContainer);
                 }).catch(err => {
                     console.error("Error generating image with html2canvas:", err);
