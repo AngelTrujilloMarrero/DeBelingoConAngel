@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getDatabase, ref, onValue, set, get, runTransaction, query, limitToLast } from 'firebase/database';
+import { getDatabase, ref, onValue, set, get, runTransaction, query, limitToLast, push } from 'firebase/database';
 import { getAnalytics } from 'firebase/analytics';
 
 const firebaseConfig = {
@@ -62,4 +62,4 @@ export const orchestrasRef = ref(db, 'orchestras');
 export const mapUsageRef = ref(db, 'mapUsage');
 export const messagesRef = ref(db, 'guestbook/messages');
 
-export { onValue, set, get, runTransaction, ref, query, limitToLast };
+export { onValue, set, get, runTransaction, ref, query, limitToLast, push };

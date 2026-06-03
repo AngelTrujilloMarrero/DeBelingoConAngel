@@ -55,6 +55,52 @@ export default async function handler(req, res) {
         }
         results.rateLimits = expiredRateLimitKeys.length;
 
+        // 5. Cleanup Download Records (Monthly rollup)
+        const downloadsRef = db.ref('downloads/records');
+        const downloadsSnap = await downloadsRef.once('value');
+        const downloadsData = downloadsSnap.val() || {};
+        
+        const countsByMonth = {};
+        const recordsToDelete = [];
+        
+        const startOfCurrentMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+        
+        Object.entries(downloadsData).forEach(([key, val]) => {
+            const timestamp = val.timestamp;
+            if (timestamp && timestamp < startOfCurrentMonth) {
+                const date = new Date(timestamp);
+                const yearMonth = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                countsByMonth[yearMonth] = (countsByMonth[yearMonth] || 0) + 1;
+                recordsToDelete.push(key);
+            }
+        });
+        
+        if (recordsToDelete.length > 0) {
+            // Update monthly counts in database (merge/add to existing just in case)
+            for (const [yearMonth, count] of Object.entries(countsByMonth)) {
+                const monthlyRef = db.ref(`downloads/monthly/${yearMonth}`);
+                const currentMonthlySnap = await monthlyRef.once('value');
+                const currentMonthlyVal = currentMonthlySnap.val() || 0;
+                await monthlyRef.set(currentMonthlyVal + count);
+            }
+            
+            // Delete only the processed records
+            const updates = {};
+            recordsToDelete.forEach(key => {
+                updates[key] = null;
+            });
+            await downloadsRef.update(updates);
+            
+            results.downloads = {
+                aggregated: countsByMonth,
+                clearedCount: recordsToDelete.length
+            };
+        } else {
+            results.downloads = {
+                clearedCount: 0
+            };
+        }
+
         return res.status(200).json({ success: true, results });
     } catch (error) {
         console.error('[Cleanup Combined Error]:', error.message);

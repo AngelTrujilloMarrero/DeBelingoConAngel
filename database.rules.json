@@ -62,6 +62,19 @@
           ".validate": "newData.hasChildren(['timestamp', 'page', 'country']) && newData.child('timestamp').isNumber() && newData.child('timestamp').val() <= now && newData.child('timestamp').val() > (now - 86400000)"
         }
       }
+    },
+    "downloads": {
+      "records": {
+        ".read": "auth != null && (auth.uid == 'nC4NMCMC7Gha7QH5en25xNQDtLp1' || auth.uid == 'JIdFCV7ppmXAltAajzBdTzI2qYE3')",
+        ".write": "true",
+        "$recordId": {
+          ".validate": "newData.hasChildren(['timestamp', 'type']) && newData.child('timestamp').isNumber() && newData.child('timestamp').val() <= now && newData.child('timestamp').val() > (now - 86400000) && (newData.child('type').val() == 'date' || newData.child('type').val() == 'festival')"
+        }
+      },
+      "monthly": {
+        ".read": "true",
+        ".write": "auth != null && (auth.uid == 'nC4NMCMC7Gha7QH5en25xNQDtLp1' || auth.uid == 'JIdFCV7ppmXAltAajzBdTzI2qYE3')"
+      }
     }
   }
 }

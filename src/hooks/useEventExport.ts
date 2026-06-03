@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import { Event as AppEvent } from '../types';
-import { runTransaction, exportUsageRef } from '../utils/firebase';
+import { runTransaction, exportUsageRef, db, ref, push } from '../utils/firebase';
 import { isEmbeddedBrowser } from '../utils/helpers';
 import html2canvas from 'html2canvas';
 
@@ -58,6 +58,19 @@ export const useEventExport = (events: AppEvent[]) => {
         } catch (e) {
             console.error("Error in global rate limit check:", e);
             return true;
+        }
+    };
+
+    const trackDownload = async (type: 'date' | 'festival') => {
+        try {
+            const recordsRef = ref(db, 'downloads/records');
+            await push(recordsRef, {
+                timestamp: Date.now(),
+                type
+            });
+            console.log(`[Analytics] Download of type ${type} tracked successfully`);
+        } catch (error) {
+            console.error('[Analytics] Error tracking download:', error);
         }
     };
 
@@ -335,6 +348,7 @@ export const useEventExport = (events: AppEvent[]) => {
                 downloadLink.download = 'eventos.png';
                 downloadLink.click();
             }
+            trackDownload('date');
         } catch (e) {
             console.error("Error generando data URL:", e);
             alert("Error al generar la imagen. Puede deberse a restricciones de seguridad del navegador.");
@@ -785,6 +799,7 @@ export const useEventExport = (events: AppEvent[]) => {
                         link.href = dataURL;
                         link.click();
                     }
+                    trackDownload('festival');
                     document.body.removeChild(tempContainer);
                 }).catch(err => {
                     console.error("Error generating image with html2canvas:", err);
