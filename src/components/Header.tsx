@@ -59,7 +59,7 @@ const Header: React.FC<HeaderProps> = ({ searchTerm, setSearchTerm }) => {
     <header
       ref={headerRef}
       onMouseMove={handleMouseMove}
-      className={`sticky top-0 z-50 text-white shadow-xl flex flex-col justify-center items-center cursor-default group transition-all duration-500 ease-in-out bg-[#001f3f] ${headerClasses}`}
+      className={`fixed top-0 left-0 right-0 z-50 text-white shadow-xl flex flex-col justify-center items-center cursor-default group transition-all duration-500 ease-in-out bg-[#001f3f] ${headerClasses}`}
       style={{ overflow: 'visible' }}
     >
       {/* Background Layers */}
