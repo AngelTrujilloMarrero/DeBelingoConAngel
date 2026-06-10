@@ -290,8 +290,8 @@ const MessageBoard: React.FC = () => {
     };
 
     return (
-        <div className="w-full max-w-full mt-0 mb-0 overflow-x-hidden animate-in fade-in slide-in-from-bottom-4 duration-1000">
-            <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white shadow-2xl overflow-hidden">
+        <div className="w-full mt-0 mb-0 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+            <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white shadow-2xl">
                 {/* Header - Centered */}
                 <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-2 md:p-3 border-b border-white/10">
                     <div className="max-w-7xl mx-auto flex flex-col items-center justify-center text-center gap-2">
@@ -315,10 +315,10 @@ const MessageBoard: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="max-w-7xl mx-auto px-3 py-4 sm:p-6 overflow-hidden">
-                    <div className="grid lg:grid-cols-5 gap-6 lg:gap-8">
+                <div className="max-w-7xl mx-auto px-3 py-4 sm:p-6">
+                    <div className="grid lg:grid-cols-5 gap-6 lg:gap-8 min-w-0">
                         {/* Messages List */}
-                        <div className="lg:col-span-3 space-y-3">
+                        <div className="lg:col-span-3 space-y-3 min-w-0">
                             <h4 className="text-xs font-bold text-blue-400 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
                                 <span className="w-8 h-px bg-blue-400/30"></span>
                                 Mensajes Recientes
@@ -353,8 +353,8 @@ const MessageBoard: React.FC = () => {
                                                                     </span>
                                                                 )}
                                                             </div>
-                                                            <div className="bg-gradient-to-r from-gray-800/80 to-gray-700/80 backdrop-blur-sm rounded-2xl rounded-tl-none p-3 border border-gray-600/30 group-hover/msg:border-blue-500/40 transition-all duration-300 shadow-lg hover:shadow-blue-900/10">
-                                                                <p className="text-gray-200 leading-relaxed font-medium break-words whitespace-pre-wrap">{mainMsg.text}</p>
+                                                            <div className="bg-gradient-to-r from-gray-800/80 to-gray-700/80 backdrop-blur-sm rounded-2xl rounded-tl-none p-3 border border-gray-600/30 group-hover/msg:border-blue-500/40 transition-all duration-300 shadow-lg hover:shadow-blue-900/10 min-w-0">
+                                                                <p className="text-gray-200 leading-relaxed font-medium break-words whitespace-pre-wrap break-all sm:break-words">{mainMsg.text}</p>
                                                                 
                                                                 {/* Mostrar imagen si existe */}
                                                                 {mainMsg.imageUrl && (
@@ -407,8 +407,8 @@ const MessageBoard: React.FC = () => {
                                                                     </span>
                                                                     <span className="text-[9px] text-blue-400 font-mono">Respuesta</span>
                                                                 </div>
-                                                                <div className="bg-gradient-to-r from-blue-900/20 to-purple-900/10 backdrop-blur-sm rounded-2xl rounded-tl-none p-3 sm:p-4 border border-blue-500/20 transition-all duration-300 shadow-lg hover:shadow-blue-900/10">
-                                                                    <p className="text-gray-200 leading-relaxed text-sm break-words whitespace-pre-wrap">{reply.text}</p>
+                                                                <div className="bg-gradient-to-r from-blue-900/20 to-purple-900/10 backdrop-blur-sm rounded-2xl rounded-tl-none p-3 sm:p-4 border border-blue-500/20 transition-all duration-300 shadow-lg hover:shadow-blue-900/10 min-w-0">
+                                                                    <p className="text-gray-200 leading-relaxed text-sm break-words whitespace-pre-wrap break-all sm:break-words">{reply.text}</p>
                                                                     
                                                                     {/* Mostrar imagen si existe en respuesta */}
                                                                     {reply.imageUrl && (
@@ -449,13 +449,13 @@ const MessageBoard: React.FC = () => {
                         </div>
 
                         {/* Input Form */}
-                        <div className="lg:col-span-2">
+                        <div className="lg:col-span-2 min-w-0">
                             <div className="sticky top-24">
                                 <form onSubmit={handleSubmit} className="space-y-6 bg-gray-800/40 p-4 sm:p-6 lg:p-8 rounded-3xl border border-gray-700/50 backdrop-blur-sm shadow-xl">
                                     <div className="space-y-3">
-                                        <div className="flex items-center justify-between">
+                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
                                             <label htmlFor="message-textarea" className="text-sm font-bold text-blue-300 uppercase tracking-widest ml-1">Tu Mensaje</label>
-                                            <div className="flex items-center gap-3">
+                                            <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
                                                 <button
                                                     type="button"
                                                     onClick={() => setShowImageUpload(!showImageUpload)}
@@ -465,7 +465,7 @@ const MessageBoard: React.FC = () => {
                                                     <ImageIcon className="w-4 h-4" />
                                                     {imageUrl ? 'Imagen añadida' : 'Añadir imagen'}
                                                 </button>
-                                                <span className="text-[10px] font-mono text-gray-500 bg-black/30 px-2 py-0.5 rounded-full">{newMessage.length}/300</span>
+                                                <span className="text-[10px] font-mono text-gray-500 bg-black/30 px-2 py-0.5 rounded-full whitespace-nowrap">{newMessage.length}/300</span>
                                             </div>
                                         </div>
                                         <textarea
@@ -496,7 +496,7 @@ const MessageBoard: React.FC = () => {
                                                 <span className="text-[10px] font-black text-blue-300 uppercase tracking-[0.2em]">Escudo Anti-Spam</span>
                                                 <ShieldAlert className="w-4 h-4 text-blue-400" />
                                             </div>
-                                            <div className="flex items-center gap-4">
+                                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
                                                 <div className="flex-1 bg-black/40 rounded-xl py-3 text-center font-black text-xl text-blue-100 border border-blue-500/20 select-none shadow-inner tracking-widest">
                                                     {captcha.num1} + {captcha.num2}
                                                 </div>
@@ -507,7 +507,7 @@ const MessageBoard: React.FC = () => {
                                                     placeholder="?"
                                                     aria-label={`Responde: cuanto es ${captcha.num1} + ${captcha.num2}`}
                                                     disabled={dailyLimitReached || sending}
-                                                    className="w-20 sm:w-24 bg-gray-900/80 border border-gray-600/50 rounded-xl py-3 text-center text-lg font-bold focus:ring-4 focus:ring-blue-500/50 outline-none text-white shadow-inner"
+                                                    className="w-full sm:w-24 bg-gray-900/80 border border-gray-600/50 rounded-xl py-3 text-center text-lg font-bold focus:ring-4 focus:ring-blue-500/50 outline-none text-white shadow-inner"
                                                 />
                                             </div>
                                         </div>
