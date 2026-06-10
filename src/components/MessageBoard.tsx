@@ -323,126 +323,128 @@ const MessageBoard: React.FC = () => {
                                 <span className="w-8 h-px bg-blue-400/30"></span>
                                 Mensajes Recientes
                             </h4>
-                            <div className="max-h-[450px] md:max-h-[600px] min-h-[150px] overflow-y-auto pr-2 custom-scrollbar space-y-3" aria-live="polite" aria-atomic="false">
-                                {loading ? (
-                                    <div className="flex flex-col items-center justify-center h-48 space-y-4">
-                                        <RefreshCw className="w-10 h-10 text-blue-500 animate-spin" />
-                                        <p className="text-blue-300 animate-pulse">Sincronizando muro...</p>
-                                    </div>
-                                ) : messages.length > 0 ? (
-                                    (() => {
-                                        // Organizar mensajes en hilos
-                                        const mainMessages = messages.filter(msg => !msg.replyTo);
-                                        const replies = messages.filter(msg => msg.replyTo);
+                            <div className="bg-gray-800/40 p-4 sm:p-6 lg:p-8 rounded-3xl border border-gray-700/50 backdrop-blur-sm shadow-xl">
+                                <div className="max-h-[450px] md:max-h-[600px] min-h-[150px] overflow-y-auto pr-3 custom-scrollbar space-y-3" aria-live="polite" aria-atomic="false">
+                                    {loading ? (
+                                        <div className="flex flex-col items-center justify-center h-48 space-y-4">
+                                            <RefreshCw className="w-10 h-10 text-blue-500 animate-spin" />
+                                            <p className="text-blue-300 animate-pulse">Sincronizando muro...</p>
+                                        </div>
+                                    ) : messages.length > 0 ? (
+                                        (() => {
+                                            // Organizar mensajes en hilos
+                                            const mainMessages = messages.filter(msg => !msg.replyTo);
+                                            const replies = messages.filter(msg => msg.replyTo);
 
-                                        return mainMessages.slice().reverse().map((mainMsg) => {
-                                            const messageReplies = replies.filter(reply => reply.replyTo === mainMsg.id).sort((a, b) => a.timestamp - b.timestamp);
+                                            return mainMessages.slice().reverse().map((mainMsg) => {
+                                                const messageReplies = replies.filter(reply => reply.replyTo === mainMsg.id).sort((a, b) => a.timestamp - b.timestamp);
 
-                                            return (
-                                                <div key={mainMsg.id} className="space-y-3">
-                                                    {/* Mensaje principal */}
-                                                    <div className="group/msg animate-in fade-in slide-in-from-left-4 duration-500">
-                                                        <div className="flex items-center gap-3 mb-1 ml-1">
-                                                            <span className="text-[10px] text-gray-500 font-mono">
-                                                                {new Date(mainMsg.timestamp).toLocaleDateString()} · {new Date(mainMsg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                            </span>
-                                                            {(mainMsg.repliesCount ?? 0) > 0 && (
-                                                                <span className="text-[10px] text-blue-400 font-mono">
-                                                                    {mainMsg.repliesCount} {mainMsg.repliesCount === 1 ? 'respuesta' : 'respuestas'}
+                                                return (
+                                                    <div key={mainMsg.id} className="space-y-3">
+                                                        {/* Mensaje principal */}
+                                                        <div className="group/msg animate-in fade-in slide-in-from-left-4 duration-500">
+                                                            <div className="flex items-center gap-3 mb-1 ml-1">
+                                                                <span className="text-[10px] text-gray-500 font-mono">
+                                                                    {new Date(mainMsg.timestamp).toLocaleDateString()} · {new Date(mainMsg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                                 </span>
-                                                            )}
-                                                        </div>
-                                                        <div className="bg-gradient-to-r from-gray-800/80 to-gray-700/80 backdrop-blur-sm rounded-2xl rounded-tl-none p-3 border border-gray-600/30 group-hover/msg:border-blue-500/40 transition-all duration-300 shadow-lg hover:shadow-blue-900/10">
-                                                            <p className="text-gray-200 leading-relaxed font-medium break-words whitespace-pre-wrap">{mainMsg.text}</p>
-                                                            
-                                                            {/* Mostrar imagen si existe */}
-                                                            {mainMsg.imageUrl && (
-                                                                <div className="mt-3">
-                                                                    <img
-                                                                        src={mainMsg.imageUrl}
-                                                                        alt="Imagen del mensaje"
-                                                                        className="max-w-full h-auto rounded-lg border border-gray-600/50 cursor-pointer hover:border-blue-500/50 transition-colors"
-                                                                        style={{ maxHeight: '300px' }}
-                                                                        onClick={() => handleImageClick(mainMsg.imageUrl)}
-                                                                        onKeyDown={(e) => e.key === 'Enter' && handleImageClick(mainMsg.imageUrl)}
-                                                                        role="button"
-                                                                        tabIndex={0}
-                                                                    />
-                                                                    {mainMsg.imageInfo && (
-                                                                        <div className="mt-1 text-xs text-gray-500">
-                                                                            {mainMsg.imageInfo.name} • {Math.round(mainMsg.imageInfo.size / 1024)}KB
-                                                                        </div>
-                                                                    )}
-                                                                </div>
-                                                            )}
-
-                                                            {/* Botón de respuesta */}
-                                                            <button
-                                                                onClick={() => setReplyingTo(mainMsg.id)}
-                                                                className="mt-3 flex items-center gap-2 text-xs text-gray-400 hover:text-blue-400 transition-colors"
-                                                            >
-                                                                <Reply className="w-3 h-3" />
-                                                                Responder
-                                                            </button>
-                                                        </div>
-                                                    </div>
-
-                                                    {/* Formulario de respuesta si está activo */}
-                                                    {replyingTo === mainMsg.id && (
-                                                        <ReplyForm
-                                                            messageId={mainMsg.id}
-                                                            messageAuthor={mainMsg.author}
-                                                            onSubmit={sendReply}
-                                                            onCancel={() => setReplyingTo(null)}
-                                                        />
-                                                    )}
-
-                                                    {/* Respuestas */}
-                                                    {messageReplies.map((reply, index) => (
-                                                        <div key={reply.id} className="ml-2 sm:ml-4 md:ml-8 animate-in fade-in slide-in-from-left-4 duration-500" style={{ animationDelay: `${(index + 1) * 50}ms` }}>
-                                                            <div className="flex items-center gap-3 mb-1">
-                                                                <span className="text-[9px] text-gray-500 font-mono">
-                                                                    {new Date(reply.timestamp).toLocaleDateString()} · {new Date(reply.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                                </span>
-                                                                <span className="text-[9px] text-blue-400 font-mono">Respuesta</span>
+                                                                {(mainMsg.repliesCount ?? 0) > 0 && (
+                                                                    <span className="text-[10px] text-blue-400 font-mono">
+                                                                        {mainMsg.repliesCount} {mainMsg.repliesCount === 1 ? 'respuesta' : 'respuestas'}
+                                                                    </span>
+                                                                )}
                                                             </div>
-                                                            <div className="bg-gradient-to-r from-blue-900/20 to-purple-900/10 backdrop-blur-sm rounded-2xl rounded-tl-none p-3 sm:p-4 border border-blue-500/20 transition-all duration-300 shadow-lg hover:shadow-blue-900/10">
-                                                                <p className="text-gray-200 leading-relaxed text-sm break-words whitespace-pre-wrap">{reply.text}</p>
+                                                            <div className="bg-gradient-to-r from-gray-800/80 to-gray-700/80 backdrop-blur-sm rounded-2xl rounded-tl-none p-3 border border-gray-600/30 group-hover/msg:border-blue-500/40 transition-all duration-300 shadow-lg hover:shadow-blue-900/10">
+                                                                <p className="text-gray-200 leading-relaxed font-medium break-words whitespace-pre-wrap">{mainMsg.text}</p>
                                                                 
-                                                                {/* Mostrar imagen si existe en respuesta */}
-                                                                {reply.imageUrl && (
-                                                                    <div className="mt-2">
+                                                                {/* Mostrar imagen si existe */}
+                                                                {mainMsg.imageUrl && (
+                                                                    <div className="mt-3">
                                                                         <img
-                                                                            src={reply.imageUrl}
-                                                                            alt="Imagen de la respuesta"
-                                                                            className="max-w-full h-auto rounded-lg border border-blue-500/30 cursor-pointer hover:border-blue-400/50 transition-colors"
-                                                                            style={{ maxHeight: '200px' }}
-                                                                            onClick={() => handleImageClick(reply.imageUrl)}
-                                                                            onKeyDown={(e) => e.key === 'Enter' && handleImageClick(reply.imageUrl)}
+                                                                            src={mainMsg.imageUrl}
+                                                                            alt="Imagen del mensaje"
+                                                                            className="max-w-full h-auto rounded-lg border border-gray-600/50 cursor-pointer hover:border-blue-500/50 transition-colors"
+                                                                            style={{ maxHeight: '300px' }}
+                                                                            onClick={() => handleImageClick(mainMsg.imageUrl)}
+                                                                            onKeyDown={(e) => e.key === 'Enter' && handleImageClick(mainMsg.imageUrl)}
                                                                             role="button"
                                                                             tabIndex={0}
                                                                         />
-                                                                        {reply.imageInfo && (
+                                                                        {mainMsg.imageInfo && (
                                                                             <div className="mt-1 text-xs text-gray-500">
-                                                                                {reply.imageInfo.name} • {Math.round(reply.imageInfo.size / 1024)}KB
+                                                                                {mainMsg.imageInfo.name} • {Math.round(mainMsg.imageInfo.size / 1024)}KB
                                                                             </div>
                                                                         )}
                                                                     </div>
                                                                 )}
+
+                                                                {/* Botón de respuesta */}
+                                                                <button
+                                                                    onClick={() => setReplyingTo(mainMsg.id)}
+                                                                    className="mt-3 flex items-center gap-2 text-xs text-gray-400 hover:text-blue-400 transition-colors"
+                                                                >
+                                                                    <Reply className="w-3 h-3" />
+                                                                    Responder
+                                                                </button>
                                                             </div>
                                                         </div>
-                                                    ))}
-                                                </div>
-                                            );
-                                        });
-                                    })()
-                                ) : (
-                                    <div className="bg-gray-800/30 border border-dashed border-gray-700 rounded-3xl p-12 text-center">
-                                        <MessageSquare className="w-12 h-12 text-gray-600 mx-auto mb-4 opacity-50" />
-                                        <p className="text-gray-500 font-bold text-lg">El muro está vacío</p>
-                                        <p className="text-gray-600 text-sm">¡Sé el primero en dejar un saludo!</p>
-                                    </div>
-                                )}
+
+                                                        {/* Formulario de respuesta si está activo */}
+                                                        {replyingTo === mainMsg.id && (
+                                                            <ReplyForm
+                                                                messageId={mainMsg.id}
+                                                                messageAuthor={mainMsg.author}
+                                                                onSubmit={sendReply}
+                                                                onCancel={() => setReplyingTo(null)}
+                                                            />
+                                                        )}
+
+                                                        {/* Respuestas */}
+                                                        {messageReplies.map((reply, index) => (
+                                                            <div key={reply.id} className="ml-2 sm:ml-4 md:ml-8 animate-in fade-in slide-in-from-left-4 duration-500" style={{ animationDelay: `${(index + 1) * 50}ms` }}>
+                                                                <div className="flex items-center gap-3 mb-1">
+                                                                    <span className="text-[9px] text-gray-500 font-mono">
+                                                                        {new Date(reply.timestamp).toLocaleDateString()} · {new Date(reply.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                    </span>
+                                                                    <span className="text-[9px] text-blue-400 font-mono">Respuesta</span>
+                                                                </div>
+                                                                <div className="bg-gradient-to-r from-blue-900/20 to-purple-900/10 backdrop-blur-sm rounded-2xl rounded-tl-none p-3 sm:p-4 border border-blue-500/20 transition-all duration-300 shadow-lg hover:shadow-blue-900/10">
+                                                                    <p className="text-gray-200 leading-relaxed text-sm break-words whitespace-pre-wrap">{reply.text}</p>
+                                                                    
+                                                                    {/* Mostrar imagen si existe en respuesta */}
+                                                                    {reply.imageUrl && (
+                                                                        <div className="mt-2">
+                                                                            <img
+                                                                                src={reply.imageUrl}
+                                                                                alt="Imagen de la respuesta"
+                                                                                className="max-w-full h-auto rounded-lg border border-blue-500/30 cursor-pointer hover:border-blue-400/50 transition-colors"
+                                                                                style={{ maxHeight: '200px' }}
+                                                                                onClick={() => handleImageClick(reply.imageUrl)}
+                                                                                onKeyDown={(e) => e.key === 'Enter' && handleImageClick(reply.imageUrl)}
+                                                                                role="button"
+                                                                                tabIndex={0}
+                                                                            />
+                                                                            {reply.imageInfo && (
+                                                                                <div className="mt-1 text-xs text-gray-500">
+                                                                                    {reply.imageInfo.name} • {Math.round(reply.imageInfo.size / 1024)}KB
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                );
+                                            });
+                                        })()
+                                    ) : (
+                                        <div className="bg-gray-800/30 border border-dashed border-gray-700 rounded-3xl p-12 text-center">
+                                            <MessageSquare className="w-12 h-12 text-gray-600 mx-auto mb-4 opacity-50" />
+                                            <p className="text-gray-500 font-bold text-lg">El muro está vacío</p>
+                                            <p className="text-gray-600 text-sm">¡Sé el primero en dejar un saludo!</p>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
 
