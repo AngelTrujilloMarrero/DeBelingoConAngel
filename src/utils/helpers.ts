@@ -121,8 +121,7 @@ export function formatDayName(date: Date): string {
   const dayName = date.toLocaleDateString('es-ES', {
     weekday: 'long',
     day: 'numeric',
-    month: 'long',
-    year: 'numeric'
+    month: 'long'
   });
   return capitalizeFirstLetter(dayName);
 }

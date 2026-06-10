@@ -244,11 +244,11 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
 
             return (
               <div key={dayKey} className={`space-y-4 transform-gpu ${dayKey !== Object.keys(eventsByDay).sort()[0] ? 'mt-8 pt-4 border-t border-gray-700/30' : ''}`}>
-                <div className="py-3 bg-gradient-to-r from-transparent via-yellow-400/5 to-transparent">
-                  <h3 className="text-xl md:text-2xl font-bold text-yellow-500/80 flex items-center justify-center gap-3">
-                    <Calendar className="w-6 h-6 text-yellow-500/60" aria-hidden="true" />
+                <div className="py-3 bg-gradient-to-r from-transparent via-yellow-400/10 to-transparent">
+                  <h3 className="text-xl md:text-2xl font-bold text-yellow-400 flex items-center justify-center gap-3">
+                    <Calendar className="w-6 h-6 text-yellow-400/70" aria-hidden="true" />
                     <span className="tracking-wide uppercase">{dayName}</span>
-                    <Calendar className="w-6 h-6 text-yellow-500/60" aria-hidden="true" />
+                    <Calendar className="w-6 h-6 text-yellow-400/70" aria-hidden="true" />
                   </h3>
                 </div>
 
@@ -258,6 +258,9 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                       event.tipo === 'Verbenas' ? 'border-l-purple-400' :
                       event.tipo === 'Fiesta' ? 'border-l-pink-400' :
                       event.tipo === 'Acto' ? 'border-l-amber-400' :
+                      event.tipo === 'Baile Infantil' ? 'border-l-emerald-400' :
+                      event.tipo === 'Orquesta' ? 'border-l-orange-400' :
+                      event.tipo === 'DJ' ? 'border-l-violet-400' :
                       'border-l-gray-400';
                     
                     return (
