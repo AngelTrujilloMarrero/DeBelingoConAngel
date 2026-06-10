@@ -315,15 +315,15 @@ const MessageBoard: React.FC = () => {
                     </div>
                 </div>
 
-                <div className="max-w-7xl mx-auto p-3 md:p-4">
-                    <div className="grid lg:grid-cols-5 gap-0 lg:gap-6">
+                <div className="max-w-7xl mx-auto p-4 sm:p-6">
+                    <div className="grid lg:grid-cols-5 gap-6 lg:gap-8">
                         {/* Messages List */}
                         <div className="lg:col-span-3 space-y-3">
                             <h4 className="text-xs font-bold text-blue-400 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
                                 <span className="w-8 h-px bg-blue-400/30"></span>
                                 Mensajes Recientes
                             </h4>
-                            <div className="max-h-[300px] min-h-[150px] overflow-y-auto pr-2 custom-scrollbar space-y-3" aria-live="polite" aria-atomic="false">
+                            <div className="max-h-[450px] md:max-h-[600px] min-h-[150px] overflow-y-auto pr-2 custom-scrollbar space-y-3" aria-live="polite" aria-atomic="false">
                                 {loading ? (
                                     <div className="flex flex-col items-center justify-center h-48 space-y-4">
                                         <RefreshCw className="w-10 h-10 text-blue-500 animate-spin" />
@@ -353,7 +353,7 @@ const MessageBoard: React.FC = () => {
                                                             )}
                                                         </div>
                                                         <div className="bg-gradient-to-r from-gray-800/80 to-gray-700/80 backdrop-blur-sm rounded-2xl rounded-tl-none p-3 border border-gray-600/30 group-hover/msg:border-blue-500/40 transition-all duration-300 shadow-lg hover:shadow-blue-900/10">
-                                                            <p className="text-gray-200 leading-relaxed font-medium">{mainMsg.text}</p>
+                                                            <p className="text-gray-200 leading-relaxed font-medium break-words whitespace-pre-wrap">{mainMsg.text}</p>
                                                             
                                                             {/* Mostrar imagen si existe */}
                                                             {mainMsg.imageUrl && (
@@ -399,15 +399,15 @@ const MessageBoard: React.FC = () => {
 
                                                     {/* Respuestas */}
                                                     {messageReplies.map((reply, index) => (
-                                                        <div key={reply.id} className="ml-4 md:ml-8 animate-in fade-in slide-in-from-left-4 duration-500" style={{ animationDelay: `${(index + 1) * 50}ms` }}>
+                                                        <div key={reply.id} className="ml-2 sm:ml-4 md:ml-8 animate-in fade-in slide-in-from-left-4 duration-500" style={{ animationDelay: `${(index + 1) * 50}ms` }}>
                                                             <div className="flex items-center gap-3 mb-1">
                                                                 <span className="text-[9px] text-gray-500 font-mono">
                                                                     {new Date(reply.timestamp).toLocaleDateString()} · {new Date(reply.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                                 </span>
                                                                 <span className="text-[9px] text-blue-400 font-mono">Respuesta</span>
                                                             </div>
-                                                            <div className="bg-gradient-to-r from-blue-900/20 to-purple-900/10 backdrop-blur-sm rounded-2xl rounded-tl-none p-4 border border-blue-500/20 transition-all duration-300 shadow-lg hover:shadow-blue-900/10">
-                                                                <p className="text-gray-200 leading-relaxed text-sm">{reply.text}</p>
+                                                            <div className="bg-gradient-to-r from-blue-900/20 to-purple-900/10 backdrop-blur-sm rounded-2xl rounded-tl-none p-3 sm:p-4 border border-blue-500/20 transition-all duration-300 shadow-lg hover:shadow-blue-900/10">
+                                                                <p className="text-gray-200 leading-relaxed text-sm break-words whitespace-pre-wrap">{reply.text}</p>
                                                                 
                                                                 {/* Mostrar imagen si existe en respuesta */}
                                                                 {reply.imageUrl && (
@@ -447,9 +447,9 @@ const MessageBoard: React.FC = () => {
                         </div>
 
                         {/* Input Form */}
-                        <div className="lg:col-span-2 lg:pl-6">
+                        <div className="lg:col-span-2">
                             <div className="sticky top-24">
-                                <form onSubmit={handleSubmit} className="space-y-6 bg-gray-800/40 p-6 lg:p-8 rounded-3xl border border-gray-700/50 backdrop-blur-sm shadow-xl">
+                                <form onSubmit={handleSubmit} className="space-y-6 bg-gray-800/40 p-4 sm:p-6 lg:p-8 rounded-3xl border border-gray-700/50 backdrop-blur-sm shadow-xl">
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between">
                                             <label htmlFor="message-textarea" className="text-sm font-bold text-blue-300 uppercase tracking-widest ml-1">Tu Mensaje</label>
@@ -489,7 +489,7 @@ const MessageBoard: React.FC = () => {
                                     </div>
 
                                     <div className="space-y-6">
-                                        <div className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 p-5 rounded-2xl border border-blue-500/20">
+                                        <div className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 p-4 sm:p-5 rounded-2xl border border-blue-500/20">
                                             <div className="flex items-center justify-between mb-4">
                                                 <span className="text-[10px] font-black text-blue-300 uppercase tracking-[0.2em]">Escudo Anti-Spam</span>
                                                 <ShieldAlert className="w-4 h-4 text-blue-400" />
@@ -505,7 +505,7 @@ const MessageBoard: React.FC = () => {
                                                     placeholder="?"
                                                     aria-label={`Responde: cuanto es ${captcha.num1} + ${captcha.num2}`}
                                                     disabled={dailyLimitReached || sending}
-                                                    className="w-24 bg-gray-900/80 border border-gray-600/50 rounded-xl py-3 text-center text-lg font-bold focus:ring-4 focus:ring-blue-500/50 outline-none text-white shadow-inner"
+                                                    className="w-20 sm:w-24 bg-gray-900/80 border border-gray-600/50 rounded-xl py-3 text-center text-lg font-bold focus:ring-4 focus:ring-blue-500/50 outline-none text-white shadow-inner"
                                                 />
                                             </div>
                                         </div>
@@ -523,7 +523,7 @@ const MessageBoard: React.FC = () => {
                                         <button
                                             type="submit"
                                             disabled={dailyLimitReached || sending || !newMessage.trim() || !userCaptcha}
-                                            className="w-full py-4 px-8 rounded-2xl font-black text-sm uppercase tracking-[0.2em] transition-all duration-300 transform active:scale-95 shadow-xl disabled:opacity-50 disabled:cursor-not-allowed group overflow-hidden relative"
+                                            className="w-full py-3.5 px-6 sm:py-4 sm:px-8 rounded-2xl font-black text-sm uppercase tracking-[0.2em] transition-all duration-300 transform active:scale-95 shadow-xl disabled:opacity-50 disabled:cursor-not-allowed group overflow-hidden relative"
                                         >
                                             <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 transition-transform duration-300 group-hover:scale-105"></div>
                                             <div className="relative flex items-center justify-center gap-3 text-white">

@@ -68,7 +68,7 @@ const ReplyForm: React.FC<ReplyFormProps> = ({ messageId, messageAuthor, onSubmi
   };
 
   return (
-    <div className="ml-4 md:ml-8 mt-3 p-4 bg-gray-800/50 rounded-lg border-l-4 border-blue-500">
+    <div className="ml-2 sm:ml-4 md:ml-8 mt-3 p-3 sm:p-4 bg-gray-800/50 rounded-lg border-l-4 border-blue-500">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2 text-sm text-gray-300">
@@ -149,7 +149,7 @@ const ReplyForm: React.FC<ReplyFormProps> = ({ messageId, messageAuthor, onSubmi
         )}
 
         {/* Botones */}
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <button
             type="submit"
             disabled={sending || !replyText.trim() || !userCaptcha}
