@@ -176,37 +176,35 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
       {/* Header */}
       <div className="bg-blue-600 md:bg-gradient-to-r md:from-blue-600 md:to-purple-600 pt-3 pb-2 md:py-2">
         <h2 className="text-xl md:text-3xl font-bold text-center flex items-center justify-center gap-2 md:gap-3">
-                        <Calendar className="w-5 h-5 md:w-8 md:h-8" aria-hidden="true" />
+                        <Music2 className="w-5 h-5 md:w-8 md:h-8" aria-hidden="true" />
                           Próximas Verbenas
                           <Music2 className="w-5 h-5 md:w-8 md:h-8" aria-hidden="true" />
         </h2>
-        <div className="flex items-center justify-center mt-2 px-2 gap-1.5 flex-nowrap">
+        <div className="flex items-center justify-center mt-2 px-2 gap-3 flex-nowrap">
           {/* Bloque de Actualización - Centrado */}
-          <div className="flex items-center bg-black/60 px-2.5 py-1.5 rounded-full border border-white/10 shadow-lg group/update">
-            <div className="flex items-center gap-1.5">
-              <div className="flex items-center gap-1 text-blue-100/90 text-[8.5px] md:text-xs font-bold whitespace-nowrap">
-                <Clock className="w-3 h-3 md:w-3.5 md:h-3.5 text-blue-400" />
-                <span>ACTUALIZADO: {lastUpdate}</span>
-              </div>
-              
-              {updateInfo.relativeLabel && (
-                <>
-                  <div className="w-px h-3 bg-white/20" />
-                  <div className={`flex items-center px-1.5 py-0.5 rounded-md text-[8.5px] md:text-xs font-black uppercase tracking-wider md:animate-pulse ${updateInfo.badgeClasses}`}>
-                    {updateInfo.relativeLabel}
-                  </div>
-                </>
-              )}
+          <div className="flex items-center gap-1.5 bg-gradient-to-r from-blue-900/40 to-blue-800/20 px-2.5 py-1 rounded">
+            <div className="flex items-center gap-1 text-blue-100/90 text-[8.5px] md:text-xs font-bold whitespace-nowrap">
+              <Clock className="w-3 h-3 md:w-3.5 md:h-3.5 text-blue-400" />
+              <span>ACTUALIZADO: {lastUpdate}</span>
             </div>
+            
+            {updateInfo.relativeLabel && (
+              <>
+                <div className="w-px h-3 bg-white/20" />
+                <div className={`flex items-center px-1.5 py-0.5 rounded-md text-[8.5px] md:text-xs font-black uppercase tracking-wider md:animate-pulse ${updateInfo.badgeClasses}`}>
+                  {updateInfo.relativeLabel}
+                </div>
+              </>
+            )}
           </div>
 
-          {/* Bloque del Muro - Pegado al lado */}
+          {/* Bloque del Muro */}
           {lastMessageDays !== null && (
-            <div className={`flex items-center gap-1 px-2 py-1.5 rounded-full bg-black/60 border transition-all duration-300 shadow-lg shrink-0 ${
-              lastMessageDays === 0 ? 'text-emerald-400 border-emerald-500/30' :
-              lastMessageDays === 1 ? 'text-amber-400 border-amber-500/30' :
-              lastMessageDays <= 3 ? 'text-orange-400 border-orange-500/30' :
-              'text-red-400 border-red-500/30'
+            <div className={`flex items-center gap-1 shrink-0 bg-gradient-to-r from-gray-800/40 to-gray-700/20 px-2.5 py-1 rounded ${
+              lastMessageDays === 0 ? 'text-emerald-400' :
+              lastMessageDays === 1 ? 'text-amber-400' :
+              lastMessageDays <= 3 ? 'text-orange-400' :
+              'text-red-400'
             }`} title={`Último mensaje en el muro: ${lastMessageDays === 0 ? 'hoy' : (lastMessageDays === 1 ? 'ayer' : `hace ${lastMessageDays} días`)}`}>
               <Mail className="w-3 h-3 md:w-3.5 md:h-3.5" />
               <span className="text-[8.5px] md:text-xs font-black uppercase tracking-tighter whitespace-nowrap">
@@ -246,78 +244,65 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
 
             return (
               <div key={dayKey} className={`space-y-4 transform-gpu ${dayKey !== Object.keys(eventsByDay).sort()[0] ? 'mt-8 pt-4 border-t border-gray-700/30' : ''}`}>
-                <div className="py-3 bg-gray-800/50 md:bg-gradient-to-r md:from-transparent md:via-yellow-400/15 md:to-transparent border-y border-yellow-400/20">
-                  <h3 className="text-xl md:text-2xl font-bold text-yellow-400 flex items-center justify-center gap-3">
-                    <Calendar className="w-6 h-6 text-yellow-500" aria-hidden="true" />
+                <div className="py-3 bg-gradient-to-r from-transparent via-yellow-400/5 to-transparent">
+                  <h3 className="text-xl md:text-2xl font-bold text-yellow-500/80 flex items-center justify-center gap-3">
+                    <Calendar className="w-6 h-6 text-yellow-500/60" aria-hidden="true" />
                     <span className="tracking-wide uppercase">{dayName}</span>
-                    <Calendar className="w-6 h-6 text-yellow-500" aria-hidden="true" />
+                    <Calendar className="w-6 h-6 text-yellow-500/60" aria-hidden="true" />
                   </h3>
                 </div>
 
-                <div className="space-y-3">
-                  {sortedDayEvents.map((event) => (
+                <div className="space-y-2">
+                  {sortedDayEvents.map((event) => {
+                    const tipoColor = event.tipo === 'Baile Normal' ? 'border-l-blue-400' :
+                      event.tipo === 'Verbenas' ? 'border-l-purple-400' :
+                      event.tipo === 'Fiesta' ? 'border-l-pink-400' :
+                      event.tipo === 'Acto' ? 'border-l-amber-400' :
+                      'border-l-gray-400';
+                    
+                    return (
                     <div
                       key={event.id}
                       onDoubleClick={() => toggleEvent(event.id)}
-                      className="bg-gray-800 md:bg-gray-800/80 md:bg-gradient-to-r md:from-gray-800/50 md:to-gray-700/50 rounded-lg p-4 border border-gray-600/30 hover:border-blue-400/50 md:transition-all md:duration-300 hover:shadow-lg hover:shadow-blue-500/20 cursor-pointer select-none group transform-gpu will-change-transform"
+                      className={`bg-gray-800/90 rounded-r-lg p-3 md:p-4 border-l-4 ${tipoColor} border border-gray-700/50 hover:bg-gray-750 cursor-pointer select-none group transition-colors duration-200`}
                     >
-                      <div className="flex flex-wrap items-center gap-4 text-center md:text-left min-w-0">
-                        <div className="flex items-center gap-2 text-blue-300 font-bold">
-                          <Clock className="w-5 h-5" aria-hidden="true" />
-                          <span className="text-lg">{event.hora}H</span>
+                      <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4 text-center min-w-0">
+                        <div className="flex items-center gap-1.5 text-white font-mono font-bold">
+                          <span className="text-base md:text-lg">{event.hora}</span>
+                          <span className="text-xs text-gray-400">H</span>
                         </div>
 
                         {event.tipo !== 'Baile Normal' && (
-                          <div className="px-3 py-1 bg-cyan-500/20 text-cyan-300 rounded-full text-sm font-medium border border-cyan-500/30">
+                          <div className="px-2 py-0.5 bg-cyan-500/15 text-cyan-300 rounded text-xs font-medium border border-cyan-500/20">
                             {event.tipo}
                           </div>
                         )}
 
-                        <div className="flex items-center gap-2 text-gray-300">
-                          <MapPin className="w-5 h-5" aria-hidden="true" />
-                          <span>
+                        <div className="flex items-center gap-1.5 text-gray-300">
+                          <MapPin className="w-4 h-4 text-gray-500" aria-hidden="true" />
+                          <span className="text-sm">
                             {event.lugar ? `${event.lugar}, ` : ''}{event.municipio}
                           </span>
                         </div>
 
-                        <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-2">
                           <WeatherIcon
                             date={event.day}
                             municipio={event.municipio}
                             time={event.hora}
                             alert={alertsByEvent[event.id]}
                           />
-                          <a
-                            href={generateTransitLink(event)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                             className="flex items-center px-3 py-1.5 bg-green-900 md:bg-green-900/40 md:bg-gradient-to-r md:from-green-500/20 md:to-green-600/20 text-green-300 rounded-lg text-sm font-medium border border-green-500/30 hover:from-green-500/30 hover:to-green-600/30 hover:border-green-400/50 md:transition-all md:duration-300 hover:shadow-lg hover:shadow-green-500/20"
-                            title={`Cómo llegar en guagua a ${event.municipio}`}
-                          >
-                            <TITSALogo />
-                          </a>
                           <button
                             onClick={() => toggleEvent(event.id)}
                             aria-label={expandedEventIds.includes(event.id) ? "Ocultar detalles de la formación" : "Ver detalles de la formación"}
-                            className="p-1.5 text-gray-400 hover:text-white transition-colors"
+                            className="p-1 text-gray-500 hover:text-white transition-colors"
                           >
-                            <ChevronDown className={`w-5 h-5 transition-transform duration-300 ${expandedEventIds.includes(event.id) ? 'rotate-180' : ''}`} />
+                            <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${expandedEventIds.includes(event.id) ? 'rotate-180' : ''}`} />
                           </button>
-
-                          <a
-                            href={generateDirectionsLink(event)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 px-3 py-1.5 bg-emerald-900 md:bg-gradient-to-r md:from-emerald-500/20 md:to-teal-500/20 text-emerald-300 rounded-lg text-sm font-medium border border-emerald-500/30 hover:from-emerald-500/30 hover:to-teal-500/30 hover:border-emerald-400/50 md:transition-all md:duration-300 hover:shadow-lg hover:shadow-emerald-500/20"
-                            title={`Cómo llegar a ${event.lugar ? event.lugar + ', ' : ''}${event.municipio}`}
-                          >
-                            <Navigation className="w-4 h-4" />
-                            <span className="hidden sm:inline">Cómo llegar</span>
-                          </a>
                         </div>
 
                         <div className="flex items-center gap-2 text-green-400 font-semibold min-w-0 max-w-full">
-                          <Music2 className="w-5 h-5 flex-shrink-0" />
+                          <Music2 className="w-4 h-4 flex-shrink-0 opacity-60" />
                           <span className="text-sm leading-relaxed min-w-0 orchestra-names-container">
                             {event.orquesta.split(',').map((orquesta, i, arr) => (
                               <span key={`${event.id}-${i}`} className="orchestra-name-unit">
@@ -376,6 +361,28 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                                   );
                                 })}
                               </div>
+                              <div className="flex flex-wrap gap-3 pt-2 border-t border-gray-700/50">
+                                <a
+                                  href={generateTransitLink(event)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-2 px-4 py-2 bg-green-900/50 text-green-300 rounded-lg text-sm font-medium border border-green-500/30 hover:bg-green-500/30 hover:border-green-400/50 transition-all"
+                                  title={`Cómo llegar en guagua a ${event.municipio}`}
+                                >
+                                  <TITSALogo />
+                                  <span>TITSA</span>
+                                </a>
+                                <a
+                                  href={generateDirectionsLink(event)}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="flex items-center gap-2 px-4 py-2 bg-emerald-900/50 text-emerald-300 rounded-lg text-sm font-medium border border-emerald-500/30 hover:bg-emerald-500/30 hover:border-emerald-400/50 transition-all"
+                                  title={`Cómo llegar a ${event.lugar ? event.lugar + ', ' : ''}${event.municipio}`}
+                                >
+                                  <Navigation className="w-4 h-4" />
+                                  <span>Cómo llegar</span>
+                                </a>
+                              </div>
                               <div className="bg-yellow-500/10 border border-yellow-500/20 p-3 rounded text-yellow-200/80 text-xs italic flex items-start gap-2">
                                 <ExternalLink className="w-4 h-4 mt-0.5 flex-shrink-0" />
                                 <div>
@@ -403,7 +410,8 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                         )
                       }
                     </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             );

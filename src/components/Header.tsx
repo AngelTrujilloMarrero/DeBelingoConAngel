@@ -1,5 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { Search, X, ArrowLeft, Send } from 'lucide-react';
+import { Search, X } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import Navigation from './Navigation';
 
@@ -117,15 +117,7 @@ const Header: React.FC<HeaderProps> = ({ searchTerm, setSearchTerm }) => {
               ))}
             </h1>
           </div>
-          
-          {/* Telegram Badge */}
-          <div className="mt-1.5 md:mt-2 md:mb-3 opacity-90 hover:opacity-100 transition-opacity">
-            <a href="https://t.me/debelingoconangel" target="_blank" rel="noopener noreferrer" 
-               className="inline-flex items-center gap-1.5 px-3 py-0.5 md:py-1 rounded-full bg-[#2AABEE]/20 border border-[#2AABEE]/40 text-[#e0f4ff] text-[9px] md:text-xs font-medium hover:bg-[#2AABEE]/40 hover:scale-105 transition-all shadow-[0_0_15px_rgba(42,171,238,0.3)]">
-              <Send className="w-3 h-3" />
-              <span>Únete al canal oficial de Telegram</span>
-            </a>
-          </div>
+
         </div>
 
         {/* Navigation + Search Button - ALWAYS VISIBLE */}
