@@ -61,7 +61,7 @@ function AppContent() {
         <Header searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
 
         {/* Main Content - Cambia según la ruta */}
-        <div className="w-full pt-16 md:pt-24">
+        <div className="w-full pt-16 md:pt-24 overflow-x-hidden">
           <Routes>
             <Route path="/" element={<EventosPage events={filteredEvents} recentActivity={recentActivity} searchTerm={searchTerm} />} />
             <Route path="/mapa" element={<MapaPage events={events} />} />
