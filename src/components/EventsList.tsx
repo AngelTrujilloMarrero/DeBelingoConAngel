@@ -279,12 +279,37 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                       event.tipo === 'Cerveza' ? 'border-l-lime-400' :
                       event.tipo === 'Otro' ? 'border-l-gray-500' :
                       'border-l-gray-400';
+
+                    const tipoGradient = event.tipo === 'Baile Normal' ? 'linear-gradient(to right, rgba(96,165,250,0.15), transparent 40%)' :
+                      event.tipo === 'Romería' ? 'linear-gradient(to right, rgba(245,158,11,0.15), transparent 40%)' :
+                      event.tipo === 'Baile Magos' ? 'linear-gradient(to right, rgba(168,85,247,0.15), transparent 40%)' :
+                      event.tipo === 'Tapas y Vinos' ? 'linear-gradient(to right, rgba(251,113,133,0.15), transparent 40%)' :
+                      event.tipo === 'Paseo Romero' ? 'linear-gradient(to right, rgba(249,115,22,0.15), transparent 40%)' :
+                      event.tipo === 'Tapas' ? 'linear-gradient(to right, rgba(248,113,113,0.15), transparent 40%)' :
+                      event.tipo === 'Romería Chica' ? 'linear-gradient(to right, rgba(251,191,36,0.15), transparent 40%)' :
+                      event.tipo === 'Carnaval' ? 'linear-gradient(to right, rgba(232,121,249,0.15), transparent 40%)' :
+                      event.tipo === 'Taifa' ? 'linear-gradient(to right, rgba(250,204,21,0.15), transparent 40%)' :
+                      event.tipo === 'Infantil' ? 'linear-gradient(to right, rgba(52,211,153,0.15), transparent 40%)' :
+                      event.tipo === 'Inclusiva' ? 'linear-gradient(to right, rgba(45,212,191,0.15), transparent 40%)' :
+                      event.tipo === 'Vinos' ? 'linear-gradient(to right, rgba(236,72,153,0.15), transparent 40%)' :
+                      event.tipo === 'Aniversario' ? 'linear-gradient(to right, rgba(129,140,248,0.15), transparent 40%)' :
+                      event.tipo === 'Solidario' ? 'linear-gradient(to right, rgba(34,211,238,0.15), transparent 40%)' :
+                      event.tipo === 'Romería Barquera' ? 'linear-gradient(to right, rgba(249,115,22,0.15), transparent 40%)' :
+                      event.tipo === 'Pamela' ? 'linear-gradient(to right, rgba(249,168,212,0.15), transparent 40%)' :
+                      event.tipo === 'Blanco' ? 'linear-gradient(to right, rgba(209,213,219,0.15), transparent 40%)' :
+                      event.tipo === 'Sombrero' ? 'linear-gradient(to right, rgba(252,211,77,0.15), transparent 40%)' :
+                      event.tipo === 'Sardinada' ? 'linear-gradient(to right, rgba(56,189,248,0.15), transparent 40%)' :
+                      event.tipo === 'FIN DE AÑO' ? 'linear-gradient(to right, rgba(239,68,68,0.15), transparent 40%)' :
+                      event.tipo === 'Cerveza' ? 'linear-gradient(to right, rgba(163,230,53,0.15), transparent 40%)' :
+                      event.tipo === 'Otro' ? 'linear-gradient(to right, rgba(107,114,128,0.15), transparent 40%)' :
+                      'linear-gradient(to right, rgba(156,163,175,0.15), transparent 40%)';
                     
                     return (
                     <div
                       key={event.id}
                       onDoubleClick={() => toggleEvent(event.id)}
-                      className={`bg-gray-800/90 rounded-r-lg p-3 md:p-4 border-l-4 ${tipoColor} border border-gray-700/50 hover:bg-gray-750 cursor-pointer select-none group transition-colors duration-200`}
+                      style={{ background: tipoGradient }}
+                      className={`rounded-r-lg p-3 md:p-4 border-l-4 ${tipoColor} border border-gray-700/50 hover:brightness-110 cursor-pointer select-none group transition-all duration-200`}
                     >
                       <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4 text-center min-w-0">
                         <div className="flex items-center gap-1.5 text-white font-mono font-bold">
