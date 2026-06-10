@@ -255,12 +255,27 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                 <div className="space-y-2">
                   {sortedDayEvents.map((event) => {
                     const tipoColor = event.tipo === 'Baile Normal' ? 'border-l-blue-400' :
-                      event.tipo === 'Verbenas' ? 'border-l-purple-400' :
-                      event.tipo === 'Fiesta' ? 'border-l-pink-400' :
-                      event.tipo === 'Acto' ? 'border-l-amber-400' :
-                      event.tipo === 'Baile Infantil' ? 'border-l-emerald-400' :
-                      event.tipo === 'Orquesta' ? 'border-l-orange-400' :
-                      event.tipo === 'DJ' ? 'border-l-violet-400' :
+                      event.tipo === 'Romería' ? 'border-l-amber-500' :
+                      event.tipo === 'Baile Magos' ? 'border-l-purple-500' :
+                      event.tipo === 'Tapas y Vinos' ? 'border-l-rose-400' :
+                      event.tipo === 'Paseo Romero' ? 'border-l-orange-400' :
+                      event.tipo === 'Tapas' ? 'border-l-red-400' :
+                      event.tipo === 'Romería Chica' ? 'border-l-amber-400' :
+                      event.tipo === 'Carnaval' ? 'border-l-fuchsia-400' :
+                      event.tipo === 'Taifa' ? 'border-l-yellow-400' :
+                      event.tipo === 'Infantil' ? 'border-l-emerald-400' :
+                      event.tipo === 'Inclusiva' ? 'border-l-teal-400' :
+                      event.tipo === 'Vinos' ? 'border-l-pink-500' :
+                      event.tipo === 'Aniversario' ? 'border-l-indigo-400' :
+                      event.tipo === 'Solidario' ? 'border-l-cyan-400' :
+                      event.tipo === 'Romería Barquera' ? 'border-l-orange-500' :
+                      event.tipo === 'Pamela' ? 'border-l-pink-300' :
+                      event.tipo === 'Blanco' ? 'border-l-gray-300' :
+                      event.tipo === 'Sombrero' ? 'border-l-amber-300' :
+                      event.tipo === 'Sardinada' ? 'border-l-sky-400' :
+                      event.tipo === 'FIN DE AÑO' ? 'border-l-red-500' :
+                      event.tipo === 'Cerveza' ? 'border-l-lime-400' :
+                      event.tipo === 'Otro' ? 'border-l-gray-500' :
                       'border-l-gray-400';
                     
                     return (
