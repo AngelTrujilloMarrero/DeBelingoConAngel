@@ -174,13 +174,15 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
   return (
     <div className="bg-gray-900 md:bg-gradient-to-br md:from-gray-900 md:via-gray-800 md:to-gray-900 text-white">
       {/* Header */}
-      <div className="bg-blue-600 md:bg-gradient-to-r md:from-blue-600 md:to-purple-600 pt-3 pb-2 md:py-2">
+      <div className="relative bg-blue-600 md:bg-gradient-to-r md:from-blue-600 md:to-purple-600 pt-3 pb-2 md:py-2">
+        <div className="absolute inset-x-0 top-0 h-4 bg-gradient-to-b from-gray-900 to-transparent pointer-events-none z-10" />
+        <div className="absolute inset-x-0 bottom-0 h-4 bg-gradient-to-t from-gray-900 to-transparent pointer-events-none z-10" />
         <h2 className="text-xl md:text-3xl font-bold text-center flex items-center justify-center gap-2 md:gap-3">
                         <Music2 className="w-5 h-5 md:w-8 md:h-8" aria-hidden="true" />
                           Próximas Verbenas
                           <Music2 className="w-5 h-5 md:w-8 md:h-8" aria-hidden="true" />
         </h2>
-        <div className="flex items-center justify-center mt-2 px-2 gap-3 flex-nowrap">
+        <div className="flex items-center justify-center mt-0.5 px-2 gap-3 flex-nowrap">
           {/* Bloque de Actualización - Centrado */}
           <div className="flex items-center gap-1.5 bg-gradient-to-r from-blue-900/40 to-blue-800/20 px-2.5 py-1 rounded">
             <div className="flex items-center gap-1 text-blue-100/90 text-[8.5px] md:text-xs font-bold whitespace-nowrap">
