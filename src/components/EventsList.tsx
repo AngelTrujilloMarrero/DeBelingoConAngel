@@ -136,6 +136,26 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
     return { eventsByDay: grouped, sortedEvents: sorted, lastUpdate: update, updateInfo: info };
   }, [events, recentActivity]);
 
+  const fixedTypeSet = useMemo(() => new Set([
+    'Baile Normal', 'Romería', 'Baile Magos', 'Tapas y Vinos', 'Paseo Romero',
+    'Tapas', 'Romería Chica', 'Carnaval', 'Taifa', 'Infantil', 'Inclusiva',
+    'Vinos', 'Aniversario', 'Solidario', 'Romería Barquera', 'Pamela',
+    'Blanco', 'Sombrero', 'Sardinada', 'FIN DE AÑO', 'Cerveza', 'Otro'
+  ]), []);
+
+  const activeEventTypes = useMemo(() => {
+    const displayedEvents = Object.values(eventsByDay).flat();
+    const uniqueTypes = [...new Set(displayedEvents.map(e => e.tipo))];
+    // hex palette different from fixed ones (not blue/amber/purple/rose/orange/red/yellow/fuchsia/emerald/teal/pink/indigo/cyan/lime/sky/gray)
+    const palette = ['#c084fc','#f97316','#84cc16','#06b6d4','#d946ef','#10b981','#f43f5e','#8b5cf6','#eab308','#14b8a6'];
+    let pi = 0;
+    return uniqueTypes.map(t => {
+      const isFixed = fixedTypeSet.has(t);
+      const hex = isFixed ? null : palette[pi++ % palette.length];
+      return { tipo: t, isFixed, hex };
+    });
+  }, [eventsByDay, fixedTypeSet]);
+
   const toggleEvent = (id: string) => {
     setExpandedEventIds(prev =>
       prev.includes(id) ? prev.filter(eid => eid !== id) : [...prev, id]
@@ -218,7 +238,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
       </div>
 
       {/* Events List */}
-      <div className="p-6">
+      <div className="px-6 pb-6 -mt-1">
         {events.length === 0 && searchTerm ? (
           <div className="py-20 text-center space-y-4 md:animate-in md:fade-in md:zoom-in md:duration-500">
             <div className="bg-gray-800/50 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 border border-gray-700">
@@ -277,7 +297,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                       event.tipo === 'Sardinada' ? 'border-l-sky-400 border-r-sky-400' :
                       event.tipo === 'FIN DE AÑO' ? 'border-l-red-500 border-r-red-500' :
                       event.tipo === 'Cerveza' ? 'border-l-lime-400 border-r-lime-400' :
-                      event.tipo === 'Otro' ? 'border-l-gray-500 border-r-gray-500' :
+                      event.tipo === 'Otro' ? 'border-l-gray-400 border-r-gray-400' :
                       'border-l-gray-400 border-r-gray-400';
 
                     const tipoGradient = event.tipo === 'Baile Normal' ? 'linear-gradient(to right, rgba(96,165,250,0.15), transparent 50%, rgba(96,165,250,0.15))' :
@@ -301,15 +321,23 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                       event.tipo === 'Sardinada' ? 'linear-gradient(to right, rgba(56,189,248,0.15), transparent 50%, rgba(56,189,248,0.15))' :
                       event.tipo === 'FIN DE AÑO' ? 'linear-gradient(to right, rgba(239,68,68,0.15), transparent 50%, rgba(239,68,68,0.15))' :
                       event.tipo === 'Cerveza' ? 'linear-gradient(to right, rgba(163,230,53,0.15), transparent 50%, rgba(163,230,53,0.15))' :
-                      event.tipo === 'Otro' ? 'linear-gradient(to right, rgba(107,114,128,0.15), transparent 50%, rgba(107,114,128,0.15))' :
+                      event.tipo === 'Otro' ? 'linear-gradient(to right, rgba(156,163,175,0.15), transparent 50%, rgba(156,163,175,0.15))' :
                       'linear-gradient(to right, rgba(156,163,175,0.15), transparent 50%, rgba(156,163,175,0.15))';
                     
                     return (
+                    (() => {
+                      const isFixedType = fixedTypeSet.has(event.tipo);
+                      const info = !isFixedType ? activeEventTypes.find(t => t.tipo === event.tipo) : null;
+                      const hexC = info?.hex;
+                      const cardBg = isFixedType ? tipoGradient : `linear-gradient(to right, ${hexC}26, transparent 50%, ${hexC}26)`;
+                      const borderCls = isFixedType ? `border-l-4 border-r-4 ${tipoColor}` : 'border-l-4 border-r-4';
+                      const borderSty = isFixedType ? {} : { borderLeftColor: hexC, borderRightColor: hexC };
+                      return (
                     <div
                       key={event.id}
                       onDoubleClick={() => toggleEvent(event.id)}
-                      style={{ background: tipoGradient }}
-                      className={`p-3 md:p-4 border-l-4 border-r-4 ${tipoColor} border border-gray-700/50 hover:brightness-110 cursor-pointer select-none group transition-all duration-200`}
+                      style={{ background: cardBg, ...borderSty }}
+                      className={`p-3 md:p-4 ${borderCls} border border-gray-700/50 hover:brightness-110 cursor-pointer select-none group transition-all duration-200`}
                     >
                       <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4 text-center min-w-0">
                         <div className="flex items-center gap-1.5 text-white font-mono font-bold">
@@ -456,12 +484,42 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                       }
                     </div>
                     );
+                    })()
+                    );
                   })}
                 </div>
               </div>
             );
           }))}
       </div >
+
+      {/* Leyenda de colores — solo tipos activos */}
+      {activeEventTypes.length > 0 && (() => {
+        const bgClass: Record<string, string> = {
+          'Baile Normal': 'bg-blue-400', 'Romería': 'bg-amber-500', 'Baile Magos': 'bg-purple-500',
+          'Tapas y Vinos': 'bg-rose-400', 'Paseo Romero': 'bg-orange-400', 'Tapas': 'bg-red-400',
+          'Romería Chica': 'bg-amber-400', 'Carnaval': 'bg-fuchsia-400', 'Taifa': 'bg-yellow-400',
+          'Infantil': 'bg-emerald-400', 'Inclusiva': 'bg-teal-400', 'Vinos': 'bg-pink-500',
+          'Aniversario': 'bg-indigo-400', 'Solidario': 'bg-cyan-400', 'Romería Barquera': 'bg-orange-500',
+          'Pamela': 'bg-pink-300', 'Blanco': 'bg-gray-300', 'Sombrero': 'bg-amber-300',
+          'Sardinada': 'bg-sky-400', 'FIN DE AÑO': 'bg-red-500', 'Cerveza': 'bg-lime-400', 'Otro': 'bg-gray-400'
+        };
+        return (
+          <div className="px-6 pb-4">
+            <div className="flex flex-wrap justify-center gap-x-4 gap-y-1.5 text-[10px] text-gray-500">
+              {activeEventTypes.map(({ tipo, isFixed, hex }) => (
+                <span key={tipo} className="flex items-center gap-1">
+                  <span
+                    className={`w-3 h-0.5 rounded-full inline-block ${isFixed ? bgClass[tipo] || '' : ''}`}
+                    style={isFixed ? {} : { backgroundColor: hex! }}
+                  ></span>
+                  {tipo}
+                </span>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Footer / Últimos Movimientos */}
       <div
