@@ -208,9 +208,9 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
               lastMessageDays <= 3 ? 'text-orange-400' :
               'text-red-400'
             }`} title={`Último mensaje en el muro: ${lastMessageDays === 0 ? 'hoy' : (lastMessageDays === 1 ? 'ayer' : `hace ${lastMessageDays} días`)}`}>
-              <Mail className="w-3 h-3 md:w-3.5 md:h-3.5" />
+              <Mail className="w-3 h-3 md:w-3.5 md:h-3.5 text-blue-400" />
               <span className="text-[8.5px] md:text-xs font-black uppercase tracking-tighter whitespace-nowrap">
-                {lastMessageDays === 0 ? 'Muro: Hoy' : `Muro: ${lastMessageDays}d`}
+                <span className="text-white">Muro: </span>{lastMessageDays === 0 ? <span className="text-emerald-400">Hoy</span> : <span className="text-emerald-400">{lastMessageDays}d</span>}
               </span>
             </div>
           )}
@@ -218,7 +218,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
       </div>
 
       {/* Events List */}
-      <div className="p-6 space-y-6">
+      <div className="p-6">
         {events.length === 0 && searchTerm ? (
           <div className="py-20 text-center space-y-4 md:animate-in md:fade-in md:zoom-in md:duration-500">
             <div className="bg-gray-800/50 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-6 border border-gray-700">
@@ -245,8 +245,8 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
             const sortedDayEvents = sortEventsByDateTime(dayEvents);
 
             return (
-              <div key={dayKey} className={`space-y-4 transform-gpu ${dayKey !== Object.keys(eventsByDay).sort()[0] ? 'mt-8 pt-4 border-t border-gray-700/30' : ''}`}>
-                <div className="py-3 bg-gradient-to-r from-transparent via-yellow-400/10 to-transparent">
+              <div key={dayKey} className={`transform-gpu ${dayKey !== Object.keys(eventsByDay).sort()[0] ? 'border-t border-gray-700/30' : ''}`}>
+                <div className="mt-3 mb-3 py-3 bg-gradient-to-r from-transparent via-yellow-400/10 to-transparent">
                   <h3 className="text-xl md:text-2xl font-bold text-yellow-400 flex items-center justify-center gap-3">
                     <Calendar className="w-6 h-6 text-yellow-400/70" aria-hidden="true" />
                     <span className="tracking-wide uppercase">{dayName}</span>
