@@ -256,76 +256,76 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
 
                 <div className="space-y-2">
                   {sortedDayEvents.map((event) => {
-                    const tipoColor = event.tipo === 'Baile Normal' ? 'border-l-blue-400' :
-                      event.tipo === 'Romería' ? 'border-l-amber-500' :
-                      event.tipo === 'Baile Magos' ? 'border-l-purple-500' :
-                      event.tipo === 'Tapas y Vinos' ? 'border-l-rose-400' :
-                      event.tipo === 'Paseo Romero' ? 'border-l-orange-400' :
-                      event.tipo === 'Tapas' ? 'border-l-red-400' :
-                      event.tipo === 'Romería Chica' ? 'border-l-amber-400' :
-                      event.tipo === 'Carnaval' ? 'border-l-fuchsia-400' :
-                      event.tipo === 'Taifa' ? 'border-l-yellow-400' :
-                      event.tipo === 'Infantil' ? 'border-l-emerald-400' :
-                      event.tipo === 'Inclusiva' ? 'border-l-teal-400' :
-                      event.tipo === 'Vinos' ? 'border-l-pink-500' :
-                      event.tipo === 'Aniversario' ? 'border-l-indigo-400' :
-                      event.tipo === 'Solidario' ? 'border-l-cyan-400' :
-                      event.tipo === 'Romería Barquera' ? 'border-l-orange-500' :
-                      event.tipo === 'Pamela' ? 'border-l-pink-300' :
-                      event.tipo === 'Blanco' ? 'border-l-gray-300' :
-                      event.tipo === 'Sombrero' ? 'border-l-amber-300' :
-                      event.tipo === 'Sardinada' ? 'border-l-sky-400' :
-                      event.tipo === 'FIN DE AÑO' ? 'border-l-red-500' :
-                      event.tipo === 'Cerveza' ? 'border-l-lime-400' :
-                      event.tipo === 'Otro' ? 'border-l-gray-500' :
-                      'border-l-gray-400';
+                    const tipoColor = event.tipo === 'Baile Normal' ? 'border-l-blue-400 border-r-blue-400' :
+                      event.tipo === 'Romería' ? 'border-l-amber-500 border-r-amber-500' :
+                      event.tipo === 'Baile Magos' ? 'border-l-purple-500 border-r-purple-500' :
+                      event.tipo === 'Tapas y Vinos' ? 'border-l-rose-400 border-r-rose-400' :
+                      event.tipo === 'Paseo Romero' ? 'border-l-orange-400 border-r-orange-400' :
+                      event.tipo === 'Tapas' ? 'border-l-red-400 border-r-red-400' :
+                      event.tipo === 'Romería Chica' ? 'border-l-amber-400 border-r-amber-400' :
+                      event.tipo === 'Carnaval' ? 'border-l-fuchsia-400 border-r-fuchsia-400' :
+                      event.tipo === 'Taifa' ? 'border-l-yellow-400 border-r-yellow-400' :
+                      event.tipo === 'Infantil' ? 'border-l-emerald-400 border-r-emerald-400' :
+                      event.tipo === 'Inclusiva' ? 'border-l-teal-400 border-r-teal-400' :
+                      event.tipo === 'Vinos' ? 'border-l-pink-500 border-r-pink-500' :
+                      event.tipo === 'Aniversario' ? 'border-l-indigo-400 border-r-indigo-400' :
+                      event.tipo === 'Solidario' ? 'border-l-cyan-400 border-r-cyan-400' :
+                      event.tipo === 'Romería Barquera' ? 'border-l-orange-500 border-r-orange-500' :
+                      event.tipo === 'Pamela' ? 'border-l-pink-300 border-r-pink-300' :
+                      event.tipo === 'Blanco' ? 'border-l-gray-300 border-r-gray-300' :
+                      event.tipo === 'Sombrero' ? 'border-l-amber-300 border-r-amber-300' :
+                      event.tipo === 'Sardinada' ? 'border-l-sky-400 border-r-sky-400' :
+                      event.tipo === 'FIN DE AÑO' ? 'border-l-red-500 border-r-red-500' :
+                      event.tipo === 'Cerveza' ? 'border-l-lime-400 border-r-lime-400' :
+                      event.tipo === 'Otro' ? 'border-l-gray-500 border-r-gray-500' :
+                      'border-l-gray-400 border-r-gray-400';
 
-                    const tipoGradient = event.tipo === 'Baile Normal' ? 'linear-gradient(to right, rgba(96,165,250,0.15), transparent 40%)' :
-                      event.tipo === 'Romería' ? 'linear-gradient(to right, rgba(245,158,11,0.15), transparent 40%)' :
-                      event.tipo === 'Baile Magos' ? 'linear-gradient(to right, rgba(168,85,247,0.15), transparent 40%)' :
-                      event.tipo === 'Tapas y Vinos' ? 'linear-gradient(to right, rgba(251,113,133,0.15), transparent 40%)' :
-                      event.tipo === 'Paseo Romero' ? 'linear-gradient(to right, rgba(249,115,22,0.15), transparent 40%)' :
-                      event.tipo === 'Tapas' ? 'linear-gradient(to right, rgba(248,113,113,0.15), transparent 40%)' :
-                      event.tipo === 'Romería Chica' ? 'linear-gradient(to right, rgba(251,191,36,0.15), transparent 40%)' :
-                      event.tipo === 'Carnaval' ? 'linear-gradient(to right, rgba(232,121,249,0.15), transparent 40%)' :
-                      event.tipo === 'Taifa' ? 'linear-gradient(to right, rgba(250,204,21,0.15), transparent 40%)' :
-                      event.tipo === 'Infantil' ? 'linear-gradient(to right, rgba(52,211,153,0.15), transparent 40%)' :
-                      event.tipo === 'Inclusiva' ? 'linear-gradient(to right, rgba(45,212,191,0.15), transparent 40%)' :
-                      event.tipo === 'Vinos' ? 'linear-gradient(to right, rgba(236,72,153,0.15), transparent 40%)' :
-                      event.tipo === 'Aniversario' ? 'linear-gradient(to right, rgba(129,140,248,0.15), transparent 40%)' :
-                      event.tipo === 'Solidario' ? 'linear-gradient(to right, rgba(34,211,238,0.15), transparent 40%)' :
-                      event.tipo === 'Romería Barquera' ? 'linear-gradient(to right, rgba(249,115,22,0.15), transparent 40%)' :
-                      event.tipo === 'Pamela' ? 'linear-gradient(to right, rgba(249,168,212,0.15), transparent 40%)' :
-                      event.tipo === 'Blanco' ? 'linear-gradient(to right, rgba(209,213,219,0.15), transparent 40%)' :
-                      event.tipo === 'Sombrero' ? 'linear-gradient(to right, rgba(252,211,77,0.15), transparent 40%)' :
-                      event.tipo === 'Sardinada' ? 'linear-gradient(to right, rgba(56,189,248,0.15), transparent 40%)' :
-                      event.tipo === 'FIN DE AÑO' ? 'linear-gradient(to right, rgba(239,68,68,0.15), transparent 40%)' :
-                      event.tipo === 'Cerveza' ? 'linear-gradient(to right, rgba(163,230,53,0.15), transparent 40%)' :
-                      event.tipo === 'Otro' ? 'linear-gradient(to right, rgba(107,114,128,0.15), transparent 40%)' :
-                      'linear-gradient(to right, rgba(156,163,175,0.15), transparent 40%)';
+                    const tipoGradient = event.tipo === 'Baile Normal' ? 'linear-gradient(to right, rgba(96,165,250,0.15), transparent 50%, rgba(96,165,250,0.15))' :
+                      event.tipo === 'Romería' ? 'linear-gradient(to right, rgba(245,158,11,0.15), transparent 50%, rgba(245,158,11,0.15))' :
+                      event.tipo === 'Baile Magos' ? 'linear-gradient(to right, rgba(168,85,247,0.15), transparent 50%, rgba(168,85,247,0.15))' :
+                      event.tipo === 'Tapas y Vinos' ? 'linear-gradient(to right, rgba(251,113,133,0.15), transparent 50%, rgba(251,113,133,0.15))' :
+                      event.tipo === 'Paseo Romero' ? 'linear-gradient(to right, rgba(249,115,22,0.15), transparent 50%, rgba(249,115,22,0.15))' :
+                      event.tipo === 'Tapas' ? 'linear-gradient(to right, rgba(248,113,113,0.15), transparent 50%, rgba(248,113,113,0.15))' :
+                      event.tipo === 'Romería Chica' ? 'linear-gradient(to right, rgba(251,191,36,0.15), transparent 50%, rgba(251,191,36,0.15))' :
+                      event.tipo === 'Carnaval' ? 'linear-gradient(to right, rgba(232,121,249,0.15), transparent 50%, rgba(232,121,249,0.15))' :
+                      event.tipo === 'Taifa' ? 'linear-gradient(to right, rgba(250,204,21,0.15), transparent 50%, rgba(250,204,21,0.15))' :
+                      event.tipo === 'Infantil' ? 'linear-gradient(to right, rgba(52,211,153,0.15), transparent 50%, rgba(52,211,153,0.15))' :
+                      event.tipo === 'Inclusiva' ? 'linear-gradient(to right, rgba(45,212,191,0.15), transparent 50%, rgba(45,212,191,0.15))' :
+                      event.tipo === 'Vinos' ? 'linear-gradient(to right, rgba(236,72,153,0.15), transparent 50%, rgba(236,72,153,0.15))' :
+                      event.tipo === 'Aniversario' ? 'linear-gradient(to right, rgba(129,140,248,0.15), transparent 50%, rgba(129,140,248,0.15))' :
+                      event.tipo === 'Solidario' ? 'linear-gradient(to right, rgba(34,211,238,0.15), transparent 50%, rgba(34,211,238,0.15))' :
+                      event.tipo === 'Romería Barquera' ? 'linear-gradient(to right, rgba(249,115,22,0.15), transparent 50%, rgba(249,115,22,0.15))' :
+                      event.tipo === 'Pamela' ? 'linear-gradient(to right, rgba(249,168,212,0.15), transparent 50%, rgba(249,168,212,0.15))' :
+                      event.tipo === 'Blanco' ? 'linear-gradient(to right, rgba(209,213,219,0.15), transparent 50%, rgba(209,213,219,0.15))' :
+                      event.tipo === 'Sombrero' ? 'linear-gradient(to right, rgba(252,211,77,0.15), transparent 50%, rgba(252,211,77,0.15))' :
+                      event.tipo === 'Sardinada' ? 'linear-gradient(to right, rgba(56,189,248,0.15), transparent 50%, rgba(56,189,248,0.15))' :
+                      event.tipo === 'FIN DE AÑO' ? 'linear-gradient(to right, rgba(239,68,68,0.15), transparent 50%, rgba(239,68,68,0.15))' :
+                      event.tipo === 'Cerveza' ? 'linear-gradient(to right, rgba(163,230,53,0.15), transparent 50%, rgba(163,230,53,0.15))' :
+                      event.tipo === 'Otro' ? 'linear-gradient(to right, rgba(107,114,128,0.15), transparent 50%, rgba(107,114,128,0.15))' :
+                      'linear-gradient(to right, rgba(156,163,175,0.15), transparent 50%, rgba(156,163,175,0.15))';
                     
                     return (
                     <div
                       key={event.id}
                       onDoubleClick={() => toggleEvent(event.id)}
                       style={{ background: tipoGradient }}
-                      className={`rounded-r-lg p-3 md:p-4 border-l-4 ${tipoColor} border border-gray-700/50 hover:brightness-110 cursor-pointer select-none group transition-all duration-200`}
+                      className={`p-3 md:p-4 border-l-4 border-r-4 ${tipoColor} border border-gray-700/50 hover:brightness-110 cursor-pointer select-none group transition-all duration-200`}
                     >
                       <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4 text-center min-w-0">
                         <div className="flex items-center gap-1.5 text-white font-mono font-bold">
-                          <span className="text-base md:text-lg">{event.hora}</span>
+                          <span className="text-lg md:text-lg lg:text-2xl">{event.hora}</span>
                           <span className="text-xs text-gray-400">H</span>
                         </div>
 
                         {event.tipo !== 'Baile Normal' && (
-                          <div className="px-2 py-0.5 bg-cyan-500/15 text-cyan-300 rounded text-xs font-medium border border-cyan-500/20">
+                          <div className="px-2 py-0.5 bg-cyan-500/15 text-cyan-300 rounded text-sm lg:text-base font-medium border border-cyan-500/20">
                             {event.tipo}
                           </div>
                         )}
 
                         <div className="flex items-center gap-1.5 text-gray-300">
                           <MapPin className="w-4 h-4 text-gray-500" aria-hidden="true" />
-                          <span className="text-sm">
+                          <span className="text-base lg:text-lg">
                             {event.lugar ? `${event.lugar}, ` : ''}{event.municipio}
                           </span>
                         </div>
@@ -348,7 +348,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
 
                         <div className="flex items-center gap-2 text-green-400 font-semibold min-w-0 max-w-full">
                           <Music2 className="w-4 h-4 flex-shrink-0 opacity-60" />
-                          <span className="text-sm leading-relaxed min-w-0 orchestra-names-container">
+                          <span className="text-base lg:text-lg leading-relaxed min-w-0 orchestra-names-container">
                             {event.orquesta.split(',').map((orquesta, i, arr) => (
                               <span key={`${event.id}-${i}`} className="orchestra-name-unit">
                                 {orquesta.trim()}
@@ -365,7 +365,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                         expandedEventIds.includes(event.id) && (
                           <div className="mt-4 pt-4 border-t border-gray-600/50 animate-fadeIn">
                             <div className="bg-black/20 p-4 rounded-lg space-y-4">
-                              <h4 className="text-blue-300 font-semibold flex items-center gap-2 text-sm uppercase tracking-wide">
+                              <h4 className="text-blue-300 font-semibold flex items-center gap-2 text-sm lg:text-lg uppercase tracking-wide">
                                 <Info className="w-4 h-4" />
                                 Información de las formaciones
                               </h4>
@@ -378,7 +378,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                                   return (
                                     <div key={`${event.id}-${i}`} className="bg-gray-800/50 p-3 rounded border border-gray-700/50">
                                       <div className="flex flex-wrap items-center justify-between gap-2">
-                                        <span className="font-bold text-white">{cleanName}</span>
+                                        <span className="font-bold text-white text-base lg:text-xl">{cleanName}</span>
                                         <div className="flex gap-2">
                                           {info.facebook && (
                                             <a href={info.facebook} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:text-blue-300 transition-colors" aria-label={`Facebook de ${cleanName}`}>

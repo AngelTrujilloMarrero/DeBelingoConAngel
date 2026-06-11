@@ -316,15 +316,15 @@ const MessageBoard: React.FC = () => {
                 </div>
 
                 <div className="max-w-7xl mx-auto px-3 py-4 sm:p-6">
-                    <div className="grid lg:grid-cols-5 gap-6 lg:gap-8 min-w-0">
+                    <div className="lg:flex lg:gap-6 lg:gap-8 lg:min-h-0">
                         {/* Messages List */}
-                        <div className="lg:col-span-3 space-y-3 min-w-0">
+                        <div className="lg:w-3/5 space-y-3 min-w-0 lg:min-w-0">
                             <h4 className="text-xs font-bold text-blue-400 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
                                 <span className="w-8 h-px bg-blue-400/30"></span>
                                 Mensajes Recientes
                             </h4>
                             <div className="bg-gray-800/40 p-4 sm:p-6 lg:p-8 rounded-3xl border border-gray-700/50 backdrop-blur-sm shadow-xl">
-                                <div className="max-h-[450px] md:max-h-[600px] min-h-[150px] overflow-y-auto pr-3 custom-scrollbar space-y-3" aria-live="polite" aria-atomic="false">
+                                <div className="max-h-[450px] lg:max-h-[calc(100vh-220px)] min-h-[150px] overflow-y-auto pr-3 custom-scrollbar space-y-3" aria-live="polite" aria-atomic="false">
                                     {loading ? (
                                         <div className="flex flex-col items-center justify-center h-48 space-y-4">
                                             <RefreshCw className="w-10 h-10 text-blue-500 animate-spin" />
@@ -449,8 +449,8 @@ const MessageBoard: React.FC = () => {
                         </div>
 
                         {/* Input Form */}
-                        <div className="lg:col-span-2 min-w-0">
-                            <div className="sticky top-24">
+                        <div className="lg:w-2/5 min-w-0">
+                            <div className="lg:sticky lg:top-6">
                                 <form onSubmit={handleSubmit} className="space-y-6 bg-gray-800/40 p-4 sm:p-6 lg:p-8 rounded-3xl border border-gray-700/50 backdrop-blur-sm shadow-xl">
                                     <div className="space-y-3">
                                         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
@@ -474,7 +474,7 @@ const MessageBoard: React.FC = () => {
                                             onChange={(e) => setNewMessage(e.target.value.substring(0, 300))}
                                             disabled={dailyLimitReached || sending}
                                             placeholder={dailyLimitReached ? "Límite alcanzado, borra mensajes para publicar..." : "Cuéntanos algo..."}
-                                            className="w-full bg-gray-900/60 border border-gray-600/50 rounded-2xl p-5 text-sm focus:ring-4 focus:ring-blue-500/50 focus:border-blue-500 transition-all outline-none resize-none min-h-[160px] text-white placeholder:text-gray-600 shadow-inner"
+                                            className="w-full bg-gray-900/60 border border-gray-600/50 rounded-none p-5 text-sm focus:ring-4 focus:ring-blue-500/50 focus:border-blue-500 transition-all outline-none resize-none min-h-[160px] text-white placeholder:text-gray-600"
                                         />
                                         
                                         {/* Image Upload */}
@@ -507,7 +507,7 @@ const MessageBoard: React.FC = () => {
                                                     placeholder="?"
                                                     aria-label={`Responde: cuanto es ${captcha.num1} + ${captcha.num2}`}
                                                     disabled={dailyLimitReached || sending}
-                                                    className="w-full sm:w-24 bg-gray-900/80 border border-gray-600/50 rounded-xl py-3 text-center text-lg font-bold focus:ring-4 focus:ring-blue-500/50 outline-none text-white shadow-inner"
+                                                    className="w-full sm:w-24 bg-gray-900/60 border border-gray-500/70 rounded-none py-3 px-3 text-center text-lg focus:ring-2 focus:ring-blue-500/40 outline-none text-white placeholder:text-gray-500"
                                                 />
                                             </div>
                                         </div>
