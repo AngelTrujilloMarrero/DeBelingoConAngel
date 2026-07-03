@@ -128,6 +128,12 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
     };
   }, []);
 
+  // Precarga el logo una sola vez — el navegador lo cachea para todos los eventos
+  useEffect(() => {
+    const img = new Image();
+    img.src = '/fotos/dbca.jpg';
+  }, []);
+
   const { eventsByDay, sortedEvents, lastUpdate, updateInfo } = useMemo(() => {
     const grouped = groupEventsByDay(events);
     const sorted = sortEventsByDateTime(events);
@@ -160,6 +166,31 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
     setExpandedEventIds(prev =>
       prev.includes(id) ? prev.filter(eid => eid !== id) : [...prev, id]
     );
+  };
+
+  // Genera posición/rotación estable (determinista) a partir del ID del evento
+  const getLogoWatermarkStyle = (id: string): React.CSSProperties => {
+    let h = 0;
+    for (let i = 0; i < id.length; i++) {
+      h = Math.imul(31, h) + id.charCodeAt(i) | 0;
+    }
+    const x = Math.abs(h % 65) + 10;           // 10-75%
+    const y = Math.abs((h >> 8) % 55) + 15;    // 15-70%
+    const rot = (Math.abs((h >> 16) % 40)) - 20; // -20 a +20 grados
+    return {
+      position: 'absolute',
+      left: `${x}%`,
+      top: `${y}%`,
+      transform: `translate(-50%, -50%) rotate(${rot}deg)`,
+      width: '72px',
+      height: '72px',
+      objectFit: 'contain' as const,
+      opacity: 0.13,
+      filter: 'grayscale(40%)',
+      pointerEvents: 'none',
+      userSelect: 'none',
+      zIndex: 0,
+    };
   };
 
 
@@ -337,8 +368,27 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                       key={event.id}
                       onDoubleClick={() => toggleEvent(event.id)}
                       style={{ background: cardBg, ...borderSty }}
-                      className={`p-3 md:p-4 ${borderCls} border border-gray-700/50 hover:brightness-110 cursor-pointer select-none group transition-all duration-200`}
+                      className={`relative overflow-hidden p-3 md:p-4 ${borderCls} border border-gray-700/50 hover:brightness-110 cursor-pointer select-none group transition-all duration-200`}
                     >
+                      {/* Marca de agua vertical lateral derecha */}
+                      <div className="absolute right-0.5 top-0 bottom-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden">
+                        <span 
+                          className="text-[10px] uppercase tracking-[0.3em] whitespace-nowrap font-mono font-black"
+                          style={{ writingMode: 'vertical-lr', color: 'rgba(255, 106, 0, 0.80)' }}
+                        >
+                          DBCA
+                        </span>
+                      </div>
+
+                      {/* Logo DBCA como marca de agua de fondo — cargado 1 sola vez */}
+                      <img
+                        src="/fotos/dbca.jpg"
+                        alt=""
+                        aria-hidden="true"
+                        draggable={false}
+                        style={getLogoWatermarkStyle(event.id)}
+                      />
+
                       <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4 text-center min-w-0">
                         <div className="flex items-center gap-1.5 text-white font-mono font-bold">
                           <span className="text-lg md:text-lg lg:text-2xl">{event.hora}</span>
@@ -372,6 +422,13 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                           >
                             <ChevronDown className={`w-4 h-4 transition-transform duration-300 ${expandedEventIds.includes(event.id) ? 'rotate-180' : ''}`} />
                           </button>
+                        </div>
+
+                        {/* Separador con marca de agua (fuerza salto de línea en mobile/PC) */}
+                        <div className="w-full flex items-center justify-center gap-3 my-1.5 text-[9px] md:text-[10px] uppercase tracking-[0.2em] font-bold select-none pointer-events-none" style={{ color: 'rgba(255, 106, 0, 0.90)' }}>
+                          <div className="h-[1px] flex-grow" style={{ background: 'linear-gradient(to right, transparent, rgba(255,106,0,0.70), transparent)' }} />
+                          <span>debelingoconangel.web.app</span>
+                          <div className="h-[1px] flex-grow" style={{ background: 'linear-gradient(to left, transparent, rgba(255,106,0,0.70), transparent)' }} />
                         </div>
 
                         <div className="flex items-center gap-2 text-green-400 font-semibold min-w-0 max-w-full">
