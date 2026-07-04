@@ -98,11 +98,13 @@ export const useAemetAlerts = () => {
             else if (title.toLowerCase().includes("cumbres")) zone = "Cumbres";
 
             let phenomenon = "Fenómeno adverso";
-            const parts = title.split(".");
-            if (parts.length >= 3) {
-                phenomenon = parts[2].trim();
-            } else if (title.includes(" por ")) {
-                phenomenon = title.split(" por ")[1]?.split(" en ")[0] || phenomenon;
+            if (title.includes(" por ")) {
+                phenomenon = title.split(" por ")[1]?.split(".")[0]?.split(" en ")[0]?.trim() || phenomenon;
+            } else if (title.includes(".")) {
+                const parts = title.split(".");
+                if (parts.length >= 2 && parts[1].trim()) {
+                    phenomenon = parts[1].trim();
+                }
             }
 
             const dateMatch = description.match(/(\d{2})[-/](\d{2})[-/](\d{4})/);

@@ -688,7 +688,7 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
                     prevZone, currentZone, prevDay, currentDay, prevType, currentType,
                     variation, isNew
                   };
-                }).sort((a, b) => b.current - a.current);
+                }).sort((a, b) => b.variation - a.variation);
 
                 const visibleRows = comparativaVia.filter(item => item.prev > 0 || item.current > 0);
                 const lostAll = comparativaVia.filter(item => item.prev > 0 && item.current === 0);

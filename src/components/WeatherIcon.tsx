@@ -125,7 +125,7 @@ const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, time, alert 
         if (p.includes('nieve') || p.includes('nev')) return <><CloudSnow className="w-3 h-3" /><span className="text-[10px] font-bold leading-none">N</span></>;
         if (p.includes('torment') || p.includes('rayo')) return <><CloudLightning className="w-3 h-3" /><span className="text-[10px] font-bold leading-none">T</span></>;
         if (p.includes('niebla') || p.includes('niebl')) return <><CloudFog className="w-3 h-3" /><span className="text-[10px] font-bold leading-none">F</span></>;
-        return null;
+        return <><AlertTriangle className="w-3 h-3" /><span className="text-[10px] font-bold leading-none">A</span></>;
     };
 
     return (
