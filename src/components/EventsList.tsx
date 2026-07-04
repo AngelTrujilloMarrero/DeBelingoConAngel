@@ -131,7 +131,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
   // Precarga el logo una sola vez — el navegador lo cachea para todos los eventos
   useEffect(() => {
     const img = new Image();
-    img.src = '/fotos/dbca.jpg';
+    img.src = '/fotos/dbca.webp';
   }, []);
 
   const { eventsByDay, sortedEvents, lastUpdate, updateInfo } = useMemo(() => {
@@ -381,13 +381,16 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                       </div>
 
                       {/* Logo DBCA como marca de agua de fondo — cargado 1 sola vez */}
-                      <img
-                        src="/fotos/dbca.jpg"
-                        alt=""
-                        aria-hidden="true"
-                        draggable={false}
-                        style={getLogoWatermarkStyle(event.id)}
-                      />
+                      <picture>
+                        <source srcSet="/fotos/dbca.webp" type="image/webp" />
+                        <img
+                          src="/fotos/dbca.jpg"
+                          alt=""
+                          aria-hidden="true"
+                          draggable={false}
+                          style={getLogoWatermarkStyle(event.id)}
+                        />
+                      </picture>
 
                       <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4 text-center min-w-0">
                         <div className="flex items-center gap-1.5 text-white font-mono font-bold">
