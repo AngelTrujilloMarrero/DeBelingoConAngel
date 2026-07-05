@@ -497,3 +497,20 @@
 .animate-bounce-slow {
   animation: bounce-slow 2s ease-in-out infinite;
 }
+
+/* Anti-copy container: prevent text selection and touch callouts */
+.anti-copy-container {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Allow selection on specific elements (links, buttons, expandable details) */
+.allow-select {
+  -webkit-user-select: text;
+  user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
