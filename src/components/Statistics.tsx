@@ -292,7 +292,7 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
     <div className="space-y-8">
       {/* Year Selection */}
       <div className="flex justify-center">
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl p-1">
+        <div className="bg-blue-600 md:bg-gradient-to-r md:from-blue-600 md:to-purple-600 rounded-xl p-1">
           <div className="flex gap-2 bg-gray-900 rounded-lg p-2">
             {availableYears.map(year => (
               <button
@@ -312,8 +312,8 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
 
 
       {/* Current Year Statistics */}
-      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl shadow-2xl overflow-hidden">
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-6">
+      <div className="bg-gray-900 md:bg-gradient-to-br md:from-gray-900 md:via-gray-800 md:to-gray-900 rounded-2xl shadow-2xl md:overflow-hidden">
+        <div className="bg-blue-600 md:bg-gradient-to-r md:from-blue-600 md:to-purple-600 p-6">
           <h2 className="text-2xl md:text-3xl font-bold text-white text-center flex items-center justify-center gap-3">
             <BarChart3 className="w-8 h-8" />
             Los 15 Primeros De {selectedYear}
@@ -402,10 +402,10 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
                     });
                   }}
                   className={`
-                    relative group flex flex-col items-center justify-center p-4 rounded-3xl transition-all duration-300 border
+                    relative group flex flex-col items-center justify-center p-4 rounded-3xl md:transition-all md:duration-300 border
                     ${isSelected
-                      ? 'bg-blue-600 border-blue-400 shadow-[0_0_20px_rgba(37,99,235,0.5)] scale-105 z-10'
-                      : 'bg-gradient-to-br from-gray-800 to-gray-900 border-white/20 shadow-lg hover:border-blue-400/50 hover:from-gray-700 hover:to-gray-800 hover:scale-110 hover:shadow-blue-500/20'
+                      ? 'bg-blue-600 border-blue-400 md:shadow-[0_0_20px_rgba(37,99,235,0.5)] md:scale-105 z-10'
+                      : 'bg-gray-800 md:bg-gradient-to-br md:from-gray-800 md:to-gray-900 border-white/20 shadow-lg md:hover:border-blue-400/50 md:hover:from-gray-700 md:hover:to-gray-800 md:hover:scale-110 md:hover:shadow-blue-500/20'
                     }
                   `}
                 >
@@ -423,7 +423,7 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
 
                   {/* Active Indicator Dot */}
                   {isSelected && (
-                    <span className="absolute -bottom-2 w-1.5 h-1.5 bg-blue-400 rounded-full animate-pulse" />
+                    <span className="absolute -bottom-2 w-1.5 h-1.5 bg-blue-400 rounded-full md:animate-pulse" />
                   )}
                 </button>
               );
@@ -438,7 +438,7 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
           const sortedOrquestas = Object.entries(orquestas).sort(([, a], [, b]) => b - a);
 
           return (
-            <div key={month} className="animate-fadeInUp">
+            <div key={month} className="md:animate-fadeInUp">
               <div className="bg-gray-900 border border-white/10 rounded-3xl overflow-hidden shadow-2xl">
                 {/* Header of Detail Card */}
                 <div className="bg-gradient-to-r from-gray-900 to-gray-800 p-6 border-b border-white/5 flex items-center justify-between">
@@ -461,7 +461,7 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
                     {sortedOrquestas.map(([orquesta, count], index) => (
                       <div
                         key={orquesta}
-                        className="flex items-center justify-between p-4 rounded-2xl bg-black/20 border border-white/5 hover:border-blue-500/30 hover:bg-blue-500/5 transition-all group/item"
+                        className="flex items-center justify-between p-4 rounded-2xl bg-black/20 border border-white/5 hover:border-blue-500/30 hover:bg-blue-500/5 md:transition-all group/item"
                       >
                         <div className="flex items-center gap-4 overflow-hidden">
                           <div className={`
@@ -491,7 +491,7 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
       </div>
 
       {/* Ranking Total (Collapsible) */}
-      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl shadow-2xl overflow-hidden mt-12 border border-white/5">
+      <div className="bg-gray-900 md:bg-gradient-to-br md:from-gray-900 md:via-gray-800 md:to-gray-900 rounded-2xl shadow-2xl md:overflow-hidden mt-12 border border-white/5">
         <button
           onClick={() => { setShowTotal(!showTotal); setVisibleItems(20); }}
           className="w-full flex items-center justify-between p-6 bg-gradient-to-r from-gray-800 to-gray-900 hover:from-gray-700 hover:to-gray-800 transition-all duration-300 group"
@@ -580,8 +580,8 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
         if (monthsToRender.length === 0) return null;
 
         return (
-          <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl shadow-2xl overflow-hidden mt-12">
-            <div className="bg-gradient-to-r from-pink-600 to-rose-600 p-6">
+          <div className="bg-gray-900 md:bg-gradient-to-br md:from-gray-900 md:via-gray-800 md:to-gray-900 rounded-2xl shadow-2xl md:overflow-hidden mt-12">
+            <div className="bg-pink-600 md:bg-gradient-to-r md:from-pink-600 md:to-rose-600 p-6">
               <h2 className="text-2xl md:text-3xl font-bold text-white text-center flex items-center justify-center gap-3">
                 <TrendingUp className="w-8 h-8" />
                 Comparativa {selectedYear} vs {selectedYear - 1}
@@ -606,10 +606,10 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
                       key={month}
                       onClick={() => setExpandedCompMonth(isExpanded ? null : month)}
                       className={`
-                        relative group flex flex-col items-center justify-center p-4 rounded-3xl transition-all duration-300 border
+                        relative group flex flex-col items-center justify-center p-4 rounded-3xl md:transition-all md:duration-300 border
                         ${isExpanded
-                          ? 'bg-pink-600 border-pink-400 shadow-[0_0_20px_rgba(219,39,119,0.5)] scale-105 z-10'
-                          : 'bg-gradient-to-br from-gray-800 to-gray-900 border-white/20 shadow-lg hover:border-pink-400/50 hover:from-gray-700 hover:to-gray-800 hover:scale-110 hover:shadow-pink-500/20'
+                          ? 'bg-pink-600 border-pink-400 md:shadow-[0_0_20px_rgba(219,39,119,0.5)] md:scale-105 z-10'
+                          : 'bg-gray-800 md:bg-gradient-to-br md:from-gray-800 md:to-gray-900 border-white/20 shadow-lg md:hover:border-pink-400/50 md:hover:from-gray-700 md:hover:to-gray-800 md:hover:scale-110 md:hover:shadow-pink-500/20'
                         }
                       `}
                     >
@@ -626,7 +626,7 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
                       </div>
 
                       {isExpanded && (
-                        <span className="absolute -bottom-2 w-1.5 h-1.5 bg-pink-400 rounded-full animate-pulse" />
+                        <span className="absolute -bottom-2 w-1.5 h-1.5 bg-pink-400 rounded-full md:animate-pulse" />
                       )}
                     </button>
                   );
@@ -695,7 +695,7 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
                 const significantDrop = comparativaVia.filter(item => item.prev > 0 && item.current > 0 && item.variation <= -50);
 
                 return (
-                  <div key={month} className="bg-gray-800/50 rounded-2xl p-6 border border-white/10 animate-fadeInUp">
+                  <div key={month} className="bg-gray-800/50 rounded-2xl p-6 border border-white/10 md:animate-fadeInUp">
                     <div className="flex items-center justify-between mb-6 border-b border-white/5 pb-4">
                       <h3 className="text-2xl font-bold text-white capitalize flex items-center gap-3">
                         <Calendar className="w-6 h-6 text-pink-500" />

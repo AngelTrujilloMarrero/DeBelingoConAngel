@@ -118,14 +118,19 @@ const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, time, alert 
 
     const getPhenomenonIcon = (phenomenon: string) => {
         const p = phenomenon.toLowerCase();
-        if (p.includes('viento')) return <><Wind className="w-3 h-3" /><span className="text-[10px] font-bold leading-none">V</span></>;
-        if (p.includes('costero') || p.includes('mar')) return <><Waves className="w-3 h-3" /><span className="text-[10px] font-bold leading-none">C</span></>;
-        if (p.includes('lluv') || p.includes('chubasc')) return <><CloudRain className="w-3 h-3" /><span className="text-[10px] font-bold leading-none">L</span></>;
-        if (p.includes('calima') || p.includes('polvo')) return <><Flame className="w-3 h-3" /><span className="text-[10px] font-bold leading-none">K</span></>;
-        if (p.includes('nieve') || p.includes('nev')) return <><CloudSnow className="w-3 h-3" /><span className="text-[10px] font-bold leading-none">N</span></>;
-        if (p.includes('torment') || p.includes('rayo')) return <><CloudLightning className="w-3 h-3" /><span className="text-[10px] font-bold leading-none">T</span></>;
-        if (p.includes('niebla') || p.includes('niebl')) return <><CloudFog className="w-3 h-3" /><span className="text-[10px] font-bold leading-none">F</span></>;
-        return <><AlertTriangle className="w-3 h-3" /><span className="text-[10px] font-bold leading-none">A</span></>;
+        if (p.includes('viento')) return <><Wind className="w-3 h-3" /><span className="text-[9px] font-bold leading-none">VI</span></>;
+        if (p.includes('costero') || p.includes('mar')) return <><Waves className="w-3 h-3" /><span className="text-[9px] font-bold leading-none">CO</span></>;
+        if (p.includes('lluv') || p.includes('chubasc')) return <><CloudRain className="w-3 h-3" /><span className="text-[9px] font-bold leading-none">PR</span></>;
+        if (p.includes('calima') || p.includes('polvo') || p.includes('suspensión') || p.includes('suspension')) return <><Flame className="w-3 h-3" /><span className="text-[9px] font-bold leading-none">VS</span></>;
+        if (p.includes('nieve') || p.includes('nev')) return <><CloudSnow className="w-3 h-3" /><span className="text-[9px] font-bold leading-none">NE</span></>;
+        if (p.includes('torment') || p.includes('rayo')) return <><CloudLightning className="w-3 h-3" /><span className="text-[9px] font-bold leading-none">TO</span></>;
+        if (p.includes('niebla') || p.includes('niebl')) return <><CloudFog className="w-3 h-3" /><span className="text-[9px] font-bold leading-none">NI</span></>;
+        if (p.includes('galerna') || p.includes('risaga') || p.includes('rissaga')) return <><Waves className="w-3 h-3" /><span className="text-[9px] font-bold leading-none">GA</span></>;
+        if (p.includes('alud') || p.includes('avalancha')) return <><CloudSnow className="w-3 h-3" /><span className="text-[9px] font-bold leading-none">AL</span></>;
+        if (p.includes('temperatura') && (p.includes('máx') || p.includes('max') || p.includes('alta'))) return <><Thermometer className="w-3 h-3" /><span className="text-[9px] font-bold leading-none">AT</span></>;
+        if (p.includes('temperatura') && (p.includes('mín') || p.includes('min') || p.includes('baja'))) return <><Thermometer className="w-3 h-3" /><span className="text-[9px] font-bold leading-none">BT</span></>;
+        if (p.includes('deshielo')) return <><CloudRain className="w-3 h-3" /><span className="text-[9px] font-bold leading-none">DH</span></>;
+        return <AlertTriangle className="w-3 h-3" />;
     };
 
     return (

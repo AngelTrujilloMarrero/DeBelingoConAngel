@@ -101,9 +101,10 @@ export const useAemetAlerts = () => {
             if (title.includes(" por ")) {
                 phenomenon = title.split(" por ")[1]?.split(".")[0]?.split(" en ")[0]?.trim() || phenomenon;
             } else if (title.includes(".")) {
-                const parts = title.split(".");
-                if (parts.length >= 2 && parts[1].trim()) {
-                    phenomenon = parts[1].trim();
+                const parts = title.split(".").map(p => p.trim()).filter(Boolean);
+                // parts[0] = "Aviso", parts[1] = "Nivel amarillo/naranja/rojo", parts[2] = fenómeno, parts[3] = zona
+                if (parts.length >= 3) {
+                    phenomenon = parts[2];
                 }
             }
 
