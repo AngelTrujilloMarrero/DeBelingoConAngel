@@ -58,6 +58,13 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
   const [visibleItems, setVisibleItems] = useState(20);
   const [expandedCompMonth, setExpandedCompMonth] = useState<string | null>(null);
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 768);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const currentDate = new Date();
   const currentMonth = currentDate.getMonth();
@@ -266,10 +273,10 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
       x: {
         ticks: {
           color: 'white',
-          maxRotation: window.innerWidth < 768 ? 90 : 45,
-          minRotation: window.innerWidth < 768 ? 45 : 0,
+          maxRotation: isMobile ? 90 : 45,
+          minRotation: isMobile ? 45 : 0,
           padding: 8,
-          font: { size: window.innerWidth < 768 ? 9 : 11 },
+          font: { size: isMobile ? 9 : 11 },
         },
         grid: { color: 'rgba(255, 255, 255, 0.1)', drawBorder: false },
       },
@@ -334,7 +341,7 @@ const Statistics: React.FC<StatisticsProps> = ({ events }) => {
         <div className="p-3 md:p-6">
           {Object.keys(currentYearData).length > 0 ? (
             <>
-              <div className="w-full cursor-pointer" style={{ height: 'calc(100vh - 400px)', minHeight: '400px', maxHeight: '600px' }}>
+              <div className="w-full cursor-pointer h-[50vh] min-h-[300px] max-h-[500px] md:h-[calc(100vh-400px)] md:min-h-[400px] md:max-h-[600px]">
                 <Suspense fallback={<div className="flex items-center justify-center h-full"><LoadingSpinner /></div>}>
                   <Bar data={currentYearChartData} options={chartOptions} />
                 </Suspense>
