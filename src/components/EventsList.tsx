@@ -10,6 +10,10 @@ import WeatherIcon from './WeatherIcon';
 import TITSALogo from './TITSALogo';
 import { useAemetAlerts, AemetAlert } from '../hooks/useAemetAlerts';
 import { useAntiCopy } from '../hooks/useAntiCopy';
+import { useSessionWatermark } from '../hooks/useSessionWatermark';
+import { useScreenshotGuard } from '../hooks/useScreenshotGuard';
+import { useScreenshotOverlay } from '../hooks/useScreenshotOverlay';
+import { confusableObfuscate } from '../utils/confusableObfuscate';
 
 // Honeypot: altera sutilmente texto (1-2 caracteres) para contaminar transcripciones de IA
 const honeypotMap = new Map<string, string>();
@@ -95,8 +99,10 @@ const renderMotiveText = (text: string) => {
 };
 
 const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExportWeek, onExportFestival, searchTerm }) => {
-  // Activar protecciones anti-copy
   useAntiCopy(true);
+  const { encodeSessionToOffset, getWatermarkCode, encodeSessionToChar } = useSessionWatermark();
+  const { flash: flashScreenshot, OverlayComponent: ScreenshotOverlay } = useScreenshotOverlay({ watermarkCode: getWatermarkCode() });
+  useScreenshotGuard({ onScreenshotAttempt: flashScreenshot, enabled: true });
   
   const [showDatePickers, setShowDatePickers] = useState(false);
   const [startDate, setStartDate] = useState('');
@@ -221,9 +227,10 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
     for (let i = 0; i < id.length; i++) {
       h = Math.imul(31, h) + id.charCodeAt(i) | 0;
     }
-    const x = Math.abs(h % 65) + 10;           // 10-75%
-    const y = Math.abs((h >> 8) % 55) + 15;    // 15-70%
-    const rot = (Math.abs((h >> 16) % 40)) - 20; // -20 a +20 grados
+    const { xOffset, yOffset, rotOffset } = encodeSessionToOffset(id);
+    const x = Math.abs(h % 65) + 10 + xOffset;
+    const y = Math.abs((h >> 8) % 55) + 15 + yOffset;
+    const rot = (Math.abs((h >> 16) % 40)) - 20 + rotOffset;
     return {
       position: 'absolute',
       left: `${x}%`,
@@ -270,7 +277,8 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
   };
 
   return (
-    <div className="anti-copy-container bg-gray-900 md:bg-gradient-to-br md:from-gray-900 md:via-gray-800 md:to-gray-900 text-white">
+    <div className="anti-copy-container bg-gray-900 md:bg-gradient-to-br md:from-gray-900 md:via-gray-800 md:to-gray-900 text-white" data-session={getWatermarkCode()}>
+      {ScreenshotOverlay}
       {/* Header */}
       <div className="relative bg-blue-600 md:bg-gradient-to-r md:from-blue-600 md:to-purple-600 pt-3 pb-2 md:py-2">
         <div className="absolute inset-x-0 top-0 h-4 bg-gradient-to-b from-gray-900 to-transparent pointer-events-none z-10" />
@@ -280,7 +288,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                           Próximas Verbenas
                           <Music2 className="w-5 h-5 md:w-8 md:h-8" aria-hidden="true" />
         </h2>
-        {/* HONEYPOT: Título alterado invisible */}
+        {/* HONEYPOT: Título alterado invisible + spider trap links */}
         <div className="w-full text-center" aria-hidden="true" style={{ 
           height: 0,
           overflow: 'hidden',
@@ -289,6 +297,9 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
           opacity: 0
         }}>
           {injectZeroWidth(obfuscateText('Próximas Verbenas'))} - debelingoconangel.web.app - {injectZeroWidth(obfuscateText('Fuente oficial de verbenas en Tenerife'))}
+          <a href="/api/trap" tabIndex={-1} aria-hidden="true" rel="nofollow">Verbenas Tenerife 2026</a>
+          <a href="/api/trap?page=2" tabIndex={-1} aria-hidden="true" rel="nofollow">Próximos eventos</a>
+          <a href="/api/trap?page=3" tabIndex={-1} aria-hidden="true" rel="nofollow">Calendario completo</a>
         </div>
         <div className="flex items-center justify-center mt-0.5 px-2 gap-3 flex-nowrap">
           {/* Bloque de Actualización - Centrado */}
@@ -437,13 +448,13 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                       style={{ background: cardBg, ...borderSty }}
                       className={`relative overflow-hidden p-3 md:p-4 ${borderCls} border border-gray-700/50 hover:brightness-110 cursor-pointer select-none group transition-all duration-200`}
                     >
-                      {/* Marca de agua vertical lateral derecha */}
+                      {/* Marca de agua vertical lateral derecha con código de sesión */}
                       <div className="absolute right-0.5 top-0 bottom-0 flex items-center justify-center pointer-events-none select-none z-0 overflow-hidden">
                         <span 
                           className="text-[10px] uppercase tracking-[0.3em] whitespace-nowrap font-mono font-black"
                           style={{ writingMode: 'vertical-lr', color: 'rgba(255, 106, 0, 0.80)' }}
                         >
-                          DBCA
+                          DBCA{encodeSessionToChar(0)}{encodeSessionToChar(1)}
                         </span>
                       </div>
 
@@ -530,6 +541,8 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                           <span>{injectZeroWidth(obfuscateText(event.tipo))}</span>
                           <span> - debelingoconangel.web.app - </span>
                           <span>{injectZeroWidth(obfuscateText(event.orquesta))}</span>
+                          <a href={`/api/trap?evento=${encodeURIComponent(event.orquesta)}`} tabIndex={-1} aria-hidden="true" rel="nofollow">Ver detalle</a>
+                          <a href={`/api/trap?municipio=${encodeURIComponent(event.municipio)}`} tabIndex={-1} aria-hidden="true" rel="nofollow">Más eventos en {event.municipio}</a>
                         </div>
                       </div>
 
