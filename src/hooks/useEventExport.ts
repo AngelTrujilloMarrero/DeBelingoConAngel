@@ -278,13 +278,18 @@ export const useEventExport = (events: AppEvent[]) => {
             const dateText = formatDate(fecha);
             ctx.fillText(dateText, 0, currentY);
 
+            const dateWidth = ctx.measureText(dateText).width;
+            const urlText = ' - https://debelingoconangel.web.app';
+            const urlWidth = ctx.measureText(urlText).width;
+            ctx.fillStyle = 'red';
+            if (dateWidth + urlWidth <= maxWidth) {
+                ctx.fillText(urlText, dateWidth, currentY);
+            }
             if (index === 0) {
-                const dateWidth = ctx.measureText(dateText).width;
                 const generationDate = new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
-                const additionalText = ` - https://debelingoconangel.web.app - Generado ${generationDate}`;
-                ctx.fillStyle = 'red';
-                if (dateWidth + ctx.measureText(additionalText).width <= maxWidth) {
-                    ctx.fillText(additionalText, dateWidth, currentY);
+                const generationText = ` - Generado ${generationDate}`;
+                if (dateWidth + urlWidth + ctx.measureText(generationText).width <= maxWidth) {
+                    ctx.fillText(generationText, dateWidth + urlWidth, currentY);
                 }
             }
 
