@@ -98,6 +98,8 @@ const renderMotiveText = (text: string) => {
   });
 };
 
+const ENABLE_EXPORTS = false;
+
 const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExportWeek, onExportFestival, searchTerm }) => {
   useAntiCopy(true);
   const { encodeSessionToOffset, getWatermarkCode, encodeSessionToChar } = useSessionWatermark();
@@ -883,7 +885,8 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
           )
         }
 
-        {/* Export Section */}
+        {/* Export Section — desactivada temporalmente, cambiar ENABLE_EXPORTS a true para reactivar */}
+        {ENABLE_EXPORTS && (
         <div className="flex flex-col items-center gap-4">
           {showDatePickers && (
             <div className="flex flex-col sm:flex-row gap-4 items-center bg-gray-700/50 p-4 rounded-lg">
@@ -929,6 +932,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
             </button>
           </div>
         </div>
+        )}
       </div >
     </div >
   );
