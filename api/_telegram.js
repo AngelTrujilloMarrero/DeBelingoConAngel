@@ -34,6 +34,11 @@ function splitMessage(message) {
 }
 
 export async function sendTelegramMessage(message) {
+    if (process.env.TELEGRAM_ENABLED === 'false') {
+        log('info', { action: 'sendTelegramMessage', success: false, error: 'Telegram suspendido temporalmente (TELEGRAM_ENABLED=false)' });
+        return { success: false, error: 'Telegram suspendido temporalmente' };
+    }
+
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
     const chatId = process.env.TELEGRAM_CHAT_ID;
 
@@ -80,6 +85,11 @@ export async function sendTelegramMessage(message) {
 }
 
 export async function sendTelegramPhoto(imageBuffer, caption) {
+    if (process.env.TELEGRAM_ENABLED === 'false') {
+        log('info', { action: 'sendTelegramPhoto', success: false, error: 'Telegram suspendido temporalmente (TELEGRAM_ENABLED=false)' });
+        return { success: false, error: 'Telegram suspendido temporalmente' };
+    }
+
     const botToken = process.env.TELEGRAM_BOT_TOKEN;
     const chatId = process.env.TELEGRAM_CHAT_ID;
 

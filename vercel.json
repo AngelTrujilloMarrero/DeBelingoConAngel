@@ -76,22 +76,6 @@
     {
       "path": "/api/cleanup",
       "schedule": "0 0 1 * *"
-    },
-    {
-      "path": "/api/telegram-send-weekly",
-      "schedule": "15 18 * * 0"
-    },
-    {
-      "path": "/api/telegram-send-reminder",
-      "schedule": "15 18 * * 4"
-    },
-    {
-      "path": "/api/telegram-daily",
-      "schedule": "0 19 * * 1,2,3,5,6"
-    },
-    {
-      "path": "/api/telegram-send-photos",
-      "schedule": "0 19 * * 1,2,3,5,6"
     }
   ]
 }
