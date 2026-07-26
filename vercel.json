@@ -1,9 +1,9 @@
 {
   "version": 2,
-  "framework": null,
+  "framework": "vite",
   "installCommand": "pnpm install --no-frozen-lockfile",
-  "buildCommand": "mkdir -p empty_dist && echo 'API Backend Only' > empty_dist/index.txt",
-  "outputDirectory": "empty_dist",
+  "buildCommand": "pnpm run build",
+  "outputDirectory": "dist",
   "functions": {
     "api/**/*.js": {
       "memory": 1024,
@@ -70,7 +70,8 @@
     { "source": "/api/upload-imgur", "destination": "/api/upload?provider=imgur" },
     { "source": "/api/upload-imgbb", "destination": "/api/upload?provider=imgbb" },
     { "source": "/api/mistral", "destination": "/api/ai" },
-    { "source": "/api/openrouter", "destination": "/api/ai" }
+    { "source": "/api/openrouter", "destination": "/api/ai" },
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
   ],
   "crons": [
     {

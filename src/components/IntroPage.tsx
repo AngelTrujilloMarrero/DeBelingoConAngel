@@ -14,6 +14,7 @@ export const INTRO_START_DATE = new Date('2026-07-26T00:00:00');
 export const INTRO_DURATION_DAYS = 20;
 
 export function isIntroActive(): boolean {
+  if (import.meta.env.VITE_SHOW_INTRO === 'false') return false;
   const endDate = new Date(INTRO_START_DATE);
   endDate.setDate(endDate.getDate() + INTRO_DURATION_DAYS);
   return new Date() < endDate;
