@@ -98,7 +98,12 @@ const renderMotiveText = (text: string) => {
   });
 };
 
-const ENABLE_EXPORTS = false;
+const ENABLE_EXPORTS = typeof window !== 'undefined' && (
+  window.location.hostname.includes('vercel.app') ||
+  window.location.hostname.includes('vercel') ||
+  window.location.hostname === 'localhost' ||
+  window.location.hostname === '127.0.0.1'
+);
 
 const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExportWeek, onExportFestival, searchTerm }) => {
   useAntiCopy(true);
