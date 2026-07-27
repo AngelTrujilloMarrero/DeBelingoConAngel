@@ -12,9 +12,7 @@ function getEventActivityType(event, sinceTime) {
     const agregado = event.FechaAgregado ? new Date(event.FechaAgregado) : null;
     const editado = event.FechaEditado ? new Date(event.FechaEditado) : null;
     
-    // Si se añadió en el periodo de reporte
     if (agregado && agregado >= sinceTime) {
-        // Si no hay edición o la edición fue inmediata tras añadirlo
         if (!editado || Math.abs(editado.getTime() - agregado.getTime()) < 5000) {
             return 'add';
         }
@@ -78,152 +76,158 @@ function formatDateFull(dateStr) {
     return `${daysOfWeekNames[date.getDay()]} ${date.getDate()} de ${monthsNames[date.getMonth()]}`;
 }
 
-async function handleWeekly(req, res) {
-    const today = new Date();
+function getCanaryTime() {
+    const formatter = new Intl.DateTimeFormat('en-CA', {
+        timeZone: 'Atlantic/Canary',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false,
+    });
+    const parts = formatter.formatToParts(new Date());
+    const getVal = (type) => parseInt(parts.find(p => p.type === type)?.value || '0', 10);
+    return {
+        year: getVal('year'),
+        month: getVal('month') - 1,
+        day: getVal('day'),
+        hour: getVal('hour'),
+        minute: getVal('minute'),
+        dayOfWeek: new Date(getVal('year'), getVal('month') - 1, getVal('day')).getDay(),
+    };
+}
+
+async function handleWeekdays(req, res) {
+    const canary = getCanaryTime();
     try {
-        const monday = new Date(today);
-        const daysUntilMonday = today.getDay() === 0 ? 1 : 8 - today.getDay();
-        monday.setDate(today.getDate() + daysUntilMonday);
+        const monday = new Date(canary.year, canary.month, canary.day);
+        monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
         monday.setHours(0, 0, 0, 0);
-        const sunday = new Date(monday);
-        sunday.setDate(monday.getDate() + 6);
-        sunday.setHours(23, 59, 59, 999);
+
+        const friday = new Date(monday);
+        friday.setDate(monday.getDate() + 4);
+        friday.setHours(23, 59, 59, 999);
 
         const events = await getEvents();
-        const weeklyEvents = events.filter(e => !e.cancelado && new Date(e.day) >= monday && new Date(e.day) <= sunday);
-
-        if (weeklyEvents.length === 0) {
-            console.log(JSON.stringify({ timestamp: today.toISOString(), action: 'weekly', result: 'no_events' }));
-            return res.status(200).json({ success: true, message: 'No events next week.' });
-        }
-
-        weeklyEvents.sort((a, b) => new Date(a.day) - new Date(b.day) || a.hora.localeCompare(b.hora));
-
-        const grouped = {};
-        weeklyEvents.forEach(e => {
-            const d = e.day.split('T')[0];
-            if (!grouped[d]) grouped[d] = [];
-            grouped[d].push(e);
-        });
-
-        let message = `🎵 <b>VERBENAS DE TENERIFE - SEMANA DEL ${monday.getDate()} DE ${months[monday.getMonth()]} AL ${sunday.getDate()} DE ${months[sunday.getMonth()]}</b>\n\n`;
-        Object.keys(grouped).sort().forEach(d => {
-            const dateObj = new Date(d);
-            message += `━━━━━━━━━━ <b>${daysOfWeek[dateObj.getDay()]} ${dateObj.getDate()}</b> ━━━━━━━━━━\n\n`;
-            grouped[d].forEach(e => message += formatEvent(e, null) + '\n');
-        });
-        message += `━━━━━━━━━━ ✦ ━━━━━━━━━━━\n\n🔗 <a href="https://debelingoconangel.web.app">debelingoconangel.web.app</a>`;
-        
-        const result = await sendTelegramMessage(message);
-        console.log(JSON.stringify({ timestamp: today.toISOString(), action: 'weekly', result: 'sent', count: weeklyEvents.length }));
-        return res.status(200).json(result);
-    } catch (error) {
-        console.error(JSON.stringify({ timestamp: today.toISOString(), action: 'weekly', success: false, error: error.message }));
-        const alertMsg = `❌ <b>Error en el resumen semanal</b>\n\n${error.message}`;
-        await sendTelegramMessage(alertMsg);
-        return res.status(500).json({ success: false, error: error.message });
-    }
-}
-
-async function handleReminder(req, res) {
-    const today = new Date();
-    try {
-        const friday = new Date(today);
-        friday.setDate(today.getDate() + 1);
-        friday.setHours(0, 0, 0, 0);
-        const sunday = new Date(friday);
-        sunday.setDate(friday.getDate() + 2);
-        sunday.setHours(23, 59, 59, 999);
-
-        const events = await getEvents();
-        const weekendEvents = events.filter(e => !e.cancelado && new Date(e.day) >= friday && new Date(e.day) <= sunday);
-
-        if (weekendEvents.length === 0) {
-            console.log(JSON.stringify({ timestamp: today.toISOString(), action: 'reminder', result: 'no_events' }));
-            return res.status(200).json({ success: true, message: 'No events this weekend.' });
-        }
-
-        weekendEvents.sort((a, b) => new Date(a.day) - new Date(b.day) || a.hora.localeCompare(b.hora));
-
-        const grouped = {};
-        weekendEvents.forEach(e => {
-            const d = e.day.split('T')[0];
-            if (!grouped[d]) grouped[d] = [];
-            grouped[d].push(e);
-        });
-
-        let message = `🔔 <b>RECORDATORIO DEL FIN DE SEMANA</b>\n\n`;
-        Object.keys(grouped).sort().forEach(d => {
-            const dateObj = new Date(d);
-            message += `━━━━━━━━━━ <b>${daysOfWeek[dateObj.getDay()]} ${dateObj.getDate()}</b> ━━━━━━━━━━\n\n`;
-            grouped[d].forEach(e => message += formatEvent(e, null) + '\n');
-        });
-        message += `━━━━━━━━━━ ✦ ━━━━━━━━━━━\n\n🔗 <a href="https://debelingoconangel.web.app">debelingoconangel.web.app</a>`;
-        
-        const result = await sendTelegramMessage(message);
-        console.log(JSON.stringify({ timestamp: today.toISOString(), action: 'reminder', result: 'sent', count: weekendEvents.length }));
-        return res.status(200).json(result);
-    } catch (error) {
-        console.error(JSON.stringify({ timestamp: today.toISOString(), action: 'reminder', success: false, error: error.message }));
-        const alertMsg = `❌ <b>Error en el recordatorio de fin de semana</b>\n\n${error.message}`;
-        await sendTelegramMessage(alertMsg);
-        return res.status(500).json({ success: false, error: error.message });
-    }
-}
-
-async function handleDaily(req, res) {
-    const now = new Date();
-    const dayOfWeek = now.getDay();
-    // Lunes (1) y Viernes (5) usamos ventana de 48h porque Domingo y Jueves no hay reporte diario (se publica la agenda completa)
-    const windowHours = (dayOfWeek === 1 || dayOfWeek === 5) ? 48 : 24;
-
-    try {
-        const events = await getEvents();
-        const sinceTime = new Date(now.getTime() - (windowHours * 60 * 60 * 1000));
-
-        const modifiedEvents = events.filter(e => {
+        const weekdayEvents = events.filter(e => {
             if (e.cancelado) return false;
-            
-            const eventDate = new Date(e.day);
-            eventDate.setHours(23, 59, 59, 999);
-            if (eventDate < now) return false;
-
-            const agregado = e.FechaAgregado ? new Date(e.FechaAgregado) : null;
-            const editado = e.FechaEditado ? new Date(e.FechaEditado) : null;
-            
-            return (agregado && agregado >= sinceTime) || (editado && editado >= sinceTime);
+            const d = new Date(e.day);
+            return d >= monday && d <= friday;
         });
 
-        if (modifiedEvents.length === 0) {
-            const msg = `✅ <b>Daily Check-in</b>\n\nNo hay cambios en eventos en las últimas ${windowHours} horas.\n\n🔗 <a href="https://debelingoconangel.web.app">debelingoconangel.web.app</a>`;
-            const result = await sendTelegramMessage(msg);
-            console.log(JSON.stringify({ timestamp: now.toISOString(), action: 'daily', result: 'no_changes', windowHours }));
-            return res.status(200).json(result);
+        if (weekdayEvents.length === 0) {
+            console.log(JSON.stringify({ timestamp: new Date().toISOString(), action: 'weekdays', result: 'no_events' }));
+            return res.status(200).json({ success: true, message: 'No events this week.' });
         }
 
-        modifiedEvents.sort((a, b) => new Date(a.day) - new Date(b.day) || a.hora.localeCompare(b.hora));
+        weekdayEvents.sort((a, b) => new Date(a.day) - new Date(b.day) || a.hora.localeCompare(b.hora));
 
         const grouped = {};
-        modifiedEvents.forEach(e => {
+        weekdayEvents.forEach(e => {
             const d = e.day.split('T')[0];
             if (!grouped[d]) grouped[d] = [];
             grouped[d].push(e);
         });
 
-        let message = `🆕 <b>NOVEDADES Y MODIFICACIONES DE HOY</b>\n\n`;
+        let message = `🎵 <b>VERBENAS DE TENERIFE</b>\n`;
+        message += `Lunes ${monday.getDate()} al viernes ${friday.getDate()} de ${months[monday.getMonth()]}\n\n`;
+
         Object.keys(grouped).sort().forEach(d => {
             const dateObj = new Date(d);
             message += `━━━━━━━━━━ <b>${daysOfWeek[dateObj.getDay()]} ${dateObj.getDate()}</b> ━━━━━━━━━━\n\n`;
-            grouped[d].forEach(e => message += formatEvent(e, sinceTime) + '\n');
+            grouped[d].forEach(e => message += formatEvent(e, null) + '\n');
         });
+
         message += `━━━━━━━━━━ ✦ ━━━━━━━━━━━\n\n🔗 <a href="https://debelingoconangel.web.app">debelingoconangel.web.app</a>`;
-        
+
         const result = await sendTelegramMessage(message);
-        console.log(JSON.stringify({ timestamp: now.toISOString(), action: 'daily', result: 'changes_found', count: modifiedEvents.length }));
+        console.log(JSON.stringify({ timestamp: new Date().toISOString(), action: 'weekdays', result: 'sent', count: weekdayEvents.length }));
         return res.status(200).json(result);
     } catch (error) {
-        console.error(JSON.stringify({ timestamp: now.toISOString(), action: 'daily', success: false, error: error.message }));
-        const alertMsg = `❌ <b>Error en el daily automático</b>\n\n${error.message}`;
+        console.error(JSON.stringify({ timestamp: new Date().toISOString(), action: 'weekdays', success: false, error: error.message }));
+        const alertMsg = `❌ <b>Error en la agenda semanal</b>\n\n${error.message}`;
+        await sendTelegramMessage(alertMsg);
+        return res.status(500).json({ success: false, error: error.message });
+    }
+}
+
+async function handleSaturday(req, res) {
+    const canary = getCanaryTime();
+    try {
+        const tomorrow = new Date(canary.year, canary.month, canary.day + 1);
+        tomorrow.setHours(0, 0, 0, 0);
+        const endOfTomorrow = new Date(tomorrow);
+        endOfTomorrow.setHours(23, 59, 59, 999);
+
+        const events = await getEvents();
+        const saturdayEvents = events.filter(e => {
+            if (e.cancelado) return false;
+            const d = new Date(e.day);
+            return d >= tomorrow && d <= endOfTomorrow;
+        });
+
+        if (saturdayEvents.length === 0) {
+            console.log(JSON.stringify({ timestamp: new Date().toISOString(), action: 'saturday', result: 'no_events' }));
+            return res.status(200).json({ success: true, message: 'No events for Saturday.' });
+        }
+
+        saturdayEvents.sort((a, b) => a.hora.localeCompare(b.hora));
+
+        let message = `🔔 <b>VERBENAS DEL SÁBADO</b>\n`;
+        message += `${daysOfWeekNames[tomorrow.getDay()]} ${tomorrow.getDate()} de ${monthsNames[tomorrow.getMonth()]}\n\n`;
+
+        saturdayEvents.forEach(e => message += formatEvent(e, null) + '\n');
+
+        message += `━━━━━━━━━━ ✦ ━━━━━━━━━━━\n\n🔗 <a href="https://debelingoconangel.web.app">debelingoconangel.web.app</a>`;
+
+        const result = await sendTelegramMessage(message);
+        console.log(JSON.stringify({ timestamp: new Date().toISOString(), action: 'saturday', result: 'sent', count: saturdayEvents.length }));
+        return res.status(200).json(result);
+    } catch (error) {
+        console.error(JSON.stringify({ timestamp: new Date().toISOString(), action: 'saturday', success: false, error: error.message }));
+        const alertMsg = `❌ <b>Error en el recordatorio del sábado</b>\n\n${error.message}`;
+        await sendTelegramMessage(alertMsg);
+        return res.status(500).json({ success: false, error: error.message });
+    }
+}
+
+async function handleSunday(req, res) {
+    const canary = getCanaryTime();
+    try {
+        const tomorrow = new Date(canary.year, canary.month, canary.day + 1);
+        tomorrow.setHours(0, 0, 0, 0);
+        const endOfTomorrow = new Date(tomorrow);
+        endOfTomorrow.setHours(23, 59, 59, 999);
+
+        const events = await getEvents();
+        const sundayEvents = events.filter(e => {
+            if (e.cancelado) return false;
+            const d = new Date(e.day);
+            return d >= tomorrow && d <= endOfTomorrow;
+        });
+
+        if (sundayEvents.length === 0) {
+            console.log(JSON.stringify({ timestamp: new Date().toISOString(), action: 'sunday', result: 'no_events' }));
+            return res.status(200).json({ success: true, message: 'No events for Sunday.' });
+        }
+
+        sundayEvents.sort((a, b) => a.hora.localeCompare(b.hora));
+
+        let message = `🔔 <b>VERBENAS DEL DOMINGO</b>\n`;
+        message += `${daysOfWeekNames[tomorrow.getDay()]} ${tomorrow.getDate()} de ${monthsNames[tomorrow.getMonth()]}\n\n`;
+
+        sundayEvents.forEach(e => message += formatEvent(e, null) + '\n');
+
+        message += `━━━━━━━━━━ ✦ ━━━━━━━━━━━\n\n🔗 <a href="https://debelingoconangel.web.app">debelingoconangel.web.app</a>`;
+
+        const result = await sendTelegramMessage(message);
+        console.log(JSON.stringify({ timestamp: new Date().toISOString(), action: 'sunday', result: 'sent', count: sundayEvents.length }));
+        return res.status(200).json(result);
+    } catch (error) {
+        console.error(JSON.stringify({ timestamp: new Date().toISOString(), action: 'sunday', success: false, error: error.message }));
+        const alertMsg = `❌ <b>Error en el recordatorio del domingo</b>\n\n${error.message}`;
         await sendTelegramMessage(alertMsg);
         return res.status(500).json({ success: false, error: error.message });
     }
@@ -265,8 +269,8 @@ export default async function handler(req, res) {
 
     if (req.method === 'POST') return handleNotifyChange(req, res);
     const { action } = req.query;
-    if (action === 'weekly') return handleWeekly(req, res);
-    if (action === 'reminder') return handleReminder(req, res);
-    if (action === 'daily') return handleDaily(req, res);
+    if (action === 'weekdays') return handleWeekdays(req, res);
+    if (action === 'saturday') return handleSaturday(req, res);
+    if (action === 'sunday') return handleSunday(req, res);
     return res.status(400).json({ error: 'Invalid action' });
 }

@@ -40,8 +40,53 @@ export interface UpdateInfo {
 
 function getCanaryTime(): Date {
   const now = new Date();
-  const utc = now.getTime() + (now.getTimezoneOffset() * 60000);
-  return new Date(utc);
+  const formatter = new Intl.DateTimeFormat('en-CA', {
+    timeZone: 'Atlantic/Canary',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  });
+  const parts = formatter.formatToParts(now);
+  const getVal = (type: string) => parseInt(parts.find(p => p.type === type)?.value || '0', 10);
+  return new Date(Date.UTC(getVal('year'), getVal('month') - 1, getVal('day'), getVal('hour'), getVal('minute'), getVal('second')));
+}
+
+export function getCutoffDay(canaryNow: Date): Date {
+  const dayOfWeek = canaryNow.getUTCDay();
+  const hour = canaryNow.getUTCHours();
+  const minute = canaryNow.getUTCMinutes();
+  const timeMinutes = hour * 60 + minute;
+
+  let cutoffDayOfWeek: number;
+
+  if (dayOfWeek === 5 && timeMinutes >= 23 * 60 + 50) {
+    cutoffDayOfWeek = 6;
+  } else if (dayOfWeek === 6 && timeMinutes >= 23 * 60 + 50) {
+    cutoffDayOfWeek = 0;
+  } else {
+    cutoffDayOfWeek = 5;
+  }
+
+  const canaryDateStart = new Date(Date.UTC(
+    canaryNow.getUTCFullYear(),
+    canaryNow.getUTCMonth(),
+    canaryNow.getUTCDate()
+  ));
+
+  let daysToAdd: number;
+  if (cutoffDayOfWeek >= dayOfWeek) {
+    daysToAdd = cutoffDayOfWeek - dayOfWeek;
+  } else {
+    daysToAdd = 7 - dayOfWeek + cutoffDayOfWeek;
+  }
+
+  const cutoff = new Date(canaryDateStart.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
+  cutoff.setUTCHours(23, 59, 59, 999);
+  return cutoff;
 }
 
 export function getLastUpdateInfo(events: Event[], recentActivity: RecentActivityItem[] = []): UpdateInfo {
@@ -70,7 +115,7 @@ export function getLastUpdateInfo(events: Event[], recentActivity: RecentActivit
   }
 
   const now = getCanaryTime();
-  const todayStart = new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()));
+  const todayStart = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
   const updateDayStart = new Date(Date.UTC(lastUpdateDate.getFullYear(), lastUpdateDate.getMonth(), lastUpdateDate.getDate()));
   const diffDays = Math.floor((todayStart.getTime() - updateDayStart.getTime()) / (1000 * 60 * 60 * 24));
 
@@ -87,15 +132,21 @@ export function getLastUpdateInfo(events: Event[], recentActivity: RecentActivit
   }
 }
 
-export function groupEventsByDay(events: Event[]): { [key: string]: Event[] } {
+export function groupEventsByDay(events: Event[], canaryNow?: Date): { [key: string]: Event[] } {
+  const now = canaryNow || getCanaryTime();
   const eventsByDay: { [key: string]: Event[] } = {};
 
-  events.forEach(event => {
-    const eventDate = new Date(event.day);
-    const twoDaysAgo = new Date();
-    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+  const oneDayAgo = new Date(Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    now.getUTCDate() - 1
+  ));
 
-    if (eventDate >= twoDaysAgo) {
+  const cutoffDay = getCutoffDay(now);
+
+  events.forEach(event => {
+    const eventDate = new Date(event.day + 'T00:00:00Z');
+    if (eventDate >= oneDayAgo && eventDate <= cutoffDay) {
       const dayKey = eventDate.toISOString().split('T')[0];
       if (!eventsByDay[dayKey]) {
         eventsByDay[dayKey] = [];
@@ -144,4 +195,10 @@ export function getBrowserInfo() {
 
 export function isEmbeddedBrowser(): boolean {
   return getBrowserInfo().isEmbedded;
+}
+
+export function isFirebaseHosting(): boolean {
+  if (typeof window === 'undefined') return false;
+  const hostname = window.location.hostname;
+  return hostname.endsWith('.web.app') || hostname.endsWith('.firebaseapp.com');
 }

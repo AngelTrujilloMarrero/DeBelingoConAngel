@@ -1,6 +1,5 @@
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import Header from './components/Header';
-import IntroPage, { isIntroActive } from './components/IntroPage';
 import VisitCounter from './components/VisitCounter';
 import { useEvents } from './hooks/useEvents';
 import { useAnalytics } from './hooks/useAnalytics';
@@ -21,7 +20,6 @@ function AppContent() {
   const { pathname } = useLocation();
   
   const [searchTerm, setSearchTerm] = useState('');
-  const [introActive] = useState(isIntroActive);
 
   useAnalytics();
 
@@ -58,10 +56,7 @@ function AppContent() {
   console.log('App rendering, pathname:', pathname);
   return (
     <TurnstileProvider>
-      {introActive ? (
-        <IntroPage />
-      ) : (
-        <>
+      <>
           <div className="min-h-screen bg-[#111] md:bg-gradient-to-br md:from-gray-900 md:via-gray-800 md:to-gray-900">
             {/* Header - Siempre visible */}
             <Header searchTerm={searchTerm} setSearchTerm={setSearchTerm} />
@@ -113,8 +108,7 @@ function AppContent() {
               </div>
             </footer>
           </div>
-        </>
-      )}
+      </>
     </TurnstileProvider>
   );
 }

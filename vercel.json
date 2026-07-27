@@ -58,9 +58,9 @@
     }
   ],
   "rewrites": [
-    { "source": "/api/telegram-send-weekly", "destination": "/api/telegram?action=weekly" },
-    { "source": "/api/telegram-send-reminder", "destination": "/api/telegram?action=reminder" },
-    { "source": "/api/telegram-daily", "destination": "/api/telegram?action=daily" },
+    { "source": "/api/telegram-send-weekdays", "destination": "/api/telegram?action=weekdays" },
+    { "source": "/api/telegram-send-saturday", "destination": "/api/telegram?action=saturday" },
+    { "source": "/api/telegram-send-sunday", "destination": "/api/telegram?action=sunday" },
     { "source": "/api/telegram-notify-change", "destination": "/api/telegram" },
     { "source": "/api/telegram-send-photos", "destination": "/api/telegram-photo" },
     { "source": "/api/cleanup-deletions", "destination": "/api/cleanup" },
