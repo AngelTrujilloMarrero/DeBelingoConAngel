@@ -222,7 +222,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
     const update = getLastUpdateDate(eventsForStats, isFB ? filteredActivity : recentActivity);
     const info = getLastUpdateInfo(eventsForStats, isFB ? filteredActivity : recentActivity);
 
-    return { eventsByDay: grouped, sortedEvents: sorted, lastUpdate: update, updateInfo: info, filteredRecentActivity: filteredActivity };
+    return { eventsByDay: grouped, sortedEvents: sorted, lastUpdate: update, updateInfo: info, filteredRecentActivity: isFB ? filteredActivity : recentActivity };
   }, [events, recentActivity]);
 
   const fixedTypeSet = useMemo(() => new Set([
