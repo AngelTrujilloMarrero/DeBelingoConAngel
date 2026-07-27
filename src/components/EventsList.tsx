@@ -198,8 +198,6 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
     const now = getCanaryTime();
     const grouped = groupEventsByDay(events);
     const sorted = sortEventsByDateTime(events);
-    const update = getLastUpdateDate(sorted, recentActivity);
-    const info = getLastUpdateInfo(sorted, recentActivity);
 
     const oneDayAgo = new Date(Date.UTC(
       now.getUTCFullYear(),
@@ -212,6 +210,17 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
       const eventDate = new Date(item.event.day + 'T00:00:00Z');
       return eventDate >= oneDayAgo && eventDate <= cutoffDay;
     });
+
+    const isFB = isFirebaseHosting();
+    const eventsForStats = isFB
+      ? sorted.filter(e => {
+          const d = new Date(e.day + 'T00:00:00Z');
+          return d >= oneDayAgo && d <= cutoffDay;
+        })
+      : sorted;
+
+    const update = getLastUpdateDate(eventsForStats, isFB ? filteredActivity : recentActivity);
+    const info = getLastUpdateInfo(eventsForStats, isFB ? filteredActivity : recentActivity);
 
     return { eventsByDay: grouped, sortedEvents: sorted, lastUpdate: update, updateInfo: info, filteredRecentActivity: filteredActivity };
   }, [events, recentActivity]);
