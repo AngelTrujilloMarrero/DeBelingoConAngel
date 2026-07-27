@@ -38,7 +38,7 @@ export interface UpdateInfo {
   badgeClasses: string;
 }
 
-function getCanaryTime(): Date {
+export function getCanaryTime(): Date {
   const now = new Date();
   const formatter = new Intl.DateTimeFormat('en-CA', {
     timeZone: 'Atlantic/Canary',

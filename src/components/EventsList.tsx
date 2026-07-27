@@ -5,7 +5,7 @@ import { onValue, orchestrasRef, messagesRef, query, limitToLast } from '../util
 import { orchestraDetails } from '../data/orchestras';
 import { getCachedOrchestraArchive } from '../utils/dataLoaders';
 import { Event, RecentActivityItem } from '../types';
-import { groupEventsByDay, sortEventsByDateTime, formatDayName, getLastUpdateDate, getLastUpdateInfo, isFirebaseHosting } from '../utils/helpers';
+import { groupEventsByDay, sortEventsByDateTime, formatDayName, getLastUpdateDate, getLastUpdateInfo, isFirebaseHosting, getCanaryTime, getCutoffDay } from '../utils/helpers';
 import WeatherIcon from './WeatherIcon';
 import TITSALogo from './TITSALogo';
 import { useAemetAlerts, AemetAlert } from '../hooks/useAemetAlerts';
@@ -194,12 +194,26 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
     img.src = '/fotos/dbca.webp';
   }, []);
 
-  const { eventsByDay, sortedEvents, lastUpdate, updateInfo } = useMemo(() => {
+  const { eventsByDay, sortedEvents, lastUpdate, updateInfo, filteredRecentActivity } = useMemo(() => {
+    const now = getCanaryTime();
     const grouped = groupEventsByDay(events);
     const sorted = sortEventsByDateTime(events);
     const update = getLastUpdateDate(sorted, recentActivity);
     const info = getLastUpdateInfo(sorted, recentActivity);
-    return { eventsByDay: grouped, sortedEvents: sorted, lastUpdate: update, updateInfo: info };
+
+    const oneDayAgo = new Date(Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      now.getUTCDate() - 1
+    ));
+    const cutoffDay = getCutoffDay(now);
+
+    const filteredActivity = (recentActivity || []).filter(item => {
+      const eventDate = new Date(item.event.day + 'T00:00:00Z');
+      return eventDate >= oneDayAgo && eventDate <= cutoffDay;
+    });
+
+    return { eventsByDay: grouped, sortedEvents: sorted, lastUpdate: update, updateInfo: info, filteredRecentActivity: filteredActivity };
   }, [events, recentActivity]);
 
   const fixedTypeSet = useMemo(() => new Set([
@@ -741,7 +755,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
 
         {/* Recent Activity — Timeline */}
         {
-          recentActivity && recentActivity.length > 0 && (
+          filteredRecentActivity && filteredRecentActivity.length > 0 && (
             <>
               <div className="flex items-center gap-3 pt-2">
                 <div className="flex-1 h-px bg-gradient-to-r from-transparent to-gray-600/60" />
@@ -752,7 +766,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
               </div>
 
               <div className="activity-timeline mt-2">
-                {recentActivity.slice(0, visibleMovimientos).map((item, index) => (
+                {filteredRecentActivity.slice(0, visibleMovimientos).map((item, index) => (
                   <div key={item.event.id} className="activity-timeline-item">
                     {/* Node */}
                     <div className={`activity-timeline-node ${index === 0 ? 'latest' : ''} ${
@@ -849,7 +863,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                         </div>
                       )}
                       
-                      {index === recentActivity.slice(0, visibleMovimientos).length - 1 && recentActivity.length > 1 && (
+                      {index === filteredRecentActivity.slice(0, visibleMovimientos).length - 1 && filteredRecentActivity.length > 1 && (
                         <div className="mt-4 text-[9px] text-gray-600 font-bold tracking-widest uppercase">
                           Inicio del bloque
                         </div>
@@ -861,14 +875,14 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
 
               {/* Ver más / Comprimir — Lógica mejorada */}
               <div className="flex items-center justify-center gap-4 mt-4 mb-2">
-                {visibleMovimientos < recentActivity.length && (
+                {visibleMovimientos < filteredRecentActivity.length && (
                   <button
-                    onClick={() => setVisibleMovimientos(prev => Math.min(prev + 5, recentActivity.length))}
+                    onClick={() => setVisibleMovimientos(prev => Math.min(prev + 5, filteredRecentActivity.length))}
                     className="flex items-center gap-1.5 py-1 px-3 text-xs text-gray-500 hover:text-gray-300 hover:bg-gray-800/30 rounded-full border border-gray-700/50 transition-all"
-                    title={`Ver ${Math.min(5, recentActivity.length - visibleMovimientos)} movimientos más`}
+                    title={`Ver ${Math.min(5, filteredRecentActivity.length - visibleMovimientos)} movimientos más`}
                   >
                     <ChevronDown className="w-3.5 h-3.5" />
-                    Ver más ({recentActivity.length - visibleMovimientos})
+                    Ver más ({filteredRecentActivity.length - visibleMovimientos})
                   </button>
                 )}
                 
@@ -882,7 +896,7 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
                     className="flex items-center gap-1.5 py-1 px-3 text-xs text-gray-500 hover:text-blue-400 hover:bg-blue-500/10 rounded-full border border-gray-700/50 hover:border-blue-500/30 transition-all"
                   >
                     <ChevronDown className="w-3.5 h-3.5 rotate-180" />
-                    {visibleMovimientos === recentActivity.length ? 'Cerrar lista' : 'Comprimir'}
+                    {visibleMovimientos === filteredRecentActivity.length ? 'Cerrar lista' : 'Comprimir'}
                   </button>
                 )}
               </div>
