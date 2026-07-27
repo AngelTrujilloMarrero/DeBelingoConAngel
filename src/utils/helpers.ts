@@ -133,8 +133,23 @@ export function getLastUpdateInfo(events: Event[], recentActivity: RecentActivit
 }
 
 export function groupEventsByDay(events: Event[], canaryNow?: Date): { [key: string]: Event[] } {
-  const now = canaryNow || getCanaryTime();
   const eventsByDay: { [key: string]: Event[] } = {};
+
+  if (!isFirebaseHosting()) {
+    const twoDaysAgo = new Date();
+    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+    events.forEach(event => {
+      const eventDate = new Date(event.day);
+      if (eventDate >= twoDaysAgo) {
+        const dayKey = eventDate.toISOString().split('T')[0];
+        if (!eventsByDay[dayKey]) eventsByDay[dayKey] = [];
+        eventsByDay[dayKey].push(event);
+      }
+    });
+    return eventsByDay;
+  }
+
+  const now = canaryNow || getCanaryTime();
 
   const oneDayAgo = new Date(Date.UTC(
     now.getUTCFullYear(),
