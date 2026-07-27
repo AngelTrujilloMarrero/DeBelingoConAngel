@@ -77,6 +77,18 @@
     {
       "path": "/api/cleanup",
       "schedule": "0 0 1 * *"
+    },
+    {
+      "path": "/api/telegram-send-weekdays",
+      "schedule": "0 0 * * 1"
+    },
+    {
+      "path": "/api/telegram-send-saturday",
+      "schedule": "50 23 * * 5"
+    },
+    {
+      "path": "/api/telegram-send-sunday",
+      "schedule": "50 23 * * 6"
     }
   ]
 }
