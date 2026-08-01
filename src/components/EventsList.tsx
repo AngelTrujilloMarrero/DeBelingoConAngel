@@ -5,7 +5,7 @@ import { onValue, orchestrasRef, messagesRef, query, limitToLast } from '../util
 import { orchestraDetails } from '../data/orchestras';
 import { getCachedOrchestraArchive } from '../utils/dataLoaders';
 import { Event, RecentActivityItem } from '../types';
-import { groupEventsByDay, sortEventsByDateTime, formatDayName, getLastUpdateDate, getLastUpdateInfo, isFirebaseHosting, getCanaryTime, getCutoffDay } from '../utils/helpers';
+import { groupEventsByDay, sortEventsByDateTime, formatDayName, getLastUpdateDate, getLastUpdateInfo, isFirebaseHosting, getCanaryTime, getVisibleWindow } from '../utils/helpers';
 import WeatherIcon from './WeatherIcon';
 import TITSALogo from './TITSALogo';
 import { useAemetAlerts, AemetAlert } from '../hooks/useAemetAlerts';
@@ -199,23 +199,18 @@ const EventsList: React.FC<EventsListProps> = ({ events, recentActivity, onExpor
     const grouped = groupEventsByDay(events);
     const sorted = sortEventsByDateTime(events);
 
-    const oneDayAgo = new Date(Date.UTC(
-      now.getUTCFullYear(),
-      now.getUTCMonth(),
-      now.getUTCDate() - 1
-    ));
-    const cutoffDay = getCutoffDay(now);
+    const { start: visibleStart, end: visibleEnd } = getVisibleWindow(now);
 
     const filteredActivity = (recentActivity || []).filter(item => {
       const eventDate = new Date(item.event.day + 'T00:00:00Z');
-      return eventDate >= oneDayAgo && eventDate <= cutoffDay;
+      return eventDate >= visibleStart && eventDate <= visibleEnd;
     });
 
     const isFB = isFirebaseHosting();
     const eventsForStats = isFB
       ? sorted.filter(e => {
           const d = new Date(e.day + 'T00:00:00Z');
-          return d >= oneDayAgo && d <= cutoffDay;
+          return d >= visibleStart && d <= visibleEnd;
         })
       : sorted;
 

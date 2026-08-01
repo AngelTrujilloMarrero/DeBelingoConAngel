@@ -153,19 +153,34 @@ async function handleWeekdays(req, res) {
     }
 }
 
+function getNextWeekday(date, targetDayOfWeek) {
+    const daysUntil = (targetDayOfWeek - date.getDay() + 7) % 7;
+    const target = new Date(date);
+    target.setDate(date.getDate() + daysUntil);
+    target.setHours(0, 0, 0, 0);
+    return target;
+}
+
+function getDayRange(date) {
+    const start = new Date(date);
+    start.setHours(0, 0, 0, 0);
+    const end = new Date(start);
+    end.setHours(23, 59, 59, 999);
+    return { start, end };
+}
+
 async function handleSaturday(req, res) {
     const canary = getCanaryTime();
     try {
-        const tomorrow = new Date(canary.year, canary.month, canary.day + 1);
-        tomorrow.setHours(0, 0, 0, 0);
-        const endOfTomorrow = new Date(tomorrow);
-        endOfTomorrow.setHours(23, 59, 59, 999);
+        const today = new Date(canary.year, canary.month, canary.day);
+        const saturday = getNextWeekday(today, 6);
+        const { start: dayStart, end: endOfDay } = getDayRange(saturday);
 
         const events = await getEvents();
         const saturdayEvents = events.filter(e => {
             if (e.cancelado) return false;
             const d = new Date(e.day);
-            return d >= tomorrow && d <= endOfTomorrow;
+            return d >= dayStart && d <= endOfDay;
         });
 
         if (saturdayEvents.length === 0) {
@@ -176,7 +191,7 @@ async function handleSaturday(req, res) {
         saturdayEvents.sort((a, b) => a.hora.localeCompare(b.hora));
 
         let message = `🔔 <b>VERBENAS DEL SÁBADO</b>\n`;
-        message += `${daysOfWeekNames[tomorrow.getDay()]} ${tomorrow.getDate()} de ${monthsNames[tomorrow.getMonth()]}\n\n`;
+        message += `${daysOfWeekNames[saturday.getDay()]} ${saturday.getDate()} de ${monthsNames[saturday.getMonth()]}\n\n`;
 
         saturdayEvents.forEach(e => message += formatEvent(e, null) + '\n');
 
@@ -196,16 +211,15 @@ async function handleSaturday(req, res) {
 async function handleSunday(req, res) {
     const canary = getCanaryTime();
     try {
-        const tomorrow = new Date(canary.year, canary.month, canary.day + 1);
-        tomorrow.setHours(0, 0, 0, 0);
-        const endOfTomorrow = new Date(tomorrow);
-        endOfTomorrow.setHours(23, 59, 59, 999);
+        const today = new Date(canary.year, canary.month, canary.day);
+        const sunday = getNextWeekday(today, 0);
+        const { start: dayStart, end: endOfDay } = getDayRange(sunday);
 
         const events = await getEvents();
         const sundayEvents = events.filter(e => {
             if (e.cancelado) return false;
             const d = new Date(e.day);
-            return d >= tomorrow && d <= endOfTomorrow;
+            return d >= dayStart && d <= endOfDay;
         });
 
         if (sundayEvents.length === 0) {
@@ -216,7 +230,7 @@ async function handleSunday(req, res) {
         sundayEvents.sort((a, b) => a.hora.localeCompare(b.hora));
 
         let message = `🔔 <b>VERBENAS DEL DOMINGO</b>\n`;
-        message += `${daysOfWeekNames[tomorrow.getDay()]} ${tomorrow.getDate()} de ${monthsNames[tomorrow.getMonth()]}\n\n`;
+        message += `${daysOfWeekNames[sunday.getDay()]} ${sunday.getDate()} de ${monthsNames[sunday.getMonth()]}\n\n`;
 
         sundayEvents.forEach(e => message += formatEvent(e, null) + '\n');
 

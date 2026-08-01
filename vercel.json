@@ -84,11 +84,11 @@
     },
     {
       "path": "/api/telegram-send-saturday",
-      "schedule": "50 23 * * 5"
+      "schedule": "50 22 * * 5"
     },
     {
       "path": "/api/telegram-send-sunday",
-      "schedule": "50 23 * * 6"
+      "schedule": "50 22 * * 6"
     }
   ]
 }

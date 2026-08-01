@@ -55,38 +55,51 @@ export function getCanaryTime(): Date {
   return new Date(Date.UTC(getVal('year'), getVal('month') - 1, getVal('day'), getVal('hour'), getVal('minute'), getVal('second')));
 }
 
-export function getCutoffDay(canaryNow: Date): Date {
+export interface VisibleWindow {
+  start: Date;
+  end: Date;
+}
+
+export function getVisibleWindow(canaryNow: Date): VisibleWindow {
   const dayOfWeek = canaryNow.getUTCDay();
-  const hour = canaryNow.getUTCHours();
-  const minute = canaryNow.getUTCMinutes();
-  const timeMinutes = hour * 60 + minute;
+  const timeMinutes = canaryNow.getUTCHours() * 60 + canaryNow.getUTCMinutes();
+  const NIGHT = 23 * 60 + 50;
 
-  let cutoffDayOfWeek: number;
-
-  if (dayOfWeek === 5 && timeMinutes >= 23 * 60 + 50) {
-    cutoffDayOfWeek = 6;
-  } else if (dayOfWeek === 6 && timeMinutes >= 23 * 60 + 50) {
-    cutoffDayOfWeek = 0;
-  } else {
-    cutoffDayOfWeek = 5;
-  }
-
-  const canaryDateStart = new Date(Date.UTC(
+  const todayStart = new Date(Date.UTC(
     canaryNow.getUTCFullYear(),
     canaryNow.getUTCMonth(),
     canaryNow.getUTCDate()
   ));
+  const dayMs = 24 * 60 * 60 * 1000;
 
-  let daysToAdd: number;
-  if (cutoffDayOfWeek >= dayOfWeek) {
-    daysToAdd = cutoffDayOfWeek - dayOfWeek;
-  } else {
-    daysToAdd = 7 - dayOfWeek + cutoffDayOfWeek;
+  const dayAt = (offset: number, endOfDay = false): Date => {
+    const d = new Date(todayStart.getTime() + offset * dayMs);
+    if (endOfDay) d.setUTCHours(23, 59, 59, 999);
+    return d;
+  };
+
+  const mondayOffset = (dayOfWeek + 6) % 7;
+
+  const isFridayNight = dayOfWeek === 5 && timeMinutes >= NIGHT;
+  const isSaturdayNight = dayOfWeek === 6 && timeMinutes >= NIGHT;
+  const isSundayNight = dayOfWeek === 0 && timeMinutes >= NIGHT;
+
+  if (isFridayNight) {
+    return { start: dayAt(1), end: dayAt(1, true) };
   }
-
-  const cutoff = new Date(canaryDateStart.getTime() + daysToAdd * 24 * 60 * 60 * 1000);
-  cutoff.setUTCHours(23, 59, 59, 999);
-  return cutoff;
+  if (isSaturdayNight) {
+    return { start: dayAt(1), end: dayAt(1, true) };
+  }
+  if (isSundayNight) {
+    return { start: dayAt(1), end: dayAt(5, true) };
+  }
+  if (dayOfWeek === 6) {
+    return { start: todayStart, end: dayAt(0, true) };
+  }
+  if (dayOfWeek === 0) {
+    return { start: todayStart, end: dayAt(0, true) };
+  }
+  return { start: dayAt(-mondayOffset), end: dayAt(4 - mondayOffset, true) };
 }
 
 export function getLastUpdateInfo(events: Event[], recentActivity: RecentActivityItem[] = []): UpdateInfo {
@@ -151,17 +164,11 @@ export function groupEventsByDay(events: Event[], canaryNow?: Date): { [key: str
 
   const now = canaryNow || getCanaryTime();
 
-  const oneDayAgo = new Date(Date.UTC(
-    now.getUTCFullYear(),
-    now.getUTCMonth(),
-    now.getUTCDate() - 1
-  ));
-
-  const cutoffDay = getCutoffDay(now);
+  const { start, end } = getVisibleWindow(now);
 
   events.forEach(event => {
     const eventDate = new Date(event.day + 'T00:00:00Z');
-    if (eventDate >= oneDayAgo && eventDate <= cutoffDay) {
+    if (eventDate >= start && eventDate <= end) {
       const dayKey = eventDate.toISOString().split('T')[0];
       if (!eventsByDay[dayKey]) {
         eventsByDay[dayKey] = [];
