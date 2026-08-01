@@ -80,26 +80,28 @@ export function getVisibleWindow(canaryNow: Date): VisibleWindow {
 
   const mondayOffset = (dayOfWeek + 6) % 7;
 
+  const start = dayAt(-1);
+
   const isFridayNight = dayOfWeek === 5 && timeMinutes >= NIGHT;
   const isSaturdayNight = dayOfWeek === 6 && timeMinutes >= NIGHT;
   const isSundayNight = dayOfWeek === 0 && timeMinutes >= NIGHT;
 
   if (isFridayNight) {
-    return { start: dayAt(1), end: dayAt(1, true) };
+    return { start, end: dayAt(1, true) };
   }
   if (isSaturdayNight) {
-    return { start: dayAt(1), end: dayAt(1, true) };
+    return { start, end: dayAt(1, true) };
   }
   if (isSundayNight) {
-    return { start: dayAt(1), end: dayAt(5, true) };
+    return { start, end: dayAt(5, true) };
   }
   if (dayOfWeek === 6) {
-    return { start: todayStart, end: dayAt(0, true) };
+    return { start, end: dayAt(0, true) };
   }
   if (dayOfWeek === 0) {
-    return { start: todayStart, end: dayAt(0, true) };
+    return { start, end: dayAt(0, true) };
   }
-  return { start: dayAt(-mondayOffset), end: dayAt(4 - mondayOffset, true) };
+  return { start, end: dayAt(4 - mondayOffset, true) };
 }
 
 export function getLastUpdateInfo(events: Event[], recentActivity: RecentActivityItem[] = []): UpdateInfo {
