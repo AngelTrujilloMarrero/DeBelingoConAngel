@@ -180,7 +180,7 @@ const SocialMedia: React.FC<SocialMediaProps> = ({ events = [] }) => {
               <BookOpen className="w-10 h-10 md:w-12 md:h-12 text-purple-300" />
               <Scroll className="w-8 h-8 md:w-10 md:h-10 text-purple-400" />
             </div>
-            <h2
+            <h1
               className="text-2xl md:text-4xl font-bold text-purple-200 tracking-wide"
               style={{
                 fontFamily: '"Cinzel", "Times New Roman", serif',
@@ -188,7 +188,7 @@ const SocialMedia: React.FC<SocialMediaProps> = ({ events = [] }) => {
               }}
             >
               BIOGRAFÍA DE DE BELINGO CON ÁNGEL
-            </h2>
+            </h1>
             <div className="mt-2 flex justify-center">
               <div className="w-32 md:w-48 h-1 bg-gradient-to-r from-transparent via-purple-500 to-transparent" />
             </div>

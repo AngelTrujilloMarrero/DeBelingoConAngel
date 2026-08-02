@@ -105,7 +105,7 @@ const Header: React.FC<HeaderProps> = ({ searchTerm, setSearchTerm }) => {
           </div>
           {/* Visible on desktop */}
           <div className="hidden md:block transition-all duration-500">
-            <h1 className="text-lg md:text-xl lg:text-3xl font-bold font-orbitron tracking-widest transform scale-x-110 origin-center inline-block group/text cursor-pointer transition-transform duration-300 hover:scale-125 py-1 perspective-[1000px]">
+            <div className="text-lg md:text-xl lg:text-3xl font-bold font-orbitron tracking-widest transform scale-x-110 origin-center inline-block group/text cursor-pointer transition-transform duration-300 hover:scale-125 py-1 perspective-[1000px]">
               {"DE BELINGO CON ÁNGEL".split('').map((char, i) => (
                 <span
                   key={`char-${i}`}
@@ -115,7 +115,7 @@ const Header: React.FC<HeaderProps> = ({ searchTerm, setSearchTerm }) => {
                   {char === ' ' ? '\u00A0' : char}
                 </span>
               ))}
-            </h1>
+            </div>
           </div>
 
         </div>
