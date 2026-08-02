@@ -4,7 +4,7 @@
     "start_url": "/",
     "display": "standalone",
     "background_color": "#ffffff",
-    "theme_color": "#1e40af",
+    "theme_color": "#001f3f",
     "icons": [
         {
             "src": "/fotos/dbca.jpg",
