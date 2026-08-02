@@ -1,5 +1,6 @@
 import { sendTelegramMessage } from './_telegram.js';
 import { getEvents } from './_firebase.js';
+import { getAemetAlerts, getAlertsForEvent, formatAemetAlertLine } from './_aemet.js';
 
 const daysOfWeek = ['DOMINGO', 'LUNES', 'MARTES', 'MIÉRCOLES', 'JUEVES', 'VIERNES', 'SÁBADO'];
 const daysOfWeekNames = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
@@ -76,6 +77,28 @@ function formatDateFull(dateStr) {
     return `${daysOfWeekNames[date.getDay()]} ${date.getDate()} de ${monthsNames[date.getMonth()]}`;
 }
 
+async function getAemetAlertsSafe() {
+    try {
+        return await getAemetAlerts();
+    } catch (error) {
+        console.log(JSON.stringify({ timestamp: new Date().toISOString(), action: 'aemet', success: false, error: error.message }));
+        return [];
+    }
+}
+
+function appendAemetSection(message, dayEvents, alerts) {
+    if (!alerts || alerts.length === 0) return message;
+    const lines = [];
+    for (const alert of alerts) {
+        const affected = dayEvents.filter(e => getAlertsForEvent(e, [alert]).length > 0);
+        if (affected.length > 0) {
+            lines.push(`• ${formatAemetAlertLine(alert, affected)}`);
+        }
+    }
+    if (lines.length === 0) return message;
+    return message + `\n⚠️ <b>Alertas AEMET</b>\n${lines.join('\n')}\n`;
+}
+
 function getCanaryTime() {
     const formatter = new Intl.DateTimeFormat('en-CA', {
         timeZone: 'Atlantic/Canary',
@@ -97,6 +120,18 @@ function getCanaryTime() {
         minute: getVal('minute'),
         dayOfWeek: new Date(getVal('year'), getVal('month') - 1, getVal('day')).getDay(),
     };
+}
+
+function isTodayCanaryDay(dateStr) {
+    const canary = getCanaryTime();
+    const today = `${canary.year}-${String(canary.month + 1).padStart(2, '0')}-${String(canary.day).padStart(2, '0')}`;
+    return Boolean(dateStr && dateStr.split('T')[0] === today);
+}
+
+function isOnlyHourChangeToday(event) {
+    if (!event || !event.cambios) return false;
+    const soloHora = Array.isArray(event.cambios) && event.cambios.length === 1 && event.cambios[0] === 'hora';
+    return soloHora && isTodayCanaryDay(event.day);
 }
 
 async function handleWeekdays(req, res) {
@@ -122,6 +157,7 @@ async function handleWeekdays(req, res) {
             return res.status(200).json({ success: true, message: 'No events this week.' });
         }
 
+        const alerts = await getAemetAlertsSafe();
         weekdayEvents.sort((a, b) => new Date(a.day) - new Date(b.day) || a.hora.localeCompare(b.hora));
 
         const grouped = {};
@@ -138,6 +174,7 @@ async function handleWeekdays(req, res) {
             const dateObj = new Date(d);
             message += `━━━━━━━━━━ <b>${daysOfWeek[dateObj.getDay()]} ${dateObj.getDate()}</b> ━━━━━━━━━━\n\n`;
             grouped[d].forEach(e => message += formatEvent(e, null) + '\n');
+            message = appendAemetSection(message, grouped[d], alerts);
         });
 
         message += `━━━━━━━━━━ ✦ ━━━━━━━━━━━\n\n🔗 <a href="https://debelingoconangel.web.app">debelingoconangel.web.app</a>`;
@@ -188,12 +225,14 @@ async function handleSaturday(req, res) {
             return res.status(200).json({ success: true, message: 'No events for Saturday.' });
         }
 
+        const alerts = await getAemetAlertsSafe();
         saturdayEvents.sort((a, b) => a.hora.localeCompare(b.hora));
 
         let message = `🔔 <b>VERBENAS DEL SÁBADO</b>\n`;
         message += `${daysOfWeekNames[saturday.getDay()]} ${saturday.getDate()} de ${monthsNames[saturday.getMonth()]}\n\n`;
 
         saturdayEvents.forEach(e => message += formatEvent(e, null) + '\n');
+        message = appendAemetSection(message, saturdayEvents, alerts);
 
         message += `━━━━━━━━━━ ✦ ━━━━━━━━━━━\n\n🔗 <a href="https://debelingoconangel.web.app">debelingoconangel.web.app</a>`;
 
@@ -227,12 +266,14 @@ async function handleSunday(req, res) {
             return res.status(200).json({ success: true, message: 'No events for Sunday.' });
         }
 
+        const alerts = await getAemetAlertsSafe();
         sundayEvents.sort((a, b) => a.hora.localeCompare(b.hora));
 
         let message = `🔔 <b>VERBENAS DEL DOMINGO</b>\n`;
         message += `${daysOfWeekNames[sunday.getDay()]} ${sunday.getDate()} de ${monthsNames[sunday.getMonth()]}\n\n`;
 
         sundayEvents.forEach(e => message += formatEvent(e, null) + '\n');
+        message = appendAemetSection(message, sundayEvents, alerts);
 
         message += `━━━━━━━━━━ ✦ ━━━━━━━━━━━\n\n🔗 <a href="https://debelingoconangel.web.app">debelingoconangel.web.app</a>`;
 
@@ -248,7 +289,7 @@ async function handleSunday(req, res) {
 }
 
 async function handleNotifyChange(req, res) {
-    const { type, event, reason } = req.body;
+    const { type, event, reason, horaAnterior } = req.body;
     if (!type || !event) return res.status(400).json({ success: false, error: 'Missing data' });
 
     let message = '';
@@ -261,6 +302,16 @@ async function handleNotifyChange(req, res) {
         message += `📅 ${formatDateFull(event.day)}\n`;
         if (event.orquesta) message += `🎻 ${event.orquesta}\n`;
         if (reason || event.motivoEliminacion) message += `\nMotivo: ${reason || event.motivoEliminacion}\n`;
+    } else if (type === 'edit' && isOnlyHourChangeToday(event)) {
+        // Cambio únicamente de hora en el propio día del evento
+        message += `⏰ <b>CAMBIO DE HORA - HOY</b>\n\n🎵 ${event.tipo}\n`;
+        let locationParts = [];
+        if (event.lugar) locationParts.push(event.lugar);
+        if (event.municipio) locationParts.push(event.municipio);
+        if (locationParts.length > 0) message += `📍 ${locationParts.join(', ')}\n`;
+        message += `📅 ${formatDateFull(event.day)}\n`;
+        message += `🕐 <b>${event.hora}</b>${horaAnterior ? ` (era ${horaAnterior})` : ''}\n`;
+        if (event.orquesta) message += `🎻 ${event.orquesta}\n`;
     } else {
         const titles = { add: 'NUEVA VERBENA', reagregado: 'VERBENA REAGREGADA', edit: 'CAMBIO EN VERBENA' };
         const emojis = { add: '➕', reagregado: '➕', edit: '✏️' };
