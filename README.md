@@ -1,5 +1,7 @@
 # Verbenas en Tenerife
 
+> Test de pipeline CI: este commit verifica ci.yml en un PR de prueba.
+
 Aplicación web para descubrir y seguir las verbenas y eventos musicales en Tenerife. Desarrollada con React, TypeScript y tecnologías modernas para ofrecer una experiencia completa y accesible.
 
 ## 🎭 ¿Qué es Verbenas en Tenerife?
