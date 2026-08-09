@@ -32,54 +32,25 @@ jobs:
       - name: Generate Static Stats
         run: pnpm run generate-stats -- --force
 
-      - name: Cleanup Old Events from Firebase
-        if: success()
-        run: |
-          if [ -f cleanup-events.json ]; then
-            echo "🗑️  Cleanup manifest found. Deleting old events from Firebase..."
-            npx firebase-tools database:update /events cleanup-events.json --token "${{ secrets.FIREBASE_TOKEN }}" --project debelingoconangel --confirm
-            rm cleanup-events.json
-          else
-            echo "ℹ️  No events to clean up."
-          fi
-
-      - name: Upload Historical Daily Visits to Firebase
-        if: success()
-        run: |
-          if [ -f upload-daily-visits.json ]; then
-            echo "📤  Upload manifest found. Archiving daily visits under /historicalDailyVisits..."
-            npx firebase-tools database:update /historicalDailyVisits upload-daily-visits.json --token "${{ secrets.FIREBASE_TOKEN }}" --project debelingoconangel --confirm
-            rm upload-daily-visits.json
-          else
-            echo "ℹ️  No historical daily visits to archive."
-          fi
-
-      - name: Cleanup Old Daily Visits from Firebase
-        if: success()
-        run: |
-          if [ -f cleanup-daily-visits.json ]; then
-            echo "🗑️  Cleanup manifest found. Deleting old daily visits from /dailyVisits..."
-            npx firebase-tools database:update /dailyVisits cleanup-daily-visits.json --token "${{ secrets.FIREBASE_TOKEN }}" --project debelingoconangel --confirm
-            rm cleanup-daily-visits.json
-          else
-            echo "ℹ️  No daily visits to clean up."
-          fi
-
       - name: Commit changes to branch
         if: success()
         run: |
-          if git diff --quiet; then
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          for P in src/data public/events-archive public/visits-archive; do
+            if [ -e "$P" ]; then
+              git add -A -- "$P" || { echo "❌ Error al añadir $P"; exit 1; }
+            fi
+          done
+          if git diff --cached --quiet; then
             echo "ℹ️  No changes generated; no PR needed."
             echo "HAS_CHANGES=false" >> "$GITHUB_ENV"
             exit 0
           fi
           echo "HAS_CHANGES=true" >> "$GITHUB_ENV"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -b "auto/update-stats-${{ github.run_id }}"
-          git add -- src/data/historicalStats.json src/data/historicalDailyVisits.json src/data/orchestraArchive.json public/events-archive public/visits-archive
-          git commit -m "chore: auto-update historical stats, event archives, daily visits and orchestra archive for the new year"
-          git push origin "auto/update-stats-${{ github.run_id }}"
+          git commit -m "chore: auto-update historical stats, event archives, daily visits and orchestra archive for the new year" || { echo "❌ git commit falló"; exit 1; }
+          git push origin "auto/update-stats-${{ github.run_id }}" || { echo "❌ git push falló"; exit 1; }
 
       - name: Open and auto-merge pull request
         if: success() && env.HAS_CHANGES == 'true'
@@ -94,3 +65,55 @@ jobs:
             --body "Actualización anual automática de estadísticas históricas, archivos de eventos y visitas diarias. Se mergeará automáticamente cuando el check \`build\` pase.")
           echo "PR created: $PR_URL"
           gh pr merge "$PR_URL" --auto --squash
+
+      - name: Verify Admin archives before deleting from Firebase
+        if: success() && env.HAS_CHANGES == 'true'
+        run: |
+          if [ ! -s public/events-archive/index.json ]; then
+            echo "ℹ️  No event archive index; skipping cross-check."
+            exit 0
+          fi
+          YEARS=$(python3 -c "import json;print(' '.join(map(str, json.load(open('public/events-archive/index.json'))['years'])))")
+          for Y in $YEARS; do
+            TMP="/tmp/admin_$Y.json"
+            HTTP=$(curl -s -o "$TMP" -w "%{http_code}" "https://admindebelingo.web.app/events-archive/${Y}.json")
+            N=$(python3 -c "import json;d=json.load(open('$TMP'));print(d.get('totalEvents',0))" 2>/dev/null || echo "0")
+            if [ "$HTTP" != "200" ] || [ -z "$N" ] || [ "$N" = "0" ]; then
+              echo "❌ El panel no tiene archivado el año $Y (HTTP $HTTP). ABORTO la limpieza de Firebase para evitar pérdida de datos."
+              exit 1
+            fi
+            echo "✅ El panel tiene archivado el año $Y ($N eventos)"
+          done
+
+      - name: Cleanup Old Events from Firebase
+        if: success() && env.HAS_CHANGES == 'true'
+        run: |
+          if [ -f cleanup-events.json ]; then
+            echo "🗑️  Cleanup manifest found. Deleting old events from Firebase..."
+            npx firebase-tools database:update /events cleanup-events.json --token "${{ secrets.FIREBASE_TOKEN }}" --project debelingoconangel --confirm
+            rm cleanup-events.json
+          else
+            echo "ℹ️  No events to clean up."
+          fi
+
+      - name: Upload Historical Daily Visits to Firebase
+        if: success() && env.HAS_CHANGES == 'true'
+        run: |
+          if [ -f upload-daily-visits.json ]; then
+            echo "📤  Upload manifest found. Archiving daily visits under /historicalDailyVisits..."
+            npx firebase-tools database:update /historicalDailyVisits upload-daily-visits.json --token "${{ secrets.FIREBASE_TOKEN }}" --project debelingoconangel --confirm
+            rm upload-daily-visits.json
+          else
+            echo "ℹ️  No historical daily visits to archive."
+          fi
+
+      - name: Cleanup Old Daily Visits from Firebase
+        if: success() && env.HAS_CHANGES == 'true'
+        run: |
+          if [ -f cleanup-daily-visits.json ]; then
+            echo "🗑️  Cleanup manifest found. Deleting old daily visits from /dailyVisits..."
+            npx firebase-tools database:update /dailyVisits cleanup-daily-visits.json --token "${{ secrets.FIREBASE_TOKEN }}" --project debelingoconangel --confirm
+            rm cleanup-daily-visits.json
+          else
+            echo "ℹ️  No daily visits to clean up."
+          fi
