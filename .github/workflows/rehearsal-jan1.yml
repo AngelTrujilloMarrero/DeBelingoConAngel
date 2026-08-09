@@ -1,0 +1,47 @@
+name: Jan 1 Rehearsal (Safe Test)
+
+# PRUEBA SEGURA del workflow del 1 de enero (update-historical-stats).
+# Replica el entorno y el script de generación de stats PERO:
+#   - NO ejecuta los pasos de borrado/borrado de Firebase (database:update)
+#   - NO hace commit/push con git-auto-commit
+#   - NO despliega
+# El script SOLO HACE LECTURAS (fetch GET) de Firebase y escribe archivos locales efímeros.
+# Los manifiestos cleanup-*.json generados NO se aplican a la BD.
+
+on:
+  workflow_dispatch:
+
+jobs:
+  rehearsal:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install pnpm
+        run: npm install -g pnpm@11
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Verify FIREBASE_TOKEN secret
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          if [ -z "$FIREBASE_TOKEN" ]; then
+            echo "❌ El secret FIREBASE_TOKEN no está configurado. FALLO."
+            exit 1
+          fi
+          echo "✅ Secret FIREBASE_TOKEN presente (longitud $(echo -n "$FIREBASE_TOKEN" | wc -c))."
+
+      - name: Generate static stats (read-only vs Firebase, sin cleanup)
+        run: pnpm run generate-stats -- --force
+
+      - name: Build to verify deploy step would work
+        run: pnpm build
