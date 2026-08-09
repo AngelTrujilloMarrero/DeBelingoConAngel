@@ -32,6 +32,55 @@ jobs:
       - name: Generate Static Stats
         run: pnpm run generate-stats -- --force
 
+      - name: Commit changes to branch
+        if: success()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A -- src/data public/events-archive public/visits-archive 2>/dev/null || true
+          if git diff --cached --quiet; then
+            echo "ℹ️  No changes generated; no PR needed."
+            echo "HAS_CHANGES=false" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          echo "HAS_CHANGES=true" >> "$GITHUB_ENV"
+          git checkout -b "auto/update-stats-${{ github.run_id }}"
+          git commit -m "chore: auto-update historical stats, event archives, daily visits and orchestra archive for the new year"
+          git push origin "auto/update-stats-${{ github.run_id }}"
+
+      - name: Open and auto-merge pull request
+        if: success() && env.HAS_CHANGES == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          BRANCH="auto/update-stats-${{ github.run_id }}"
+          PR_URL=$(gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "chore: auto-update historical stats for the new year" \
+            --body "Actualización anual automática de estadísticas históricas, archivos de eventos y visitas diarias. Se mergeará automáticamente cuando el check \`build\` pase.")
+          echo "PR created: $PR_URL"
+          gh pr merge "$PR_URL" --auto --squash
+
+      - name: Verify Admin archives before deleting from Firebase
+        if: success() && env.HAS_CHANGES == 'true'
+        run: |
+          if [ ! -s public/events-archive/index.json ]; then
+            echo "ℹ️  No event archive index; skipping cross-check."
+            exit 0
+          fi
+          YEARS=$(python3 -c "import json;print(' '.join(map(str, json.load(open('public/events-archive/index.json'))['years'])))")
+          for Y in $YEARS; do
+            TMP="/tmp/admin_$Y.json"
+            HTTP=$(curl -s -o "$TMP" -w "%{http_code}" "https://admindebelingo.web.app/events-archive/${Y}.json")
+            N=$(python3 -c "import json;d=json.load(open('$TMP'));print(d.get('totalEvents',0))" 2>/dev/null || echo "0")
+            if [ "$HTTP" != "200" ] || [ -z "$N" ] || [ "$N" = "0" ]; then
+              echo "❌ El panel no tiene archivado el año $Y (HTTP $HTTP). ABORTO la limpieza de Firebase para evitar pérdida de datos."
+              exit 1
+            fi
+            echo "✅ El panel tiene archivado el año $Y ($N eventos)"
+          done
+
       - name: Cleanup Old Events from Firebase
         if: success()
         run: |
@@ -64,33 +113,3 @@ jobs:
           else
             echo "ℹ️  No daily visits to clean up."
           fi
-
-      - name: Commit changes to branch
-        if: success()
-        run: |
-          if git diff --quiet; then
-            echo "ℹ️  No changes generated; no PR needed."
-            echo "HAS_CHANGES=false" >> "$GITHUB_ENV"
-            exit 0
-          fi
-          echo "HAS_CHANGES=true" >> "$GITHUB_ENV"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git checkout -b "auto/update-stats-${{ github.run_id }}"
-          git add -- src/data/historicalStats.json src/data/historicalDailyVisits.json src/data/orchestraArchive.json public/events-archive public/visits-archive
-          git commit -m "chore: auto-update historical stats, event archives, daily visits and orchestra archive for the new year"
-          git push origin "auto/update-stats-${{ github.run_id }}"
-
-      - name: Open and auto-merge pull request
-        if: success() && env.HAS_CHANGES == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          BRANCH="auto/update-stats-${{ github.run_id }}"
-          PR_URL=$(gh pr create \
-            --base main \
-            --head "$BRANCH" \
-            --title "chore: auto-update historical stats for the new year" \
-            --body "Actualización anual automática de estadísticas históricas, archivos de eventos y visitas diarias. Se mergeará automáticamente cuando el check \`build\` pase.")
-          echo "PR created: $PR_URL"
-          gh pr merge "$PR_URL" --auto --squash
