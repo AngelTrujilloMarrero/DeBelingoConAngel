@@ -37,7 +37,11 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add -A -- src/data public/events-archive public/visits-archive 2>/dev/null || true
+          for P in src/data public/events-archive public/visits-archive; do
+            if [ -e "$P" ]; then
+              git add -A -- "$P" || { echo "❌ Error al añadir $P"; exit 1; }
+            fi
+          done
           if git diff --cached --quiet; then
             echo "ℹ️  No changes generated; no PR needed."
             echo "HAS_CHANGES=false" >> "$GITHUB_ENV"
@@ -45,8 +49,8 @@ jobs:
           fi
           echo "HAS_CHANGES=true" >> "$GITHUB_ENV"
           git checkout -b "auto/update-stats-${{ github.run_id }}"
-          git commit -m "chore: auto-update historical stats, event archives, daily visits and orchestra archive for the new year"
-          git push origin "auto/update-stats-${{ github.run_id }}"
+          git commit -m "chore: auto-update historical stats, event archives, daily visits and orchestra archive for the new year" || { echo "❌ git commit falló"; exit 1; }
+          git push origin "auto/update-stats-${{ github.run_id }}" || { echo "❌ git push falló"; exit 1; }
 
       - name: Open and auto-merge pull request
         if: success() && env.HAS_CHANGES == 'true'
@@ -82,7 +86,7 @@ jobs:
           done
 
       - name: Cleanup Old Events from Firebase
-        if: success()
+        if: success() && env.HAS_CHANGES == 'true'
         run: |
           if [ -f cleanup-events.json ]; then
             echo "🗑️  Cleanup manifest found. Deleting old events from Firebase..."
@@ -93,7 +97,7 @@ jobs:
           fi
 
       - name: Upload Historical Daily Visits to Firebase
-        if: success()
+        if: success() && env.HAS_CHANGES == 'true'
         run: |
           if [ -f upload-daily-visits.json ]; then
             echo "📤  Upload manifest found. Archiving daily visits under /historicalDailyVisits..."
@@ -104,7 +108,7 @@ jobs:
           fi
 
       - name: Cleanup Old Daily Visits from Firebase
-        if: success()
+        if: success() && env.HAS_CHANGES == 'true'
         run: |
           if [ -f cleanup-daily-visits.json ]; then
             echo "🗑️  Cleanup manifest found. Deleting old daily visits from /dailyVisits..."
