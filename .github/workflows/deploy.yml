@@ -20,6 +20,9 @@ jobs:
       - name: Install pnpm
         run: npm install -g pnpm@11
 
+      - name: Set public VITE env vars for build
+        run: cp .env.ci .env
+
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
