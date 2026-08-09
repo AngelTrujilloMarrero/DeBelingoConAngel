@@ -8,11 +8,12 @@ on:
   workflow_dispatch: # Allows manual trigger
 
 jobs:
-  update-and-deploy:
+  update-and-pr:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     permissions:
       contents: write
+      pull-requests: write
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -64,16 +65,32 @@ jobs:
             echo "ℹ️  No daily visits to clean up."
           fi
 
-      - name: Commit and push changes
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "chore: auto-update historical stats, event archives, daily visits and orchestra archive for the new year [skip ci]"
-          file_pattern: 'src/data/historicalStats.json src/data/historicalDailyVisits.json src/data/orchestraArchive.json public/events-archive/* public/visits-archive/*'
-
-      - name: Set public VITE env vars for build
-        run: cp .env.ci .env
-
-      - name: Build and Deploy to Firebase
+      - name: Commit changes to branch
+        if: success()
         run: |
-          pnpm build
-          npx firebase-tools deploy --only hosting --token "${{ secrets.FIREBASE_TOKEN }}"
+          if git diff --quiet; then
+            echo "ℹ️  No changes generated; no PR needed."
+            echo "HAS_CHANGES=false" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          echo "HAS_CHANGES=true" >> "$GITHUB_ENV"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "auto/update-stats-${{ github.run_id }}"
+          git add -- src/data/historicalStats.json src/data/historicalDailyVisits.json src/data/orchestraArchive.json public/events-archive public/visits-archive
+          git commit -m "chore: auto-update historical stats, event archives, daily visits and orchestra archive for the new year"
+          git push origin "auto/update-stats-${{ github.run_id }}"
+
+      - name: Open and auto-merge pull request
+        if: success() && env.HAS_CHANGES == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          BRANCH="auto/update-stats-${{ github.run_id }}"
+          PR_URL=$(gh pr create \
+            --base main \
+            --head "$BRANCH" \
+            --title "chore: auto-update historical stats for the new year" \
+            --body "Actualización anual automática de estadísticas históricas, archivos de eventos y visitas diarias. Se mergeará automáticamente cuando el check \`build\` pase.")
+          echo "PR created: $PR_URL"
+          gh pr merge "$PR_URL" --auto --squash
