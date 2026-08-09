@@ -43,5 +43,8 @@ jobs:
       - name: Generate static stats (read-only vs Firebase, sin cleanup)
         run: pnpm run generate-stats -- --force
 
+      - name: Set public VITE env vars for build
+        run: cp .env.ci .env
+
       - name: Build to verify deploy step would work
         run: pnpm build

@@ -70,6 +70,9 @@ jobs:
           commit_message: "chore: auto-update historical stats, event archives, daily visits and orchestra archive for the new year [skip ci]"
           file_pattern: 'src/data/historicalStats.json src/data/historicalDailyVisits.json src/data/orchestraArchive.json public/events-archive/* public/visits-archive/*'
 
+      - name: Set public VITE env vars for build
+        run: cp .env.ci .env
+
       - name: Build and Deploy to Firebase
         run: |
           pnpm build
