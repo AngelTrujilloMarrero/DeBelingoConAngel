@@ -1,3 +1,10 @@
+overrides:
+  uuid: ^14.0.0
+  http-proxy-agent: ^9.0.0
+  yaml: ^2.8.3
+  postcss: ^8.5.12
+  webpack: ^5.106.2
+
 allowBuilds:
   '@firebase/util': true
   esbuild: false
