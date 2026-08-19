@@ -1,3 +1,4 @@
+export { default as FinPage } from './FinPage';
 export { default as EventosPage } from './EventosPage';
 export { default as MapaPage } from './MapaPage';
 export { default as EstadisticasPage } from './EstadisticasPage';
