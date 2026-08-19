@@ -4,7 +4,7 @@ import VisitCounter from './components/VisitCounter';
 import { useEvents } from './hooks/useEvents';
 import { useAnalytics } from './hooks/useAnalytics';
 import { Loader2 } from 'lucide-react';
-import { EventosPage, MapaPage, EstadisticasPage, RedesPage, FormacionesPage, CarnavalPage, PrivacidadPage, TerminosPage } from './pages';
+import { EventosPage, FinPage, MapaPage, EstadisticasPage, RedesPage, FormacionesPage, CarnavalPage, PrivacidadPage, TerminosPage } from './pages';
 import MessageBoard from './components/MessageBoard';
 import { useEffect, useState } from 'react';
 import { TurnstileProvider } from './components/TurnstileProvider';
@@ -64,7 +64,8 @@ function AppContent() {
             {/* Main Content - Cambia según la ruta */}
             <div className="w-full">
               <Routes>
-                <Route path="/" element={<EventosPage events={filteredEvents} recentActivity={recentActivity} searchTerm={searchTerm} />} />
+                <Route path="/" element={<FinPage />} />
+                <Route path="/eventos" element={<EventosPage events={filteredEvents} recentActivity={recentActivity} searchTerm={searchTerm} />} />
                 <Route path="/mapa" element={<MapaPage events={events} />} />
                 <Route path="/estadisticas" element={<EstadisticasPage events={events} />} />
                 <Route path="/formaciones" element={<FormacionesPage events={events} />} />
@@ -76,7 +77,7 @@ function AppContent() {
             </div>
 
             {/* Message Board - Only on main page and when not searching or on mobile */}
-            {pathname === '/' && !searchTerm && <MessageBoard />}
+            {pathname === '/eventos' && !searchTerm && <MessageBoard />}
 
             {/* Footer - Siempre visible */}
             <footer className="bg-gray-900 text-white py-12 relative overflow-hidden">
