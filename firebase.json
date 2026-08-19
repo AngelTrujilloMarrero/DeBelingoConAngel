@@ -4,6 +4,7 @@
   },
   "hosting": {
     "public": "dist",
+    "site": "debelingoconangel",
     "ignore": [
       "firebase.json",
       "**/.*",
