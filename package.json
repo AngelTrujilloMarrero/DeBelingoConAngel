@@ -56,7 +56,7 @@
     "firebase": "^12.18.0",
     "firebase-admin": "^14.2.0",
     "html2canvas": "^1.4.1",
-    "input-otp": "^1.4.2",
+    "input-otp": "^1.5.0",
     "leaflet": "^1.9.4",
     "leaflet.markercluster": "^1.5.3",
     "lucide-react": "^1.33.0",
