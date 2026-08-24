@@ -13,7 +13,7 @@
     "prebuild": "pnpm run generate-stats"
   },
   "dependencies": {
-    "@hookform/resolvers": "^5.9.0",
+    "@hookform/resolvers": "^5.9.1",
     "@marsidev/react-turnstile": "^1.6.0",
     "@napi-rs/canvas": "^1.0.6",
     "@radix-ui/react-accordion": "^1.2.20",
