@@ -71,7 +71,7 @@
     "react-leaflet": "^5.0.0",
     "react-leaflet-cluster": "^4.1.3",
     "react-resizable-panels": "^4.12.4",
-    "react-router-dom": "^7.18.3",
+    "react-router-dom": "^7.18.4",
     "react-server-dom-webpack": "19.2.8",
     "recharts": "^3.10.1",
     "sonner": "^2.0.8",
