@@ -1,0 +1,80 @@
+{
+  "rules": {
+    ".read": true,
+    ".write": "auth != null && (auth.uid == 'nC4NMCMC7Gha7QH5en25xNQDtLp1' || auth.uid == 'JIdFCV7ppmXAltAajzBdTzI2qYE3')",
+    "visitCount": {
+      ".read": true,
+      ".write": "true",
+      ".validate": "newData.isNumber() && newData.val() <= 2000000 && newData.val() >= 0"
+    },
+    "dailyVisits": {
+      ".read": true,
+      ".write": "true"
+    },
+    "historicalDailyVisits": {
+      ".read": true,
+      ".write": "auth != null && (auth.uid == 'nC4NMCMC7Gha7QH5en25xNQDtLp1' || auth.uid == 'JIdFCV7ppmXAltAajzBdTzI2qYE3')"
+    },
+    "mapUsage": {
+      ".read": true,
+      ".write": "true"
+    },
+    "exportUsage": {
+      ".read": true,
+      ".write": "true"
+    },
+    "socialFollowers": {
+      ".read": true,
+      ".write": "true"
+    },
+    "orchestras": {
+      ".read": true,
+      ".write": "auth != null && (auth.uid == 'nC4NMCMC7Gha7QH5en25xNQDtLp1' || auth.uid == 'JIdFCV7ppmXAltAajzBdTzI2qYE3')"
+    },
+    "events": {
+      ".read": true,
+      ".write": "auth != null && (auth.uid == 'nC4NMCMC7Gha7QH5en25xNQDtLp1' || auth.uid == 'JIdFCV7ppmXAltAajzBdTzI2qYE3')"
+    },
+    "eventDeletions": {
+      ".read": true,
+      ".write": "auth != null && (auth.uid == 'nC4NMCMC7Gha7QH5en25xNQDtLp1' || auth.uid == 'JIdFCV7ppmXAltAajzBdTzI2qYE3')",
+      ".indexOn": [
+        "deletedAt"
+      ]
+    },
+    "guestbook": {
+      "messages": {
+        ".read": true,
+        ".indexOn": [
+          "timestamp"
+        ],
+        "$messageId": {
+          ".write": "!data.exists()",
+          ".validate": "newData.hasChildren(['text', 'timestamp']) && newData.child('text').isString() && newData.child('text').val().length < 300 && newData.child('timestamp').val() <= now && newData.child('timestamp').val() > (now - 60000)"
+        }
+      }
+    },
+    "analytics": {
+      ".read": "auth != null && (auth.uid == 'nC4NMCMC7Gha7QH5en25xNQDtLp1' || auth.uid == 'JIdFCV7ppmXAltAajzBdTzI2qYE3')",
+      "visits": {
+        ".write": "true",
+        "$visitId": {
+          ".validate": "newData.hasChildren(['timestamp', 'page', 'country']) && newData.child('timestamp').isNumber() && newData.child('timestamp').val() <= now && newData.child('timestamp').val() > (now - 86400000)"
+        }
+      }
+    },
+    "downloads": {
+      "records": {
+        ".read": "auth != null && (auth.uid == 'nC4NMCMC7Gha7QH5en25xNQDtLp1' || auth.uid == 'JIdFCV7ppmXAltAajzBdTzI2qYE3')",
+        ".write": "true",
+        "$recordId": {
+          ".validate": "newData.hasChildren(['timestamp', 'type']) && newData.child('timestamp').isNumber() && newData.child('timestamp').val() <= now && newData.child('timestamp').val() > (now - 86400000) && (newData.child('type').val() == 'date' || newData.child('type').val() == 'festival')"
+        }
+      },
+      "monthly": {
+        ".read": "true",
+        ".write": "auth != null && (auth.uid == 'nC4NMCMC7Gha7QH5en25xNQDtLp1' || auth.uid == 'JIdFCV7ppmXAltAajzBdTzI2qYE3')"
+      }
+    }
+  }
+}

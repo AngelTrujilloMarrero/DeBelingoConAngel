@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Blog Methods</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #f5f5f5; }
+        .test { background: white; padding: 20px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .error { background: #ffebee; border-left: 4px solid #f44336; }
+        .success { background: #e8f5e8; border-left: 4px solid #4caf50; }
+        .loading { background: #e3f2fd; border-left: 4px solid #2196f3; }
+        h2 { margin-top: 0; }
+        .post { background: #f8f9fa; padding: 10px; margin: 5px 0; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Test de Métodos del Blog</h1>
+    
+    <div id="loading" class="test loading">
+        <h2>⏳ Probando métodos...</h2>
+        <p>Ejecutando pruebas comparativas...</p>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        const HASHNODE_API = "https://gql.hashnode.com";
+        const HOSTNAME = "de-belingo-con-angel.hashnode.dev";
+
+        // Método 1: Exacto como belingo_viewer.html
+        async function testBelingoMethod() {
+            try {
+                const timestamp = new Date().getTime();
+                const query = `
+                    query GetUserArticles($host: String!) {
+                        publication(host: $host) {
+                            id
+                            posts(first: 10) {
+                                edges {
+                                    node {
+                                        id
+                                        title
+                                        brief
+                                        url
+                                        publishedAt
+                                        coverImage {
+                                            url
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                `;
+
+                const response = await fetch(`${HASHNODE_API}?nocache=${timestamp}`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Cache-Control': 'no-cache, no-store, must-revalidate',
+                        'Pragma': 'no-cache',
+                        'Expires': '0'
+                    },
+                    body: JSON.stringify({
+                        query: query,
+                        variables: { 
+                            host: HOSTNAME,
+                            _cb: timestamp 
+                        }
+                    })
+                });
+
+                const result = await response.json();
+                
+                if (result.errors) throw new Error(result.errors[0].message);
+                if (!result.data?.publication) throw new Error("Publicación no encontrada.");
+
+                const posts = result.data.publication.posts.edges.map(edge => edge.node);
+                
+                return {
+                    success: true,
+                    count: posts.length,
+                    posts: posts,
+                    method: 'belingo_viewer.html (exacto)'
+                };
+
+            } catch (error) {
+                return {
+                    success: false,
+                    error: error.message,
+                    method: 'belingo_viewer.html (exacto)'
+                };
+            }
+        }
+
+        // Método 2: Método complejo anterior (para comparar)
+        async function testComplexMethod() {
+            try {
+                const timestamp = Date.now();
+                const pageSize = 10;
+                let allPosts = [];
+                
+                const query = `
+                    query getPublicationPosts($host: String!, $first: Int!) {
+                        publication(host: $host) {
+                            posts(first: $first) {
+                                edges {
+                                    node {
+                                        id
+                                        title
+                                        brief
+                                        slug
+                                        url
+                                        coverImage { url }
+                                        publishedAt
+                                        readTimeInMinutes
+                                        author { name profilePicture }
+                                        content { html markdown }
+                                        tags { name slug }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                `;
+
+                const variables = { host: HOSTNAME, first: pageSize };
+
+                const response = await fetch(`${HASHNODE_API}?_t=${timestamp}&bypass=${Date.now()}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Cache-Control': 'no-cache, no-store, must-revalidate, max-age=0',
+                        'Pragma': 'no-cache',
+                        'Expires': '0',
+                        'User-Agent': 'Mozilla/5.0 (compatible; DebelingoBlog/1.0)',
+                        'Accept': 'application/json, text/plain, */*'
+                    },
+                    body: JSON.stringify({ query, variables }),
+                    cache: 'no-store'
+                });
+
+                const data = await response.json();
+                
+                if (data.errors) {
+                    throw new Error(`GraphQL errors: ${data.errors.map(e => e.message).join(', ')}`);
+                }
+
+                const edges = data.data?.publication?.posts?.edges || [];
+                edges.forEach(edge => allPosts.push(edge.node));
+
+                return {
+                    success: true,
+                    count: allPosts.length,
+                    posts: allPosts,
+                    method: 'Método complejo anterior'
+                };
+
+            } catch (error) {
+                return {
+                    success: false,
+                    error: error.message,
+                    method: 'Método complejo anterior'
+                };
+            }
+        }
+
+        // Ejecutar pruebas
+        async function runTests() {
+            const results = document.getElementById('results');
+            const loading = document.getElementById('loading');
+            
+            // Probar método belingo_viewer.html
+            const test1 = await testBelingoMethod();
+            
+            // Probar método complejo
+            const test2 = await testComplexMethod();
+
+            // Mostrar resultados
+            loading.style.display = 'none';
+            
+            results.innerHTML = `
+                <div class="test ${test1.success ? 'success' : 'error'}">
+                    <h2>📋 ${test1.method}</h2>
+                    <p><strong>Resultado:</strong> ${test1.success ? '✅ Éxito' : '❌ Error'}</p>
+                    <p><strong>Posts encontrados:</strong> ${test1.count || 0}</p>
+                    ${test1.error ? `<p><strong>Error:</strong> ${test1.error}</p>` : ''}
+                    ${test1.posts ? `
+                        <h3>Posts cargados:</h3>
+                        ${test1.posts.slice(0, 3).map(post => `
+                            <div class="post">
+                                <strong>${post.title}</strong><br>
+                                <small>ID: ${post.id.substring(0,8)} | ${new Date(post.publishedAt).toLocaleDateString()}</small>
+                            </div>
+                        `).join('')}
+                    ` : ''}
+                </div>
+
+                <div class="test ${test2.success ? 'success' : 'error'}">
+                    <h2>📋 ${test2.method}</h2>
+                    <p><strong>Resultado:</strong> ${test2.success ? '✅ Éxito' : '❌ Error'}</p>
+                    <p><strong>Posts encontrados:</strong> ${test2.count || 0}</p>
+                    ${test2.error ? `<p><strong>Error:</strong> ${test2.error}</p>` : ''}
+                    ${test2.posts ? `
+                        <h3>Posts cargados:</h3>
+                        ${test2.posts.slice(0, 3).map(post => `
+                            <div class="post">
+                                <strong>${post.title}</strong><br>
+                                <small>ID: ${post.id.substring(0,8)} | ${new Date(post.publishedAt).toLocaleDateString()}</small>
+                            </div>
+                        `).join('')}
+                    ` : ''}
+                </div>
+
+                <div class="test">
+                    <h2>🎯 Conclusión</h2>
+                    <p>El método que funciona correctamente es el de <strong>belingo_viewer.html</strong> porque:</p>
+                    <ul>
+                        <li>Usa una consulta GraphQL más simple</li>
+                        <li>No incluye variables innecesarias que puedan causar conflictos</li>
+                        <li>Los headers son exactamente los que Hashnode espera</li>
+                        <li>La variable <code>_cb: timestamp</code> en el body ayuda a cambiar el hash de la petición</li>
+                    </ul>
+                </div>
+            `;
+        }
+
+        // Ejecutar pruebas al cargar
+        window.addEventListener('DOMContentLoaded', runTests);
+    </script>
+</body>
+</html>

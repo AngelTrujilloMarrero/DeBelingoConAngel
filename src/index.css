@@ -1,0 +1,516 @@
+@import "tailwindcss";
+
+@theme {
+  --color-border: 220 13% 91%;
+  --color-foreground: 240 10% 3.9%;
+}
+
+@layer base {
+  :root {
+    scroll-behavior: auto; /* Disable smooth scroll on mobile to prevent artifacts */
+    @media (min-width: 768px) {
+      scroll-behavior: smooth;
+    }
+    scroll-padding-top: 1rem;
+    @media (min-width: 768px) {
+      scroll-padding-top: 7rem;
+    }
+    /* Adjusted for the new compact header */
+    --radius: 0.5rem;
+    --sidebar-background: 0 0% 98%;
+    --sidebar-foreground: 240 5.3% 26.1%;
+    --sidebar-primary: 240 5.9% 10%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 240 4.8% 95.9%;
+    --sidebar-accent-foreground: 240 5.9% 10%;
+    --sidebar-border: 220 13% 91%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  .dark {
+    --sidebar-background: 240 5.9% 10%;
+    --sidebar-foreground: 240 4.8% 95.9%;
+    --sidebar-primary: 224.3 76.3% 48%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 240 3.7% 15.9%;
+    --sidebar-accent-foreground: 240 4.8% 95.9%;
+    --sidebar-border: 240 3.7% 15.9%;
+    --sidebar-ring: 217.2 91.2% 59.8%;
+  }
+
+  * {
+    border-color: theme(colors.border);
+  }
+
+  body {
+    color: theme(colors.foreground);
+    font-feature-settings: "rlig" 1, "calt" 1;
+    min-height: 100vh;
+    background-color: #001f3f; /* Solid fallback for mobile */
+  }
+
+  #root {
+    max-width: 100vw;
+  }
+
+  html, body {
+    max-width: 100vw;
+  }
+
+  @media (min-width: 768px) {
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to bottom, #001f3f, #111);
+      z-index: -10;
+      pointer-events: none;
+    }
+  }
+}
+
+/* Respect user's motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Global mobile stability fix: disable heavy CSS features on small screens 
+   to prevent GPU rendering artifacts and crashes (auto-reloads) */
+@media (max-width: 767px) {
+  .backdrop-blur-md, .backdrop-blur-lg, .backdrop-blur-sm, .glass {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(to bottom, #667eea, #764ba2);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(to bottom, #5a6fd8, #6a4190);
+}
+
+/* Custom scrollbar utility for components */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.4);
+  border-radius: 10px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.6);
+}
+
+/* Utility to hide scrollbar */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+/* Leaflet popup customization */
+.leaflet-popup-content-wrapper {
+  border-radius: 8px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2) !important;
+}
+
+.leaflet-popup-content {
+  margin: 0 !important;
+}
+
+.custom-popup .leaflet-popup-content-wrapper {
+  background: white !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15) !important;
+}
+
+.custom-popup .leaflet-popup-tip {
+  background: white !important;
+}
+
+/* Animation classes */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes pulse-glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+  }
+
+  50% {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
+  }
+}
+
+.animate-fadeInUp {
+  animation: fadeInUp 0.6s ease-out;
+}
+
+.animate-slideInRight {
+  animation: slideInRight 0.6s ease-out;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s infinite;
+}
+
+/* Glass morphism effect */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Gradient text */
+.gradient-text {
+  background: linear-gradient(45deg, #667eea, #764ba2, #f093fb, #f5576c);
+  background-size: 300% 300%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  animation: gradient-shift 3s ease infinite;
+}
+
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* DBCA Logo animations - Optimized for performance */
+@keyframes dbca-subtle-pulse {
+
+  0%,
+  100% {
+    transform: translateZ(0) scale(1);
+  }
+
+  50% {
+    transform: translateZ(0) scale(1.05);
+  }
+}
+
+.dbca-logo {
+  /* Eliminated infinite animation to ensure 0 CPU usage when idle */
+  transform: translateZ(0);
+  transition: transform 0.5s ease;
+}
+
+.dbca-logo:hover {
+  transform: translateZ(0) scale(1.1);
+  /* Optional: Add a subtle pulse ONLY on hover if desired, or just static scale */
+  /* animation: dbca-subtle-pulse 2s ease-in-out infinite; */
+}
+
+/* Blurred background image style */
+.blurred-bg {
+  position: relative;
+  background-color: transparent;
+  /* Ensure pseudo-element is visible */
+  z-index: 1;
+}
+
+.blurred-bg::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url('/fotos/eltablero.jpg');
+  background-size: cover;
+  background-position: center;
+  filter: blur(2px);
+  transform: scale(1.1);
+  /* Avoid seeing blurred edges */
+  z-index: -2;
+}
+
+.blurred-bg::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  /* Dark overlay for readability */
+  z-index: -1;
+}
+
+@keyframes background-pan {
+  0% {
+    background-position: 0% 50%;
+  }
+
+  50% {
+    background-position: 100% 50%;
+  }
+
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.orchestra-names-container {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  align-items: baseline;
+}
+
+.orchestra-name-unit {
+  display: inline-block;
+  word-break: break-word;
+}
+
+.orchestra-separator {
+  margin-right: 0px;
+}
+
+@keyframes wave {
+
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) rotateX(0deg);
+    filter: brightness(1);
+  }
+
+  50% {
+    transform: translate3d(0, -8px, 30px) rotateX(20deg);
+    filter: brightness(1.3);
+    text-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+  }
+}
+
+.gradient-text-wave {
+  background: linear-gradient(45deg, #667eea, #764ba2, #f093fb, #f5576c);
+  background-size: 200% 200%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  display: inline-block;
+  transition: filter 0.3s ease;
+}
+
+.group\/text:hover .gradient-text-wave {
+  animation: gradient-shift 3s ease infinite;
+}
+
+/* Animación fadeIn para análisis de orquestas */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Estilos para el contador de seguidores */
+@keyframes countUp {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.count-animation {
+  animation: countUp 0.3s ease-out;
+}
+
+/* Timeline - Últimos Movimientos */
+.activity-timeline {
+  position: relative;
+  padding-left: 24px;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  overflow: hidden;
+}
+
+.activity-timeline::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 10px;
+  bottom: 10px;
+  width: 2px;
+  background: linear-gradient(to bottom, 
+    rgba(59, 130, 246, 0.5), 
+    rgba(107, 114, 128, 0.2) 80%,
+    transparent);
+  border-radius: 1px;
+}
+
+.activity-timeline-item {
+  position: relative;
+  padding: 12px 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  padding-left: 16px;
+  transition: all 0.3s ease;
+}
+
+.activity-timeline-item:hover {
+  opacity: 1 !important;
+  transform: scale(1.02);
+}
+
+.activity-timeline-item:not(:hover) {
+  opacity: 0.85;
+}
+
+.activity-timeline-node {
+  position: absolute;
+  left: -18px;
+  top: 14px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  box-shadow: 0 0 0 3px rgba(31, 41, 55, 1);
+  overflow: hidden;
+}
+
+.activity-timeline-node.latest {
+  box-shadow: 0 0 0 4px rgba(31, 41, 55, 1), 0 0 12px rgba(59, 130, 246, 0.5);
+  animation: node-pulse 2s infinite;
+}
+
+@keyframes node-pulse {
+  0% { box-shadow: 0 0 0 0px rgba(59, 130, 246, 0.4), 0 0 0 4px rgba(31, 41, 55, 1); }
+  70% { box-shadow: 0 0 0 10px rgba(59, 130, 246, 0), 0 0 0 4px rgba(31, 41, 55, 1); }
+  100% { box-shadow: 0 0 0 0px rgba(59, 130, 246, 0), 0 0 0 4px rgba(31, 41, 55, 1); }
+}
+
+.activity-timeline-node svg {
+  width: 8px;
+  height: 8px;
+}
+
+@keyframes timeline-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.activity-timeline-item {
+  animation: timeline-slide-in 0.3s ease-out both;
+}
+
+.activity-timeline-item:nth-child(1) { animation-delay: 0ms; }
+.activity-timeline-item:nth-child(2) { animation-delay: 40ms; }
+.activity-timeline-item:nth-child(3) { animation-delay: 80ms; }
+.activity-timeline-item:nth-child(4) { animation-delay: 120ms; }
+.activity-timeline-item:nth-child(5) { animation-delay: 160ms; }
+
+@keyframes bounce-slow {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.animate-bounce-slow {
+  animation: bounce-slow 2s ease-in-out infinite;
+}
+
+/* Anti-copy container: prevent text selection and touch callouts */
+.anti-copy-container {
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Allow selection on specific elements (links, buttons, expandable details) */
+.allow-select {
+  -webkit-user-select: text;
+  user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}

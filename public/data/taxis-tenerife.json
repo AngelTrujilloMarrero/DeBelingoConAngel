@@ -1,0 +1,807 @@
+{
+  "municipios": {
+    "Santa Cruz de Tenerife": {
+      "empresas": [
+        {
+          "nombre": "Radio Taxi Santa Cruz",
+          "telefono": "+34 922 226 666",
+          "web": "https://www.radiotaxisantacruz.com/",
+          "centralita": "+34 922 226 666"
+        },
+        {
+          "nombre": "Teletaxi Santa Cruz",
+          "telefono": "+34 922 607 037",
+          "web": null,
+          "app": "Teletaxi App"
+        },
+        {
+          "nombre": "Taxi Express",
+          "telefono": "+34 922 373 737",
+          "web": null
+        }
+      ],
+      "alternativas": [
+        {
+          "nombre": "Uber",
+          "disponible": true,
+          "web": "https://www.uber.com/es/es-es/r/cities/santa-cruz-de-tenerife/",
+          "app": "Uber App"
+        },
+        {
+          "nombre": "Bolt",
+          "disponible": true,
+          "web": "https://bolt.eu/es-es/",
+          "app": "Bolt App"
+        },
+        {
+          "nombre": "Cabify",
+          "disponible": true,
+          "web": "https://www.cabify.com/es/",
+          "app": "Cabify App"
+        }
+      ]
+    },
+    "San Cristóbal de La Laguna": {
+      "empresas": [
+        {
+          "nombre": "Radio Taxi La Laguna",
+          "telefono": "+34 922 255 555",
+          "web": null,
+          "centralita": "+34 922 255 555"
+        },
+        {
+          "nombre": "Taxi Laguna",
+          "telefono": "+34 922 259 259",
+          "web": null
+        }
+      ],
+      "alternativas": [
+        {
+          "nombre": "Uber",
+          "disponible": true,
+          "web": "https://www.uber.com/es/es-es/r/cities/santa-cruz-de-tenerife/",
+          "app": "Uber App"
+        },
+        {
+          "nombre": "Bolt",
+          "disponible": true,
+          "web": "https://bolt.eu/es-es/",
+          "app": "Bolt App"
+        },
+        {
+          "nombre": "Cabify",
+          "disponible": true,
+          "web": "https://www.cabify.com/es/",
+          "app": "Cabify App"
+        }
+      ]
+    },
+    "Adeje": {
+      "empresas": [
+        {
+          "nombre": "Radio Taxi Adeje",
+          "telefono": "+34 922 710 710",
+          "web": null,
+          "centralita": "+34 922 716 161",
+          "reserva_rapida": "922 979 293"
+        },
+        {
+          "nombre": "Taxi Costa Adeje",
+          "telefono": "+34 922 715 715",
+          "web": null
+        }
+      ],
+      "alternativas": [
+        {
+          "nombre": "Uber",
+          "disponible": true,
+          "web": "https://www.uber.com/es/es-es/r/cities/tenerife-sur/",
+          "app": "Uber App"
+        },
+        {
+          "nombre": "Bolt",
+          "disponible": true,
+          "web": "https://bolt.eu/es-es/",
+          "app": "Bolt App"
+        },
+        {
+          "nombre": "Cabify",
+          "disponible": true,
+          "web": "https://www.cabify.com/es/",
+          "app": "Cabify App"
+        }
+      ]
+    },
+    "Arona": {
+      "empresas": [
+        {
+          "nombre": "Servitaxi Tenesur Arona",
+          "telefono": "+34 922 747 511",
+          "web": null,
+          "centralita": "+34 922 747 511",
+          "complemento": "922 796 608"
+        },
+        {
+          "nombre": "Radio Taxi Arona",
+          "telefono": "+34 922 787 878",
+          "web": null,
+          "centralita": "+34 922 792 929"
+        },
+        {
+          "nombre": "Taxi Playa de las Américas",
+          "telefono": "+34 922 793 933",
+          "web": null
+        }
+      ],
+      "alternativas": [
+        {
+          "nombre": "Uber",
+          "disponible": true,
+          "web": "https://www.uber.com/es/es-es/r/cities/tenerife-sur/",
+          "app": "Uber App"
+        },
+        {
+          "nombre": "Bolt",
+          "disponible": true,
+          "web": "https://bolt.eu/es-es/",
+          "app": "Bolt App"
+        },
+        {
+          "nombre": "Cabify",
+          "disponible": true,
+          "web": "https://www.cabify.com/es/",
+          "app": "Cabify App"
+        }
+      ]
+    },
+    "Granadilla de Abona": {
+      "empresas": [
+        {
+          "nombre": "Radio Taxi Granadilla",
+          "telefono": "+34 922 540 540",
+          "web": null,
+          "centralita": "+34 922 547 547"
+        },
+        {
+          "nombre": "Taxi El Médano",
+          "telefono": "+34 922 548 548",
+          "web": null
+        },
+        {
+          "nombre": "Taxi Aeropuerto Tenerife Sur",
+          "telefono": "+34 922 397 074",
+          "web": null,
+          "alternativo": "922 397 475"
+        }
+      ],
+      "alternativas": [
+        {
+          "nombre": "Uber",
+          "disponible": true,
+          "web": "https://www.uber.com/es/es-es/r/cities/tenerife-sur/",
+          "app": "Uber App"
+        },
+        {
+          "nombre": "Bolt",
+          "disponible": true,
+          "web": "https://bolt.eu/es-es/",
+          "app": "Bolt App"
+        }
+      ]
+    },
+    "Puerto de la Cruz": {
+      "empresas": [
+        {
+          "nombre": "Radio Taxi Puerto de la Cruz",
+          "telefono": "+34 922 380 380",
+          "web": null,
+          "centralita": "+34 922 382 382"
+        },
+        {
+          "nombre": "Taxi Puerto",
+          "telefono": "+34 922 379 379",
+          "web": null
+        }
+      ],
+      "alternativas": [
+        {
+          "nombre": "Uber",
+          "disponible": true,
+          "web": "https://www.uber.com/es/es-es/r/cities/puerto-de-la-cruz/",
+          "app": "Uber App"
+        },
+        {
+          "nombre": "Bolt",
+          "disponible": true,
+          "web": "https://bolt.eu/es-es/",
+          "app": "Bolt App"
+        },
+        {
+          "nombre": "Cabify",
+          "disponible": true,
+          "web": "https://www.cabify.com/es/",
+          "app": "Cabify App"
+        }
+      ]
+    },
+    "La Orotava": {
+      "empresas": [
+        {
+          "nombre": "Radio Taxi La Orotava",
+          "telefono": "+34 922 330 080",
+          "web": null,
+          "centralita": "+34 922 332 332",
+          "alternativo": "922 331 199"
+        }
+      ],
+      "alternativas": [
+        {
+          "nombre": "Uber",
+          "disponible": true,
+          "web": "https://www.uber.com/es/es-es/r/cities/puerto-de-la-cruz/",
+          "app": "Uber App"
+        },
+        {
+          "nombre": "Bolt",
+          "disponible": true,
+          "web": "https://bolt.eu/es-es/",
+          "app": "Bolt App"
+        }
+      ]
+    },
+    "Los Realejos": {
+      "empresas": [
+        {
+          "nombre": "Radio Taxi Los Realejos",
+          "telefono": "+34 922 340 340",
+          "web": null,
+          "centralita": "+34 922 342 342"
+        }
+      ],
+      "alternativas": [
+        {
+          "nombre": "Uber",
+          "disponible": true,
+          "web": "https://www.uber.com/es/es-es/r/cities/puerto-de-la-cruz/",
+          "app": "Uber App"
+        },
+        {
+          "nombre": "Bolt",
+          "disponible": true,
+          "web": "https://bolt.eu/es-es/",
+          "app": "Bolt App"
+        }
+      ]
+    },
+    "Candelaria": {
+      "empresas": [
+        {
+          "nombre": "Radio Taxi Candelaria",
+          "telefono": "+34 922 500 500",
+          "web": null,
+          "centralita": "+34 922 503 503",
+          "servicio_24h": "922 500 123"
+        }
+      ],
+      "alternativas": [
+        {
+          "nombre": "Uber",
+          "disponible": true,
+          "web": "https://www.uber.com/es/es-es/r/cities/santa-cruz-de-tenerife/",
+          "app": "Uber App"
+        },
+        {
+          "nombre": "Bolt",
+          "disponible": true,
+          "web": "https://bolt.eu/es-es/",
+          "app": "Bolt App"
+        }
+      ]
+    },
+    "Güímar": {
+      "empresas": [
+        {
+          "nombre": "Radio Taxi Güímar",
+          "telefono": "+34 922 510 510",
+          "web": null,
+          "centralita": "+34 922 513 513"
+        }
+      ],
+      "alternativas": [
+        {
+          "nombre": "Uber",
+          "disponible": true,
+          "web": "https://www.uber.com/es/es-es/r/cities/santa-cruz-de-tenerife/",
+          "app": "Uber App"
+        },
+        {
+          "nombre": "Bolt",
+          "disponible": true,
+          "web": "https://bolt.eu/es-es/",
+          "app": "Bolt App"
+        }
+      ]
+    },
+    "Tacoronte": {
+      "empresas": [
+        {
+          "nombre": "Radio Taxi Tacoronte",
+          "telefono": "+34 922 550 550",
+          "web": null,
+          "centralita": "+34 922 553 553"
+        }
+      ],
+      "alternativas": [
+        {
+          "nombre": "Uber",
+          "disponible": true,
+          "web": "https://www.uber.com/es/es-es/r/cities/santa-cruz-de-tenerife/",
+          "app": "Uber App"
+        },
+        {
+          "nombre": "Bolt",
+          "disponible": true,
+          "web": "https://bolt.eu/es-es/",
+          "app": "Bolt App"
+        }
+      ]
+    },
+    "La Matanza de Acentejo": {
+      "empresas": [
+        {
+          "nombre": "Radio Taxi La Matanza",
+          "telefono": "+34 922 560 560",
+          "web": null,
+          "centralita": "+34 922 563 563"
+        }
+      ],
+      "alternativas": [
+        {
+          "nombre": "Uber",
+          "disponible": true,
+          "web": "https://www.uber.com/es/es-es/r/cities/santa-cruz-de-tenerife/",
+          "app": "Uber App"
+        },
+        {
+          "nombre": "Bolt",
+          "disponible": true,
+          "web": "https://bolt.eu/es-es/",
+          "app": "Bolt App"
+        }
+      ]
+    },
+    "La Victoria de Acentejo": {
+      "empresas": [
+        {
+          "nombre": "Radio Taxi La Victoria",
+          "telefono": "+34 922 570 570",
+          "web": null,
+          "centralita": "+34 922 573 573"
+        }
+      ],
+      "alternativas": [
+        {
+          "nombre": "Uber",
+          "disponible": true,
+          "web": "https://www.uber.com/es/es-es/r/cities/santa-cruz-de-tenerife/",
+          "app": "Uber App"
+        },
+        {
+          "nombre": "Bolt",
+          "disponible": true,
+          "web": "https://bolt.eu/es-es/",
+          "app": "Bolt App"
+        }
+      ]
+    },
+    "El Sauzal": {
+      "empresas": [
+        {
+          "nombre": "Radio Taxi El Sauzal",
+          "telefono": "+34 922 580 580",
+          "web": null,
+          "centralita": "+34 922 583 583"
+        }
+      ],
+      "alternativas": [
+        {
+          "nombre": "Uber",
+          "disponible": true,
+          "web": "https://www.uber.com/es/es-es/r/cities/santa-cruz-de-tenerife/",
+          "app": "Uber App"
+        },
+        {
+          "nombre": "Bolt",
+          "disponible": true,
+          "web": "https://bolt.eu/es-es/",
+          "app": "Bolt App"
+        }
+      ]
+    },
+    "Tegueste": {
+      "empresas": [
+        {
+          "nombre": "Radio Taxi Tegueste",
+          "telefono": "+34 922 590 590",
+          "web": null,
+          "centralita": "+34 922 593 593"
+        }
+      ],
+      "alternativas": [
+        {
+          "nombre": "Uber",
+          "disponible": true,
+          "web": "https://www.uber.com/es/es-es/r/cities/santa-cruz-de-tenerife/",
+          "app": "Uber App"
+        },
+        {
+          "nombre": "Bolt",
+          "disponible": true,
+          "web": "https://bolt.eu/es-es/",
+          "app": "Bolt App"
+        }
+      ]
+    },
+    "San Miguel de Abona": {
+      "empresas": [
+        {
+          "nombre": "Radio Taxi San Miguel",
+          "telefono": "+34 922 730 730",
+          "web": null,
+          "centralita": "+34 922 733 733"
+        }
+      ],
+      "alternativas": [
+        {
+          "nombre": "Uber",
+          "disponible": true,
+          "web": "https://www.uber.com/es/es-es/r/cities/tenerife-sur/",
+          "app": "Uber App"
+        },
+        {
+          "nombre": "Bolt",
+          "disponible": true,
+          "web": "https://bolt.eu/es-es/",
+          "app": "Bolt App"
+        }
+      ]
+    },
+    "Arafo": {
+      "empresas": [
+        {
+          "nombre": "Radio Taxi Arafo",
+          "telefono": "+34 922 520 520",
+          "web": null,
+          "centralita": "+34 922 523 523"
+        }
+      ],
+      "alternativas": [
+        {
+          "nombre": "Uber",
+          "disponible": true,
+          "web": "https://www.uber.com/es/es-es/r/cities/santa-cruz-de-tenerife/",
+          "app": "Uber App"
+        },
+        {
+          "nombre": "Bolt",
+          "disponible": true,
+          "web": "https://bolt.eu/es-es/",
+          "app": "Bolt App"
+        }
+      ]
+    },
+    "El Rosario": {
+      "empresas": [
+        {
+          "nombre": "Radio Taxi El Rosario",
+          "telefono": "+34 922 530 530",
+          "web": null,
+          "centralita": "+34 922 533 533"
+        }
+      ],
+      "alternativas": [
+        {
+          "nombre": "Uber",
+          "disponible": true,
+          "web": "https://www.uber.com/es/es-es/r/cities/santa-cruz-de-tenerife/",
+          "app": "Uber App"
+        },
+        {
+          "nombre": "Bolt",
+          "disponible": true,
+          "web": "https://bolt.eu/es-es/",
+          "app": "Bolt App"
+        }
+      ]
+    },
+    "Fasnia": {
+      "empresas": [
+        {
+          "nombre": "Radio Taxi Fasnia",
+          "telefono": "+34 922 540 540",
+          "web": null,
+          "centralita": "+34 922 543 543",
+          "coordinacion": "+34 922 662 660"
+        }
+      ],
+      "alternativas": [
+        {
+          "nombre": "Uber",
+          "disponible": true,
+          "web": "https://www.uber.com/es/es-es/r/cities/santa-cruz-de-tenerife/",
+          "app": "Uber App"
+        },
+        {
+          "nombre": "Bolt",
+          "disponible": true,
+          "web": "https://bolt.eu/es-es/",
+          "app": "Bolt App"
+        }
+      ]
+    },
+    "Garachico": {
+      "empresas": [
+        {
+          "nombre": "Radio Taxi Garachico",
+          "telefono": "+34 922 840 840",
+          "web": null,
+          "centralita": "+34 922 843 843",
+          "parada_oficial": "922 830 056"
+        }
+      ],
+      "alternativas": [
+        {
+          "nombre": "Uber",
+          "disponible": true,
+          "web": "https://www.uber.com/es/es-es/r/cities/puerto-de-la-cruz/",
+          "app": "Uber App"
+        },
+        {
+          "nombre": "Bolt",
+          "disponible": true,
+          "web": "https://bolt.eu/es-es/",
+          "app": "Bolt App"
+        }
+      ]
+    },
+    "Guía de Isora": {
+      "empresas": [
+        {
+          "nombre": "Radio Taxi Guía de Isora",
+          "telefono": "+34 922 850 850",
+          "web": null,
+          "centralita": "+34 922 853 853",
+          "adicional1": "922 640 000",
+          "adicional2": "922 850 218"
+        }
+      ],
+      "alternativas": [
+        {
+          "nombre": "Uber",
+          "disponible": true,
+          "web": "https://www.uber.com/es/es-es/r/cities/tenerife-sur/",
+          "app": "Uber App"
+        },
+        {
+          "nombre": "Bolt",
+          "disponible": true,
+          "web": "https://bolt.eu/es-es/",
+          "app": "Bolt App"
+        }
+      ]
+    },
+    "Icod de los Vinos": {
+      "empresas": [
+        {
+          "nombre": "Radio Taxi Icod",
+          "telefono": "+34 922 810 810",
+          "web": null,
+          "centralita": "+34 922 813 813",
+          "contacto1": "922 122 272",
+          "contacto2": "922 813 346"
+        }
+      ],
+      "alternativas": [
+        {
+          "nombre": "Uber",
+          "disponible": true,
+          "web": "https://www.uber.com/es/es-es/r/cities/puerto-de-la-cruz/",
+          "app": "Uber App"
+        },
+        {
+          "nombre": "Bolt",
+          "disponible": true,
+          "web": "https://bolt.eu/es-es/",
+          "app": "Bolt App"
+        }
+      ]
+    },
+    "La Guancha": {
+      "empresas": [
+        {
+          "nombre": "Radio Taxi La Guancha",
+          "telefono": "+34 922 820 820",
+          "web": null,
+          "centralita": "+34 922 823 823"
+        }
+      ],
+      "alternativas": [
+        {
+          "nombre": "Uber",
+          "disponible": true,
+          "web": "https://www.uber.com/es/es-es/r/cities/puerto-de-la-cruz/",
+          "app": "Uber App"
+        },
+        {
+          "nombre": "Bolt",
+          "disponible": true,
+          "web": "https://bolt.eu/es-es/",
+          "app": "Bolt App"
+        }
+      ]
+    },
+    "Los Silos": {
+      "empresas": [
+        {
+          "nombre": "Radio Taxi Los Silos",
+          "telefono": "+34 922 830 830",
+          "web": null,
+          "centralita": "+34 922 833 833",
+          "taxi_adaptado": "608 668 193"
+        }
+      ],
+      "alternativas": [
+        {
+          "nombre": "Uber",
+          "disponible": true,
+          "web": "https://www.uber.com/es/es-es/r/cities/puerto-de-la-cruz/",
+          "app": "Uber App"
+        },
+        {
+          "nombre": "Bolt",
+          "disponible": true,
+          "web": "https://bolt.eu/es-es/",
+          "app": "Bolt App"
+        }
+      ]
+    },
+    "Buenavista del Norte": {
+      "empresas": [
+        {
+          "nombre": "Auto Taxi Buenavista",
+          "telefono": "636 928 845",
+          "web": null,
+          "alternativo": "629 073 481"
+        },
+        {
+          "nombre": "Radio Taxi Buenavista",
+          "telefono": "+34 922 860 860",
+          "web": null,
+          "centralita": "+34 922 863 863"
+        }
+      ],
+      "alternativas": [
+        {
+          "nombre": "Uber",
+          "disponible": true,
+          "web": "https://www.uber.com/es/es-es/r/cities/puerto-de-la-cruz/",
+          "app": "Uber App"
+        },
+        {
+          "nombre": "Bolt",
+          "disponible": true,
+          "web": "https://bolt.eu/es-es/",
+          "app": "Bolt App"
+        }
+      ]
+    },
+    "Santiago del Teide": {
+      "empresas": [
+        {
+          "nombre": "Radio Taxi Santiago del Teide",
+          "telefono": "+34 922 870 870",
+          "web": null,
+          "centralita": "+34 922 873 873"
+        }
+      ],
+      "alternativas": [
+        {
+          "nombre": "Uber",
+          "disponible": true,
+          "web": "https://www.uber.com/es/es-es/r/cities/tenerife-sur/",
+          "app": "Uber App"
+        },
+        {
+          "nombre": "Bolt",
+          "disponible": true,
+          "web": "https://bolt.eu/es-es/",
+          "app": "Bolt App"
+        }
+      ]
+    },
+    "El Tanque": {
+      "empresas": [
+        {
+          "nombre": "Radio Taxi El Tanque",
+          "telefono": "+34 922 880 880",
+          "web": null,
+          "centralita": "+34 922 883 883",
+          "reserva_nocturna": "663 268 674"
+        }
+      ],
+      "alternativas": [
+        {
+          "nombre": "Uber",
+          "disponible": true,
+          "web": "https://www.uber.com/es/es-es/r/cities/puerto-de-la-cruz/",
+          "app": "Uber App"
+        },
+        {
+          "nombre": "Bolt",
+          "disponible": true,
+          "web": "https://bolt.eu/es-es/",
+          "app": "Bolt App"
+        }
+      ]
+    },
+    "Vilaflor": {
+      "empresas": [
+        {
+          "nombre": "Radio Taxi Vilaflor",
+          "telefono": "+34 922 890 890",
+          "web": null,
+          "centralita": "+34 922 893 893"
+        }
+      ],
+      "alternativas": [
+        {
+          "nombre": "Uber",
+          "disponible": true,
+          "web": "https://www.uber.com/es/es-es/r/cities/tenerife-sur/",
+          "app": "Uber App"
+        },
+        {
+          "nombre": "Bolt",
+          "disponible": true,
+          "web": "https://bolt.eu/es-es/",
+          "app": "Bolt App"
+        }
+      ]
+    },
+    "Arico": {
+      "empresas": [
+        {
+          "nombre": "Radio Taxi Arico",
+          "telefono": "+34 922 920 920",
+          "web": null,
+          "centralita": "+34 922 923 923"
+        }
+      ],
+      "alternativas": [
+        {
+          "nombre": "Uber",
+          "disponible": true,
+          "web": "https://www.uber.com/es/es-es/r/cities/tenerife-sur/",
+          "app": "Uber App"
+        },
+        {
+          "nombre": "Bolt",
+          "disponible": true,
+          "web": "https://bolt.eu/es-es/",
+          "app": "Bolt App"
+        }
+      ]
+    }
+  },
+  "centrales_provinciales": {
+    "Santa Cruz de Tenerife": "+34 922 226 666",
+    "Tenerife Norte": "+34 922 634 444",
+    "Tenerife Sur": "+34 922 716 161"
+  },
+  "notas": {
+    "tarifas": "Las tarifas están reguladas por el Gobierno de Canarias",
+    "disponibilidad_24h": "Los taxis están disponibles 24 horas en las principales zonas turísticas",
+    "apps_recomendadas": ["MyTaxi", "Uber", "Bolt", "Cabify"],
+    "telefono_emergencia": "112"
+  }
+}

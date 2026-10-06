@@ -1,0 +1,250 @@
+import React, { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { Sun, Moon, Cloud, CloudSun, CloudMoon, CloudFog, CloudDrizzle, CloudRain, CloudLightning, Snowflake, Thermometer, Loader2, AlertTriangle, ExternalLink, Wind, Waves, Flame, CloudSnow } from 'lucide-react';
+import { geocodeAddress, municipioMapping } from '../utils/geocoding';
+import { AemetAlert } from '../hooks/useAemetAlerts';
+
+interface WeatherIconProps {
+    date: string; // YYYY-MM-DD
+    municipio: string;
+    time?: string; // HH:mm or HH
+    alert?: AemetAlert[];
+}
+
+const WeatherIcon: React.FC<WeatherIconProps> = ({ date, municipio, time, alert }) => {
+    const [showTooltip, setShowTooltip] = useState(false);
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const eventDate = new Date(date);
+    const diffTime = eventDate.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const shouldFetchWeather = diffDays >= 0 && diffDays <= 14;
+
+    const { data: weatherData, isLoading: loading } = useQuery({
+        queryKey: ['weather', date, municipio, time],
+        queryFn: async () => {
+            await new Promise(resolve => setTimeout(resolve, Math.random() * 2000));
+            
+            const fullMunicipio = municipioMapping[municipio] || municipio;
+            const coords = await geocodeAddress(`${fullMunicipio}, Tenerife`);
+
+            if (!coords) return null;
+
+            let hour: number | null = null;
+            if (time) {
+                const match = time.trim().match(/^(\d{1,2})/);
+                if (match) {
+                    hour = parseInt(match[1]);
+                }
+            }
+
+            let weatherUrl: string;
+            const isHourly = hour !== null && hour >= 0 && hour <= 23;
+            if (isHourly) {
+                weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lng}&hourly=weather_code,temperature_2m,is_day&start_date=${date}&end_date=${date}&timezone=Atlantic/Canary`;
+            } else {
+                weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${coords.lat}&longitude=${coords.lng}&daily=weather_code,temperature_2m_max&start_date=${date}&end_date=${date}&timezone=Atlantic/Canary`;
+            }
+
+            const response = await fetch(weatherUrl);
+            if (response.status === 429) {
+                console.warn("[Weather] Rate limit hit (429). Retrying later.");
+                return null;
+            }
+            const data = await response.json();
+
+            let weatherCode: number | null = null;
+            let temp: number | null = null;
+            let isDay = 1;
+
+            if (hour !== null && data.hourly) {
+                weatherCode = data.hourly.weather_code[hour];
+                temp = data.hourly.temperature_2m[hour];
+                isDay = data.hourly.is_day[hour];
+            } else if (data.daily) {
+                weatherCode = data.daily.weather_code[0];
+                temp = data.daily.temperature_2m_max[0];
+            }
+
+            return { weatherCode, temp, isDay, coords };
+        },
+        enabled: shouldFetchWeather,
+        staleTime: 1000 * 60 * 30,
+    });
+
+    const weatherCode = weatherData?.weatherCode ?? null;
+    const temp = weatherData?.temp ?? null;
+    const isDay = weatherData?.isDay ?? null;
+    const coords = weatherData?.coords ?? null;
+    const isHourly = weatherData ? (time ? parseInt(time.trim().match(/^(\d{1,2})/)?.[1] || '0') >= 0 : false) : false;
+
+    // IMPORTANTE: Si no hay ni código de tiempo ni alerta, no renderizar nada.
+    // Pero NO retornar null si hay alerta aunque loading sea true.
+    if (weatherCode === null && !loading && (!alert || alert.length === 0)) return null;
+
+    const getIcon = (code: number) => {
+        const isNight = isDay === 0;
+        if (code === 0) return isNight ? <Moon className="w-5 h-5 text-blue-200" aria-hidden="true" /> : <Sun className="w-5 h-5 text-yellow-400" aria-hidden="true" />;
+        if (code >= 1 && code <= 3) return isNight ? <CloudMoon className="w-5 h-5 text-gray-300" aria-hidden="true" /> : <CloudSun className="w-5 h-5 text-gray-300" aria-hidden="true" />;
+        if (code === 45 || code === 48) return <CloudFog className="w-5 h-5 text-gray-400" aria-hidden="true" />;
+        if (code >= 51 && code <= 55) return <CloudDrizzle className="w-5 h-5 text-blue-300" aria-hidden="true" />;
+        if (code >= 61 && code <= 65) return <CloudRain className="w-5 h-5 text-blue-400" aria-hidden="true" />;
+        if (code >= 71 && code <= 77) return <Snowflake className="w-5 h-5 text-blue-100" aria-hidden="true" />;
+        if (code >= 80 && code <= 82) return <CloudRain className="w-5 h-5 text-blue-500" aria-hidden="true" />;
+        if (code >= 95) return <CloudLightning className="w-5 h-5 text-purple-400" aria-hidden="true" />;
+        return <Cloud className="w-5 h-5 text-gray-400" aria-hidden="true" />;
+    };
+
+    const getDescription = (code: number) => {
+        const isNight = isDay === 0;
+        if (code === 0) return isNight ? "Despejado (Noche)" : "Despejado";
+        if (code >= 1 && code <= 3) return isNight ? "Parcialmente nublado (Noche)" : "Parcialmente nublado";
+        if (code === 45 || code === 48) return "Niebla";
+        if (code >= 51 && code <= 55) return "Llovizna";
+        if (code >= 61 && code <= 65) return "Lluvia";
+        if (code >= 71 && code <= 77) return "Nieve";
+        if (code >= 80 && code <= 82) return "Chubascos";
+        if (code >= 95) return "Tormenta";
+        return "Nublado";
+    };
+
+    const getAlertColor = (level: string) => {
+        if (level === 'red') return 'text-red-500';
+        if (level === 'orange') return 'text-orange-500';
+        if (level === 'yellow') return 'text-yellow-400';
+        return 'text-gray-400';
+    };
+
+    const getPhenomenonIcon = (phenomenon: string) => {
+        const p = phenomenon.toLowerCase();
+        if (p.includes('viento')) return <><Wind className="w-3 h-3" /><span className="text-[9px] font-bold leading-none">VI</span></>;
+        if (p.includes('costero') || p.includes('mar')) return <><Waves className="w-3 h-3" /><span className="text-[9px] font-bold leading-none">CO</span></>;
+        if (p.includes('lluv') || p.includes('chubasc')) return <><CloudRain className="w-3 h-3" /><span className="text-[9px] font-bold leading-none">PR</span></>;
+        if (p.includes('calima') || p.includes('polvo') || p.includes('suspensión') || p.includes('suspension')) return <><Flame className="w-3 h-3" /><span className="text-[9px] font-bold leading-none">VS</span></>;
+        if (p.includes('nieve') || p.includes('nev')) return <><CloudSnow className="w-3 h-3" /><span className="text-[9px] font-bold leading-none">NE</span></>;
+        if (p.includes('torment') || p.includes('rayo')) return <><CloudLightning className="w-3 h-3" /><span className="text-[9px] font-bold leading-none">TO</span></>;
+        if (p.includes('niebla') || p.includes('niebl')) return <><CloudFog className="w-3 h-3" /><span className="text-[9px] font-bold leading-none">NI</span></>;
+        if (p.includes('galerna') || p.includes('risaga') || p.includes('rissaga')) return <><Waves className="w-3 h-3" /><span className="text-[9px] font-bold leading-none">GA</span></>;
+        if (p.includes('alud') || p.includes('avalancha')) return <><CloudSnow className="w-3 h-3" /><span className="text-[9px] font-bold leading-none">AL</span></>;
+        if (p.includes('temperatura') && (p.includes('máx') || p.includes('max') || p.includes('alta'))) return <><Thermometer className="w-3 h-3" /><span className="text-[9px] font-bold leading-none">AT</span></>;
+        if (p.includes('temperatura') && (p.includes('mín') || p.includes('min') || p.includes('baja'))) return <><Thermometer className="w-3 h-3" /><span className="text-[9px] font-bold leading-none">BT</span></>;
+        if (p.includes('deshielo')) return <><CloudRain className="w-3 h-3" /><span className="text-[9px] font-bold leading-none">DH</span></>;
+        return <AlertTriangle className="w-3 h-3" />;
+    };
+
+    return (
+        <div
+            className="relative flex items-center gap-2 cursor-help group/weather"
+            onMouseEnter={() => setShowTooltip(true)}
+            onMouseLeave={() => setShowTooltip(false)}
+        >
+            <div className="flex items-center gap-1 min-w-[40px] justify-center">
+                {loading ? (
+                    <Loader2 className="w-4 h-4 animate-spin text-gray-600" />
+                ) : weatherCode !== null && (
+                    <a
+                        href={coords ? `https://www.windy.com/${coords.lat}/${coords.lng}?${coords.lat},${coords.lng},12` : "https://www.windy.com/28.468/-16.255?28.468,-16.255,12"}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex items-center gap-1 transition-all duration-300 hover:scale-110"
+                        onClick={(e) => e.stopPropagation()}
+                        title="Ver previsión detallada en Windy"
+                    >
+                        <div className="transition-transform duration-300">
+                            {getIcon(weatherCode)}
+                        </div>
+                        {temp !== null && <span className="text-xs font-bold text-gray-300 hover:text-white transition-colors">{Math.round(temp)}°</span>}
+                    </a>
+                )}
+            </div>
+
+            {alert && alert.length > 0 && (
+                <div className="flex items-center gap-0.5">
+                    <a
+                        href={`https://www.aemet.es/es/eltiempo/prediccion/avisos?p=6596`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`flex items-center gap-0.5 transition-all duration-300 hover:scale-125 ${getAlertColor(alert[0].level || '')}`}
+                        onClick={(e) => e.stopPropagation()}
+                        title={`Ver alerta ${alert[0].level} en web de AEMET`}
+                    >
+                        <AlertTriangle className="w-5 h-5 md:animate-pulse" aria-hidden="true" />
+                    </a>
+                    {alert.map((a, idx) => (
+                        <span key={idx} className={`${getAlertColor(a.level || '')}`}>
+                            {getPhenomenonIcon(a.phenomenon)}
+                        </span>
+                    ))}
+                </div>
+            )}
+
+            {showTooltip && (
+                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900/95 backdrop-blur-md text-white text-xs rounded-lg shadow-xl min-w-[200px] z-50 border border-white/10 animate-in fade-in zoom-in duration-200">
+                    <div className="flex flex-col gap-2">
+                        {loading ? (
+                            <div className="flex items-center gap-2 text-gray-400 py-1">
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                                <span>Cargando previsión...</span>
+                            </div>
+                        ) : weatherCode !== null && (
+                            <div className="flex flex-col items-center gap-1 pb-2 border-b border-white/10">
+                                <span className="font-bold text-blue-300 uppercase text-[10px] tracking-wider text-center">
+                                    {isHourly && time ? `Previsión para las ${time}H` : 'Previsión Meteorológica (Máx)'}
+                                </span>
+                                <div className="flex items-center gap-2">
+                                    {getIcon(weatherCode)}
+                                    <div className="flex flex-col">
+                                        <span className="font-semibold text-white">{getDescription(weatherCode)}</span>
+                                        <span className="text-gray-400 flex items-center gap-1">
+                                            <Thermometer className="w-3 h-3 text-red-400" />
+                                            {isHourly ? 'Temp: ' : 'Máx: '}{Math.round(temp ?? 0)}°C
+                                        </span>
+                                    </div>
+                                </div>
+                                <a
+                                    href={coords ? `https://www.windy.com/${coords.lat}/${coords.lng}?${coords.lat},${coords.lng},12` : "https://www.windy.com/28.468/-16.255?28.468,-16.255,12"}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="mt-1 flex items-center gap-1 text-[9px] text-gray-400 hover:text-blue-300 transition-colors"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <ExternalLink className="w-2 h-2" />
+                                    Datos: Open-Meteo | Ver en Windy
+                                </a>
+                            </div>
+                        )}
+
+                        {alert && alert.length > 0 && (
+                            <div className="flex flex-col gap-2">
+                                {alert.map((a, idx) => (
+                                    <div key={idx} className="flex flex-col gap-1">
+                                        <span className={`font-bold uppercase text-[10px] tracking-wider flex items-center gap-1 ${getAlertColor(a.level || '')}`}>
+                                            <AlertTriangle className="w-3 h-3" />
+                                            Alerta AEMET: {a.level}
+                                        </span>
+                                        <p className="text-[11px] leading-tight text-gray-300 italic">{a.phenomenon} en {a.zone}</p>
+                                    </div>
+                                ))}
+                                <a
+                                    href={`https://www.aemet.es/es/eltiempo/prediccion/avisos?p=6596`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="mt-1 flex items-center gap-1 text-[10px] text-blue-400 font-bold group/link hover:text-blue-300 transition-colors"
+                                    onClick={(e) => e.stopPropagation()}
+                                >
+                                    <ExternalLink className="w-3 h-3" />
+                                    Ver alerta en AEMET
+                                </a>
+                            </div>
+                        )}
+                    </div>
+                    {/* Arrow */}
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-px border-8 border-transparent border-t-gray-900/95"></div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default WeatherIcon;

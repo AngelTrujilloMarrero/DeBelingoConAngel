@@ -1,0 +1,553 @@
+import React, { useState, useEffect } from 'react';
+import { db, onValue, set, get } from '../utils/firebase';
+import { ref, push, limitToLast, query, serverTimestamp } from 'firebase/database';
+import { MessageSquare, Send, ShieldAlert, CheckCircle2, AlertCircle, RefreshCw, Reply, Image as ImageIcon } from 'lucide-react';
+import { Message } from '../types/messages';
+import { ImageInfo } from '../types/messages';
+import ReplyForm from './ReplyForm';
+import { ImageUpload } from './ImageUpload';
+
+const MessageBoard: React.FC = () => {
+    const [messages, setMessages] = useState<Message[]>([]);
+    const [newMessage, setNewMessage] = useState('');
+    const [loading, setLoading] = useState(true);
+    const [sending, setSending] = useState(false);
+    const [dailyLimitReached, setDailyLimitReached] = useState(false);
+    const [status, setStatus] = useState<{ type: 'success' | 'error' | null, message: string }>({ type: null, message: '' });
+    const [imageUrl, setImageUrl] = useState<string>('');
+    const [imageInfo, setImageInfo] = useState<ImageInfo | null>(null);
+    const [showImageUpload, setShowImageUpload] = useState(false);
+
+    // Reply state
+    const [replyingTo, setReplyingTo] = useState<string | null>(null);
+
+    // Captcha state
+    const [captcha, setCaptcha] = useState({ num1: 0, num2: 0, answer: '' });
+    const [userCaptcha, setUserCaptcha] = useState('');
+
+    const messagesRef = ref(db, 'guestbook/messages');
+
+    useEffect(() => {
+        generateCaptcha();
+
+        // Check daily limit based on ACTUAL messages in DB for today
+        const checkLimit = async () => {
+            try {
+                const startOfToday = new Date();
+                startOfToday.setHours(0, 0, 0, 0);
+                const startTime = startOfToday.getTime();
+
+                // Fetch only the last 11 messages to see if 10 or more are from today
+                const q = query(messagesRef, limitToLast(11));
+                const snapshot = await get(q);
+                const data = snapshot.val();
+
+                if (data) {
+                    const todayMessages = Object.values(data).filter((msg: any) =>
+                        msg.timestamp >= startTime
+                    ).length;
+                    setDailyLimitReached(todayMessages >= 10);
+                } else {
+                    setDailyLimitReached(false);
+                }
+            } catch (e) {
+                console.error("Error checking limits:", e);
+            }
+        };
+        checkLimit();
+
+        // Listen for messages and filter older than 2 months
+        const TWO_MONTHS_MS = 60 * 24 * 60 * 60 * 1000;
+        const q = query(messagesRef, limitToLast(200)); // Increased limit for replies
+        const unsubscribe = onValue(q, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                const now = Date.now();
+                const startOfToday = new Date();
+                startOfToday.setHours(0, 0, 0, 0);
+                const startTime = startOfToday.getTime();
+
+                const messageList = Object.entries(data)
+                    .map(([id, val]: [string, any]) => ({
+                        id,
+                        ...val,
+                    }))
+                    .filter(msg => (now - msg.timestamp) < TWO_MONTHS_MS)
+                    .sort((a, b) => a.timestamp - b.timestamp);
+
+                // Calcular respuestasCount para cada mensaje
+                const messagesWithRepliesCount = messageList.map(msg => ({
+                    ...msg,
+                    repliesCount: messageList.filter(reply => reply.replyTo === msg.id).length,
+                }));
+
+                setMessages(messagesWithRepliesCount);
+
+                // Re-check limit whenever messages change (e.g. admin deletes)
+                const todayMessagesCount = messageList.filter(msg => msg.timestamp >= startTime).length;
+                setDailyLimitReached(todayMessagesCount >= 10);
+            } else {
+                setMessages([]);
+                setDailyLimitReached(false);
+            }
+            setLoading(false);
+        });
+
+        return () => unsubscribe();
+    }, []);
+
+    const generateCaptcha = () => {
+        const n1 = Math.floor(Math.random() * 10);
+        const n2 = Math.floor(Math.random() * 5) + 1;
+        setCaptcha({ num1: n1, num2: n2, answer: (n1 + n2).toString() });
+        setUserCaptcha('');
+    };
+
+    const moderateMessage = async (text: string): Promise<boolean> => {
+        try {
+            const response = await fetch(`https://www.purgomalum.com/service/containsprofanity?text=${encodeURIComponent(text)}`);
+            const isProfane = await response.text();
+
+            if (isProfane === 'true') return false;
+
+            const spanishKeywords = ['puto', 'puta', 'mierda', 'cabron', 'gilipollas', 'joder', 'zorra'];
+            const lowerText = text.toLowerCase();
+            if (spanishKeywords.some(word => lowerText.includes(word))) return false;
+
+            return true;
+        } catch (error) {
+            console.error('Error in moderation:', error);
+            return true;
+        }
+    };
+
+    const handleImageClick = (imageUrl: string) => {
+        if (imageUrl.startsWith('data:')) {
+            // For data URLs, create a temporary link and download/open it
+            try {
+                const link = document.createElement('a');
+                link.href = imageUrl;
+                link.target = '_blank';
+                link.download = `image_${Date.now()}.${imageUrl.includes('png') ? 'png' : 'jpg'}`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            } catch (error) {
+                console.error('Error opening image:', error);
+                // Fallback: try to open in new window
+                window.open(imageUrl, '_blank');
+            }
+        } else {
+            // For regular URLs, open in new tab
+            window.open(imageUrl, '_blank');
+        }
+    };
+
+    const sendReply = async (parentMessageId: string, replyText: string, replyImageUrl?: string, replyImageInfo?: ImageInfo) => {
+        const isClean = await moderateMessage(replyText);
+        if (!isClean) {
+            throw new Error('Contenido no permitido');
+        }
+
+        // Crear la respuesta con replyTo y depth
+        const parentMessage = messages.find(msg => msg.id === parentMessageId);
+        const parentDepth = parentMessage?.depth || 0;
+
+        const replyData: any = {
+            text: replyText,
+            author: 'Anónimo',
+            timestamp: serverTimestamp(),
+            replyTo: parentMessageId,
+            depth: parentDepth + 1,
+        };
+
+        if (replyImageUrl && replyImageInfo) {
+            replyData.imageUrl = replyImageUrl;
+            replyData.imageInfo = replyImageInfo;
+        }
+
+        await push(messagesRef, replyData);
+
+        // Intentar enviar notificación
+        const notificationText = replyImageUrl ? `Respuesta con imagen: "${replyText}"` : `Respuesta: "${replyText}"`;
+        sendEmailNotification(`${notificationText} (a mensaje de ${parentMessage?.author || 'Anónimo'})`);
+    };
+
+    const sendEmailNotification = async (message: string) => {
+        const sendWeb3Forms = async () => {
+            const res = await fetch("https://api.web3forms.com/submit", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "Accept": "application/json"
+                },
+                body: JSON.stringify({
+                    access_key: "158a5a3d-fcd2-4ced-bd32-bf9a57b4f56e",
+                    subject: "🔔 Nuevo mensaje en el Muro de Belingo",
+                    Mensaje: message,
+                    Fecha: new Date().toLocaleString('es-ES')
+                })
+            });
+            if (!res.ok) throw new Error("Web3Forms falló con status: " + res.status);
+            return await res.json();
+        };
+
+        const sendFormSubmit = async () => {
+            const res = await fetch("https://formsubmit.co/ajax/atrujimar@gmail.com", {
+                method: "POST",
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({
+                    _subject: "🔔 Nuevo mensaje en el Muro de Belingo",
+                    Mensaje: message,
+                    Fecha: new Date().toLocaleString('es-ES'),
+                    _template: "table",
+                    _captcha: "false"
+                })
+            });
+            if (!res.ok) throw new Error("FormSubmit falló con status: " + res.status);
+            return await res.json();
+        };
+
+        try {
+            console.log("Intentando enviar notificación con Web3Forms...");
+            await sendWeb3Forms();
+            console.log("Notificación enviada con Web3Forms correctamente.");
+        } catch (errorWeb3) {
+            console.warn("Web3Forms falló, intentando con FormSubmit como respaldo...", errorWeb3);
+            try {
+                await sendFormSubmit();
+                console.log("Notificación enviada con FormSubmit correctamente.");
+            } catch (errorFormSubmit) {
+                console.error('Ambos servicios de correo fallaron. Web3Forms:', errorWeb3, 'FormSubmit:', errorFormSubmit);
+            }
+        }
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+
+        if (!newMessage.trim() || sending) return;
+
+        if (userCaptcha !== captcha.answer) {
+            setStatus({ type: 'error', message: 'Captcha incorrecto' });
+            generateCaptcha();
+            return;
+        }
+
+        if (dailyLimitReached) {
+            setStatus({ type: 'error', message: 'Límite de 10 mensajes hoy alcanzado.' });
+            return;
+        }
+
+        setSending(true);
+        setStatus({ type: null, message: '' });
+
+        try {
+            const isClean = await moderateMessage(newMessage);
+            if (!isClean) {
+                setStatus({ type: 'error', message: 'Contenido no permitido.' });
+                setSending(false);
+                generateCaptcha();
+                return;
+            }
+
+            const messageData: any = {
+                text: newMessage.trim(),
+                author: 'Anónimo',
+                timestamp: serverTimestamp(),
+            };
+
+            if (imageUrl && imageInfo) {
+                messageData.imageUrl = imageUrl;
+                messageData.imageInfo = imageInfo;
+            }
+
+            await push(messagesRef, messageData);
+
+            // Intentar enviar notificación
+            const notificationText = imageUrl ? `Mensaje con imagen: "${newMessage.trim()}"` : newMessage.trim();
+            sendEmailNotification(notificationText);
+
+            setNewMessage('');
+            setImageUrl('');
+            setImageInfo(null);
+            setShowImageUpload(false);
+            setUserCaptcha('');
+            generateCaptcha();
+            setStatus({ type: 'success', message: '¡Enviado! Tu mensaje ya es público.' });
+
+            setTimeout(() => setStatus({ type: null, message: '' }), 3000);
+
+        } catch (error) {
+            console.error('Error:', error);
+            setStatus({ type: 'error', message: 'Error de conexión con el muro.' });
+        } finally {
+            setSending(false);
+        }
+    };
+
+    return (
+        <div className="w-full mt-0 mb-0 animate-in fade-in slide-in-from-bottom-4 duration-1000">
+            <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white shadow-2xl">
+                {/* Header - Centered */}
+                <div className="bg-gradient-to-r from-blue-600 to-purple-600 p-2 md:p-3 border-b border-white/10">
+                    <div className="max-w-7xl mx-auto flex flex-col items-center justify-center text-center gap-2">
+                        <div className="flex flex-col items-center gap-2">
+                            <div className="p-2 bg-white/20 backdrop-blur-md rounded-xl shadow-xl border border-white/20">
+                                <MessageSquare className="w-5 h-5 text-white" />
+                            </div>
+                            <div>
+                                <h3 className="text-xl md:text-2xl font-black tracking-tighter text-white drop-shadow-2xl uppercase italic">
+                                    Muro de Mensajes
+                                </h3>
+                            </div>
+                        </div>
+
+                        <div className="bg-black/30 backdrop-blur-md px-4 py-1 rounded-full border border-white/10 flex items-center gap-2 shadow-lg">
+                            <span className={`h-2 w-2 rounded-full ${dailyLimitReached ? 'bg-red-500 animate-pulse' : 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]'}`}></span>
+                            <span className={`text-[10px] font-black tracking-widest uppercase ${dailyLimitReached ? 'text-red-300' : 'text-green-300'}`}>
+                                {dailyLimitReached ? 'Límite alcanzado' : 'Muro Abierto'}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="max-w-7xl mx-auto px-3 py-4 sm:p-6">
+                    <div className="lg:flex lg:gap-6 lg:gap-8 lg:min-h-0">
+                        {/* Messages List */}
+                        <div className="lg:w-3/5 space-y-3 min-w-0 lg:min-w-0">
+                            <h4 className="text-xs font-bold text-blue-400 uppercase tracking-[0.2em] mb-2 flex items-center gap-2">
+                                <span className="w-8 h-px bg-blue-400/30"></span>
+                                Mensajes Recientes
+                            </h4>
+                            <div className="bg-gray-800/40 p-4 sm:p-6 lg:p-8 rounded-3xl border border-gray-700/50 backdrop-blur-sm shadow-xl">
+                                <div className="max-h-[450px] lg:max-h-[calc(100vh-220px)] min-h-[150px] overflow-y-auto pr-3 custom-scrollbar space-y-3" aria-live="polite" aria-atomic="false">
+                                    {loading ? (
+                                        <div className="flex flex-col items-center justify-center h-48 space-y-4">
+                                            <RefreshCw className="w-10 h-10 text-blue-500 animate-spin" />
+                                            <p className="text-blue-300 animate-pulse">Sincronizando muro...</p>
+                                        </div>
+                                    ) : messages.length > 0 ? (
+                                        (() => {
+                                            // Organizar mensajes en hilos
+                                            const mainMessages = messages.filter(msg => !msg.replyTo);
+                                            const replies = messages.filter(msg => msg.replyTo);
+
+                                            return mainMessages.slice().reverse().map((mainMsg) => {
+                                                const messageReplies = replies.filter(reply => reply.replyTo === mainMsg.id).sort((a, b) => a.timestamp - b.timestamp);
+
+                                                return (
+                                                    <div key={mainMsg.id} className="space-y-3">
+                                                        {/* Mensaje principal */}
+                                                        <div className="group/msg animate-in fade-in slide-in-from-left-4 duration-500">
+                                                            <div className="flex items-center gap-3 mb-1 ml-1">
+                                                                <span className="text-[10px] text-gray-500 font-mono">
+                                                                    {new Date(mainMsg.timestamp).toLocaleDateString()} · {new Date(mainMsg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                </span>
+                                                                {(mainMsg.repliesCount ?? 0) > 0 && (
+                                                                    <span className="text-[10px] text-blue-400 font-mono">
+                                                                        {mainMsg.repliesCount} {mainMsg.repliesCount === 1 ? 'respuesta' : 'respuestas'}
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                            <div className="bg-gradient-to-r from-gray-800/80 to-gray-700/80 backdrop-blur-sm rounded-2xl rounded-tl-none p-3 border border-gray-600/30 group-hover/msg:border-blue-500/40 transition-all duration-300 shadow-lg hover:shadow-blue-900/10 min-w-0">
+                                                                <p className="text-gray-200 leading-relaxed font-medium break-words whitespace-pre-wrap break-all sm:break-words">{mainMsg.text}</p>
+                                                                
+                                                                {/* Mostrar imagen si existe */}
+                                                                {mainMsg.imageUrl && (
+                                                                    <div className="mt-3">
+                                                                        <img
+                                                                            src={mainMsg.imageUrl}
+                                                                            alt="Imagen del mensaje"
+                                                                            className="max-w-full h-auto rounded-lg border border-gray-600/50 cursor-pointer hover:border-blue-500/50 transition-colors"
+                                                                            style={{ maxHeight: '300px' }}
+                                                                            onClick={() => handleImageClick(mainMsg.imageUrl)}
+                                                                            onKeyDown={(e) => e.key === 'Enter' && handleImageClick(mainMsg.imageUrl)}
+                                                                            role="button"
+                                                                            tabIndex={0}
+                                                                        />
+                                                                        {mainMsg.imageInfo && (
+                                                                            <div className="mt-1 text-xs text-gray-500">
+                                                                                {mainMsg.imageInfo.name} • {Math.round(mainMsg.imageInfo.size / 1024)}KB
+                                                                            </div>
+                                                                        )}
+                                                                    </div>
+                                                                )}
+
+                                                                {/* Botón de respuesta */}
+                                                                <button
+                                                                    onClick={() => setReplyingTo(mainMsg.id)}
+                                                                    className="mt-3 flex items-center gap-2 text-xs text-gray-400 hover:text-blue-400 transition-colors"
+                                                                >
+                                                                    <Reply className="w-3 h-3" />
+                                                                    Responder
+                                                                </button>
+                                                            </div>
+                                                        </div>
+
+                                                        {/* Formulario de respuesta si está activo */}
+                                                        {replyingTo === mainMsg.id && (
+                                                            <ReplyForm
+                                                                messageId={mainMsg.id}
+                                                                messageAuthor={mainMsg.author}
+                                                                onSubmit={sendReply}
+                                                                onCancel={() => setReplyingTo(null)}
+                                                            />
+                                                        )}
+
+                                                        {/* Respuestas */}
+                                                        {messageReplies.map((reply, index) => (
+                                                            <div key={reply.id} className="ml-2 sm:ml-4 md:ml-8 animate-in fade-in slide-in-from-left-4 duration-500" style={{ animationDelay: `${(index + 1) * 50}ms` }}>
+                                                                <div className="flex items-center gap-3 mb-1">
+                                                                    <span className="text-[9px] text-gray-500 font-mono">
+                                                                        {new Date(reply.timestamp).toLocaleDateString()} · {new Date(reply.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                                    </span>
+                                                                    <span className="text-[9px] text-blue-400 font-mono">Respuesta</span>
+                                                                </div>
+                                                                <div className="bg-gradient-to-r from-blue-900/20 to-purple-900/10 backdrop-blur-sm rounded-2xl rounded-tl-none p-3 sm:p-4 border border-blue-500/20 transition-all duration-300 shadow-lg hover:shadow-blue-900/10 min-w-0">
+                                                                    <p className="text-gray-200 leading-relaxed text-sm break-words whitespace-pre-wrap break-all sm:break-words">{reply.text}</p>
+                                                                    
+                                                                    {/* Mostrar imagen si existe en respuesta */}
+                                                                    {reply.imageUrl && (
+                                                                        <div className="mt-2">
+                                                                            <img
+                                                                                src={reply.imageUrl}
+                                                                                alt="Imagen de la respuesta"
+                                                                                className="max-w-full h-auto rounded-lg border border-blue-500/30 cursor-pointer hover:border-blue-400/50 transition-colors"
+                                                                                style={{ maxHeight: '200px' }}
+                                                                                onClick={() => handleImageClick(reply.imageUrl)}
+                                                                                onKeyDown={(e) => e.key === 'Enter' && handleImageClick(reply.imageUrl)}
+                                                                                role="button"
+                                                                                tabIndex={0}
+                                                                            />
+                                                                            {reply.imageInfo && (
+                                                                                <div className="mt-1 text-xs text-gray-500">
+                                                                                    {reply.imageInfo.name} • {Math.round(reply.imageInfo.size / 1024)}KB
+                                                                                </div>
+                                                                            )}
+                                                                        </div>
+                                                                    )}
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                );
+                                            });
+                                        })()
+                                    ) : (
+                                        <div className="bg-gray-800/30 border border-dashed border-gray-700 rounded-3xl p-12 text-center">
+                                            <MessageSquare className="w-12 h-12 text-gray-600 mx-auto mb-4 opacity-50" />
+                                            <p className="text-gray-500 font-bold text-lg">El muro está vacío</p>
+                                            <p className="text-gray-600 text-sm">¡Sé el primero en dejar un saludo!</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Input Form */}
+                        <div className="lg:w-2/5 min-w-0">
+                            <div className="lg:sticky lg:top-6">
+                                <form onSubmit={handleSubmit} className="space-y-6 bg-gray-800/40 p-4 sm:p-6 lg:p-8 rounded-3xl border border-gray-700/50 backdrop-blur-sm shadow-xl">
+                                    <div className="space-y-3">
+                                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0">
+                                            <label htmlFor="message-textarea" className="text-sm font-bold text-blue-300 uppercase tracking-widest ml-1">Tu Mensaje</label>
+                                            <div className="flex items-center justify-between sm:justify-end gap-3 w-full sm:w-auto">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setShowImageUpload(!showImageUpload)}
+                                                    className="flex items-center gap-1 text-xs text-gray-400 hover:text-blue-400 transition-colors"
+                                                    disabled={dailyLimitReached || sending}
+                                                >
+                                                    <ImageIcon className="w-4 h-4" />
+                                                    {imageUrl ? 'Imagen añadida' : 'Añadir imagen'}
+                                                </button>
+                                                <span className="text-[10px] font-mono text-gray-500 bg-black/30 px-2 py-0.5 rounded-full whitespace-nowrap">{newMessage.length}/300</span>
+                                            </div>
+                                        </div>
+                                        <textarea
+                                            id="message-textarea"
+                                            value={newMessage}
+                                            onChange={(e) => setNewMessage(e.target.value.substring(0, 300))}
+                                            disabled={dailyLimitReached || sending}
+                                            placeholder={dailyLimitReached ? "Límite alcanzado, borra mensajes para publicar..." : "Cuéntanos algo..."}
+                                            className="w-full bg-gray-900/60 border border-gray-600/50 rounded-none p-5 text-sm focus:ring-4 focus:ring-blue-500/50 focus:border-blue-500 transition-all outline-none resize-none min-h-[160px] text-white placeholder:text-gray-600"
+                                        />
+                                        
+                                        {/* Image Upload */}
+                                        {showImageUpload && (
+                                            <ImageUpload
+                                                onImageUploaded={(url, info) => {
+                                                    setImageUrl(url);
+                                                    setImageInfo(info);
+                                                }}
+                                                disabled={dailyLimitReached || sending}
+                                                className="mb-3"
+                                            />
+                                        )}
+                                    </div>
+
+                                    <div className="space-y-6">
+                                        <div className="bg-gradient-to-r from-blue-900/20 to-purple-900/20 p-4 sm:p-5 rounded-2xl border border-blue-500/20">
+                                            <div className="flex items-center justify-between mb-4">
+                                                <span className="text-[10px] font-black text-blue-300 uppercase tracking-[0.2em]">Escudo Anti-Spam</span>
+                                                <ShieldAlert className="w-4 h-4 text-blue-400" />
+                                            </div>
+                                            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+                                                <div className="flex-1 bg-black/40 rounded-xl py-3 text-center font-black text-xl text-blue-100 border border-blue-500/20 select-none shadow-inner tracking-widest">
+                                                    {captcha.num1} + {captcha.num2}
+                                                </div>
+                                                <input
+                                                    type="text"
+                                                    value={userCaptcha}
+                                                    onChange={(e) => setUserCaptcha(e.target.value)}
+                                                    placeholder="?"
+                                                    aria-label={`Responde: cuanto es ${captcha.num1} + ${captcha.num2}`}
+                                                    disabled={dailyLimitReached || sending}
+                                                    className="w-full sm:w-24 bg-gray-900/60 border border-gray-500/70 rounded-none py-3 px-3 text-center text-lg focus:ring-2 focus:ring-blue-500/40 outline-none text-white placeholder:text-gray-500"
+                                                />
+                                            </div>
+                                        </div>
+
+                                        {status.message && (
+                                            <div className={`p-4 rounded-xl flex items-center gap-3 text-sm font-bold animate-in zoom-in-95 duration-200 shadow-lg ${status.type === 'success'
+                                                ? 'bg-green-500/10 text-green-400 border border-green-500/30'
+                                                : 'bg-red-500/10 text-red-400 border border-red-500/30'
+                                                }`}>
+                                                {status.type === 'success' ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5 flex-shrink-0" />}
+                                                {status.message}
+                                            </div>
+                                        )}
+
+                                        <button
+                                            type="submit"
+                                            disabled={dailyLimitReached || sending || !newMessage.trim() || !userCaptcha}
+                                            className="w-full py-3.5 px-6 sm:py-4 sm:px-8 rounded-2xl font-black text-sm uppercase tracking-[0.2em] transition-all duration-300 transform active:scale-95 shadow-xl disabled:opacity-50 disabled:cursor-not-allowed group overflow-hidden relative"
+                                        >
+                                            <div className="absolute inset-0 bg-gradient-to-r from-blue-600 to-purple-600 transition-transform duration-300 group-hover:scale-105"></div>
+                                            <div className="relative flex items-center justify-center gap-3 text-white">
+                                                {sending ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Send className="w-4 h-4 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />}
+                                                <span>{sending ? 'Validando...' : 'Enviar Mensaje'}</span>
+                                            </div>
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div className="py-6 bg-black/50 border-t border-gray-800 text-center">
+                    <p className="text-[12px] text-gray-400 font-black uppercase tracking-[0.5em] opacity-80">
+                        Muro Comunitario
+                    </p>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+export default MessageBoard;
