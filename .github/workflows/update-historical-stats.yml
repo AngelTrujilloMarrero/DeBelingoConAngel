@@ -1,10 +1,8 @@
 name: Auto Update Stats & Deploy
 
 on:
-  schedule:
-    # Runs at 03:00 on January 1st every year
-    # Waits for Admin migration (01:00 UTC) to finish reading data before deletion
-    - cron: '0 3 1 1 *'
+  # Ejecución manual: el proyecto de Firebase ya no está activo.
+  # Antes se ejecutaba automáticamente el 1 de enero y dependía de Firebase.
   workflow_dispatch: # Allows manual trigger
 
 jobs:
