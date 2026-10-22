@@ -1,9 +1,9 @@
 name: Deploy to Firebase
 
 on:
-  push:
-    branches:
-      - main
+  # Deploy manual: el proyecto de Firebase ya no está activo.
+  # Antes se ejecutaba en cada push a main y fallaba por credenciales/proyecto inactivo.
+  workflow_dispatch:
 
 jobs:
   deploy:

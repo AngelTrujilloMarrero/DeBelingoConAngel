@@ -106,8 +106,8 @@ Una plataforma digital que centraliza información sobre verbenas, conciertos y 
 ## 📦 Instalación
 
 ### Prerrequisitos
-- Node.js (versión 18 o superior)
-- pnpm (recomendado) o npm
+- Node.js **22.23.4 o superior**
+- **pnpm** (el proyecto usa `pnpm-lock.yaml`; no uses `npm install` ni generes `package-lock.json`)
 
 ### Pasos de instalación
 
@@ -195,9 +195,8 @@ VITE_FIREBASE_MEASUREMENT_ID
 ```
 
 3. **Deploy automático**
-   - Cada `git push` despliega automáticamente
-   - Vercel construye el frontend + API Routes
-   - Firebase hosting (opcional) para el frontend
+   - Cada `git push` despliega automáticamente en Vercel (frontend + API Routes)
+   - Firebase Hosting ya **no** se despliega automáticamente: el workflow `Deploy to Firebase` es manual y solo debe usarse si el proyecto de Firebase vuelve a estar activo
 
 ### 📚 Documentación de Deployment
 
