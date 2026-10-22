@@ -14,7 +14,7 @@ const Header: React.FC<HeaderProps> = ({ searchTerm, setSearchTerm }) => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const { pathname } = useLocation();
-  const isEventosPage = pathname === '/eventos';
+  const isEventosPage = pathname === '/' || pathname === '';
 
   useEffect(() => {
     const handleScroll = () => {
