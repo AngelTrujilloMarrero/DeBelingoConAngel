@@ -66,3 +66,6 @@ node_modules/
 .env
 .env.production
 .env*.local
+
+# El proyecto raíz usa pnpm; no generar package-lock.json
+/package-lock.json
