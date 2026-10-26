@@ -48,7 +48,7 @@
     "@radix-ui/react-tooltip": "^1.4.1",
     "@tanstack/react-query": "^5.104.5",
     "@types/leaflet": "^1.9.22",
-    "chart.js": "^4.5.1",
+    "chart.js": "^4.6.1",
     "chartjs-plugin-datalabels": "^2.2.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",

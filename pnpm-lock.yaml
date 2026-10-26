@@ -112,11 +112,11 @@ importers:
         specifier: ^1.9.22
         version: 1.9.22
       chart.js:
-        specifier: ^4.5.1
-        version: 4.5.1
+        specifier: ^4.6.1
+        version: 4.6.1
       chartjs-plugin-datalabels:
         specifier: ^2.2.0
-        version: 2.2.0(chart.js@4.5.1)
+        version: 2.2.0(chart.js@4.6.1)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -167,7 +167,7 @@ importers:
         version: 19.3.1
       react-chartjs-2:
         specifier: ^5.3.1
-        version: 5.3.1(chart.js@4.5.1)(react@19.3.1)
+        version: 5.3.1(chart.js@4.6.1)(react@19.3.1)
       react-day-picker:
         specifier: 10.0.2
         version: 10.0.2(@types/react@19.3.0)(react@19.3.1)
@@ -2224,8 +2224,8 @@ packages:
   caniuse-lite@1.0.30001818:
     resolution: {integrity: sha512-XJbgo4adscw7R4MZU4/qVFkoMyPaNUAWmdNY4o/k9x7fFwmv4frIlndI9lWuaxviW9ObiZel9LuncnQPn6hQ5A==}
 
-  chart.js@4.5.1:
-    resolution: {integrity: sha512-GIjfiT9dbmHRiYi6Nl2yFCq7kkwdkp1W/lp2J99rX0yo9tgJGn3lKQATztIjb5tVtevcBtIdICNWqlq5+E8/Pw==}
+  chart.js@4.6.1:
+    resolution: {integrity: sha512-hJyniucsFmq//EvXYvJ6c6mahPoI3kaxdjVH8awTaJ/fDNWeSqqqArixMJWkWNN6fcYvPU3HneSANFNYtRi61g==}
     engines: {pnpm: '>=8'}
 
   chartjs-plugin-datalabels@2.2.0:
@@ -5693,13 +5693,13 @@ snapshots:
 
   caniuse-lite@1.0.30001818: {}
 
-  chart.js@4.5.1:
+  chart.js@4.6.1:
     dependencies:
       '@kurkle/color': 0.3.4
 
-  chartjs-plugin-datalabels@2.2.0(chart.js@4.5.1):
+  chartjs-plugin-datalabels@2.2.0(chart.js@4.6.1):
     dependencies:
-      chart.js: 4.5.1
+      chart.js: 4.6.1
 
   chrome-trace-event@1.0.4: {}
 
@@ -6681,9 +6681,9 @@ snapshots:
 
   re2js@2.9.0: {}
 
-  react-chartjs-2@5.3.1(chart.js@4.5.1)(react@19.3.1):
+  react-chartjs-2@5.3.1(chart.js@4.6.1)(react@19.3.1):
     dependencies:
-      chart.js: 4.5.1
+      chart.js: 4.6.1
       react: 19.3.1
 
   react-day-picker@10.0.2(@types/react@19.3.0)(react@19.3.1):
